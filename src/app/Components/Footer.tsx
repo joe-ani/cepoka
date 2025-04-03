@@ -52,12 +52,12 @@ const Footer = () => {
             alert('An error occurred');
         }
     };
-// 
+
     const handleCloseModal = () => {
         setShowAdminPrompt(false);
         setAdminKey('');
     };
-// 
+
     return (
         <footer className="relative w-full bg-[#ededed] text-black pt-24 pb-6 font-light mt-auto">
             {/* Top fade gradient */}

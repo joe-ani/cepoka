@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useActiveLink } from "../context/ActiveLinkContext";
 import { useRouter } from "next/navigation";
-import { Search, ArrowRight, MessageSquare, ChevronDown } from 'lucide-react';
+import { Search, ArrowRight, ChevronDown } from 'lucide-react';
 
 const Hero = () => {
     const { activeLink, setActiveLink } = useActiveLink();

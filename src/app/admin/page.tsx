@@ -62,6 +62,13 @@ const AdminPage = () => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);             // Current image index in modal
     const [showDeleteModal, setShowDeleteModal] = useState<string | null>(null); // Delete confirmation modal
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // Selected category
+    const [newCategory, setNewCategory] = useState(''); // New category input
+    const [showNewCategoryInput, setShowNewCategoryInput] = useState(false); // Toggle new category input
+    const [selectedIcon, setSelectedIcon] = useState('✨');
+    const [showIconSelector, setShowIconSelector] = useState(false);
+
+    // Available icons for categories
+    const AVAILABLE_ICONS = ['✨', '🌟', '💫', '👑', '💁‍♀️', '🛋️', '💆‍♀️', '💅', '💇‍♀️', '🪑', '🛁', '🧴'];
 
     // Ref for form scrolling
     const formRef = useRef<HTMLDivElement>(null);
@@ -294,6 +301,24 @@ const AdminPage = () => {
         reset({ ...getValues(), description: getValues().description, category });
     };
 
+    // Handler for adding new category
+    const handleAddCategory = () => {
+        if (newCategory.trim()) {
+            const newCategoryObj = {
+                id: newCategory.toLowerCase().replace(/\s+/g, '-'),
+                name: newCategory.trim(),
+                icon: selectedIcon,
+                imageSrc: '/icons/package.png'
+            };
+            CATEGORIES.push(newCategoryObj);
+            setNewCategory('');
+            setSelectedIcon('✨');
+            setShowNewCategoryInput(false);
+            setShowIconSelector(false);
+            toast.success('Category added successfully');
+        }
+    };
+
     if (!isAuthorized) {
         return null; // or return a loading state
     }
@@ -354,7 +379,7 @@ const AdminPage = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Colour</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
                             <textarea
                                 {...register('description')}
                                 className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-all duration-200 text-gray-900 font-normal placeholder-gray-500 min-h-[120px]"
@@ -363,29 +388,6 @@ const AdminPage = () => {
                             {errors.description && (
                                 <p className="text-red-500 text-sm mt-2">{errors.description.message}</p>
                             )}
-                            <div className="mt-2 flex flex-wrap gap-1 sm:gap-2">
-                                {COLORS.map((color) => (
-                                    <motion.button
-                                        key={color.id}
-                                        onClick={(e) => handleColorClick(color.name, e)}
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        className={`px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium
-                                        transition-all duration-200
-                                          ${color.id === 'mixed'
-                                                ? 'bg-gradient-to-r from-pink-300 via-purple-300 via-blue-300 via-green-300 via-yellow-300 to-red-300 text-black'
-                                                : ''
-                                            }
-                                        `}
-                                        style={{
-                                            backgroundColor: color.id !== 'mixed' ? color.hex : undefined,
-                                            color: ['black', 'burgundy', 'brown'].includes(color.id) ? 'white' : 'black',
-                                        }}
-                                    >
-                                        {color.name}
-                                    </motion.button>
-                                ))}
-                            </div>
                         </div>
 
                         <div className="mt-4 sm:mt-8">
@@ -410,7 +412,70 @@ const AdminPage = () => {
                                         </div>
                                     </motion.div>
                                 ))}
+                                <motion.div
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    onClick={() => setShowNewCategoryInput(true)}
+                                    className="cursor-pointer p-2 sm:p-3 rounded-lg text-center transition-colors duration-200 bg-gray-100 hover:bg-gray-200 text-gray-900"
+                                >
+                                    <div className="text-lg sm:text-2xl mb-1">➕</div>
+                                    <div className="text-[10px] sm:text-sm font-medium">
+                                        Add New
+                                    </div>
+                                </motion.div>
                             </div>
+                            {showNewCategoryInput && (
+                                <div className="mt-4 space-y-4">
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={newCategory}
+                                            onChange={(e) => setNewCategory(e.target.value)}
+                                            className="flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-all duration-200 text-gray-900 font-normal placeholder-gray-500"
+                                            placeholder="Enter new category name"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowIconSelector(!showIconSelector)}
+                                            className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all duration-200"
+                                        >
+                                            <span className="text-2xl">{selectedIcon}</span>
+                                        </button>
+                                        <button
+                                            onClick={handleAddCategory}
+                                            className="bg-[#333333] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium hover:bg-gray-800 transition-all duration-200"
+                                        >
+                                            Add
+                                        </button>
+                                    </div>
+
+                                    {showIconSelector && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -10 }}
+                                            className="p-3 border border-gray-200 rounded-lg bg-white shadow-lg"
+                                        >
+                                            <div className="grid grid-cols-6 gap-2">
+                                                {AVAILABLE_ICONS.map((icon) => (
+                                                    <button
+                                                        key={icon}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setSelectedIcon(icon);
+                                                            setShowIconSelector(false);
+                                                        }}
+                                                        className={`p-2 text-xl hover:bg-gray-100 rounded-lg transition-all duration-200 ${selectedIcon === icon ? 'bg-gray-100' : ''
+                                                            }`}
+                                                    >
+                                                        {icon}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         <div>

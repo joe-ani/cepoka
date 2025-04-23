@@ -11,6 +11,11 @@ import { Search, ArrowRight, ChevronDown } from 'lucide-react';
 const Hero = () => {
     const { activeLink, setActiveLink } = useActiveLink();
     const [menuOpen, setMenuOpen] = useState(false);
+
+    // Function to handle menu toggle
+    const handleMenuToggle = (isOpen: boolean) => {
+        setMenuOpen(isOpen);
+    };
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState("");
     const [showSearch, setShowSearch] = useState(false);
@@ -80,6 +85,7 @@ const Hero = () => {
             router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
         }
         setShowSearch(false);
+        
         setSearchQuery("");
     };
 
@@ -157,24 +163,7 @@ const Hero = () => {
         },
     };
 
-    const mobileMenuVariants = {
-        closed: {
-            opacity: 0,
-            y: "-100%",
-            transition: {
-                duration: 0.3,
-                ease: [0.4, 0, 0.2, 1],
-            }
-        },
-        open: {
-            opacity: 1,
-            y: 0,
-            transition: {
-                duration: 0.3,
-                ease: [0.4, 0, 0.2, 1],
-            }
-        }
-    };
+    // Mobile menu variants are now defined inline
 
     const menuItemVariants = {
         closed: { opacity: 0, y: -20 },
@@ -216,59 +205,129 @@ const Hero = () => {
     return (
         <div className="hero bg-[#ffffff] h-screen w-screen flex flex-col justify-center items-center relative">
             <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white to-transparent z-20"></div>
-            
+
             {menuOpen && (
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-                    onClick={() => setMenuOpen(false)}
+                    transition={{ duration: 0.3 }}
+                    className="menu-overlay fixed inset-0 bg-black/50 backdrop-blur-sm z-[90]"
+                    onClick={() => handleMenuToggle(false)}
                 />
             )}
 
             <div className="container mx-auto max-w-[1536px] flex flex-col md:flex-row justify-around items-center px-8 md:px-20 lg:px-40 pb-8 pt-0 md:pt-20">
-                <div className="logo md:mb-0 flex pt-14 justify-between w-full md:w-auto items-center relative z-50">
-                    <Image
-                        className="w-10 h-auto md:w-30"
-                        width={70}
-                        height={70}
-                        priority
-                        alt="Dfugo logo"
-                        src="/logo.png"
-                    />
+                <div className={`logo md:mb-0 flex pt-14 justify-between w-full md:w-auto items-center relative z-[200] ${menuOpen ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}>
+                    <Link href={"/"} className="relative z-[200] bg-transparent p-1 rounded-full">
+                        <Image
+                            className="w-10 h-auto md:w-30"
+                            width={70}
+                            height={70}
+                            priority
+                            alt="Dfugo logo"
+                            src="/logo.png"
+                        />
+                    </Link>
 
                     {/* Nav-style Hamburger Button */}
-                    <button
-                        className="text-white md:hidden focus:outline-none z-50 p-2"
-                        onClick={() => setMenuOpen(!menuOpen)}
-                    >
-                        <svg
-                            className="w-6 h-6"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
+                    {!menuOpen && (
+                        <button
+                            id="hero-hamburger-button"
+                            className="text-black md:hidden focus:outline-none z-[120] p-2"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleMenuToggle(true);
+                            }}
                         >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d={menuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16m-7 6h7"}
-                            ></path>
-                        </svg>
-                    </button>
+                            <svg
+                                className="w-6 h-6"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M4 6h16M4 12h16m-7 6h7"
+                                />
+                            </svg>
+                        </button>
+                    )}
                 </div>
 
                 {/* Updated Mobile Menu with centered items and dots */}
                 <motion.div
+                    id="hero-mobile-menu-container"
                     initial="closed"
                     animate={menuOpen ? "open" : "closed"}
-                    variants={mobileMenuVariants}
-                    className="fixed top-0 left-0 w-full bg-[#111111] z-40 md:hidden"
+                    variants={{
+                        open: {
+                            opacity: 1,
+                            y: 0,
+                            transition: {
+                                duration: 0.3,
+                                ease: [0.4, 0, 0.2, 1],
+                                staggerChildren: 0.1
+                            }
+                        },
+                        closed: {
+                            opacity: 0,
+                            y: "-100%",
+                            transition: {
+                                duration: 0.3,
+                                ease: [0.4, 0, 0.2, 1],
+                                staggerChildren: 0.05,
+                                staggerDirection: -1
+                            }
+                        }
+                    }}
+                    className="fixed top-0 left-0 w-full bg-[#11111180] backdrop-blur-[12px] z-[150] md:hidden"
+                    onClick={(e) => e.stopPropagation()}
                 >
-                    <div className="pt-32 pb-8 px-8 flex flex-col items-center gap-8">
+                    {/* Mobile Header - positioned exactly like the main hero header */}
+                    <div className="h-[90px] relative">
+                        <div className="absolute -bottom-10 left-0 w-full h-[1px] bg-black/10 z-[160]"></div>
+                        <div className="container mx-auto max-w-[1536px] relative">
+                            <div className="flex justify-between items-center relative z-[200] pt-6 px-8">
+                                <Link href={"/"} className="relative z-[200] bg-transparent p-1 rounded-full">
+                                    <Image
+                                        className="w-10 h-auto md:w-30"
+                                        width={70}
+                                        height={70}
+                                        priority
+                                        alt="Dfugo logo"
+                                        src="/logo.png"
+                                    />
+                                </Link>
+
+                                <button
+                                    className="text-white focus:outline-none p-2 relative z-[170] cursor-pointer hover:text-gray-300 hover:scale-110 transition-all duration-200"
+                                    onClick={() => handleMenuToggle(false)}
+                                    aria-label="Close menu"
+                                >
+                                    <svg
+                                        className="w-6 h-6"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M6 18L18 6M6 6l12 12"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="pt-16 pb-8 px-8 flex flex-col items-center gap-8" onClick={(e) => e.stopPropagation()}>
                         {/* Mobile Search - Centered */}
                         <motion.form
                             variants={menuItemVariants}
@@ -280,14 +339,14 @@ const Hero = () => {
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full px-6 py-3 rounded-full bg-black/5 text-[#333333] font-light focus:outline-none focus:ring-2 focus:ring-[#FEEF88] transition-all text-left placeholder-[#666666]"
+                                className="w-full px-6 py-3 rounded-full bg-white/10 text-white font-light focus:outline-none focus:ring-2 focus:ring-[#FEEF88] transition-all text-left placeholder-white/60"
                                 placeholder="Search products..."
                             />
                             <button
                                 type="submit"
                                 className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2"
                             >
-                                <Search className="w-4 h-4 text-[#333333]" />
+                                <Search className="w-4 h-4 text-white" />
                             </button>
                         </motion.form>
 
@@ -308,12 +367,32 @@ const Hero = () => {
                                         {link}
                                     </button>
                                     {activeLink === link && (
-                                        <motion.div
-                                            className="absolute -bottom-2 bg-[#FF69B4] w-[6px] h-[6px] rounded-full"
-                                            initial={{ scale: 0 }}
-                                            animate={{ scale: 1 }}
-                                            transition={{ duration: 0.2 }}
-                                        />
+                                        <div className="absolute -bottom-2 flex space-x-1">
+                                            <motion.div
+                                                className="bg-[#1E90FF] w-[4px] h-[4px] rounded-full"
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                transition={{ duration: 0.2 }}
+                                            />
+                                            <motion.div
+                                                className="bg-[#FF69B4] w-[4px] h-[4px] rounded-full"
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                transition={{ duration: 0.2, delay: 0.1 }}
+                                            />
+                                            <motion.div
+                                                className="bg-[#1E90FF] w-[4px] h-[4px] rounded-full"
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                transition={{ duration: 0.2, delay: 0.2 }}
+                                            />
+                                            <motion.div
+                                                className="bg-[#FF69B4] w-[4px] h-[4px] rounded-full"
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                transition={{ duration: 0.2, delay: 0.3 }}
+                                            />
+                                        </div>
                                     )}
                                 </motion.div>
                             ))}
@@ -335,9 +414,8 @@ const Hero = () => {
                                 {["Home", "Shop", "Contact", "About"].map((link) => (
                                     <li
                                         key={link}
-                                        className={`relative cursor-pointer flex flex-col items-center ${
-                                            activeLink === link ? "text-[#1E90FF]" : "text-[#333333]"
-                                        }`}
+                                        className={`relative cursor-pointer flex flex-col items-center ${activeLink === link ? "text-[#1E90FF]" : "text-[#333333]"
+                                            }`}
                                         onClick={() => handleNavClick(link)}
                                     >
                                         <div>{link}</div>
@@ -367,7 +445,7 @@ const Hero = () => {
                                                     animate={{ scale: 1 }}
                                                     transition={{ duration: 0.2, delay: 0.3 }}
                                                 />
-                                            </div>
+                                            </div>      
                                         )}
                                     </li>
                                 ))}
@@ -491,17 +569,10 @@ const Hero = () => {
                     {/* Highlight container */}
                     <motion.div
                         variants={cardVariants}
-                    style={{
-                        borderImage: 'linear-gradient(to right, #1E90FF, #FF69B4) 1',
-                        borderWidth: '1.5px',
-                        borderStyle: 'solid',
-                        borderRadius: '20px'  // Matching the rounded-[20px] class
-                        
-                    }}
-                        className="w-[170px] md:w-[200px] highlight-box rounded-[20px] p-[14px] md:p-[20px] md:rounded-[30px] z-10 space-y-2 md:space-y-4 absolute flex flex-col top-[-120px] md:top-[0px]"
+                        className="w-[170px] md:w-[200px] highlight-box border-[1.5px] border-[#b2b2b2] rounded-[20px] p-[14px] md:p-[20px] md:rounded-[30px] z-10 space-y-2 md:space-y-4 absolute flex flex-col top-[-120px] md:top-[0px]"
                     >
                         <div className="flex justify-between items-center relative">
-                            <div className="bg-[#d1d1d171] text-[8px] md:text-[14px] text-[#333333] font-semibold rounded-full p-1 px-3 md:px-5">Featured</div>
+                            <div className="bg-[#d1d1d171] text-[8px] md:text-[12px] text-[#333333] font-semibold rounded-full p-1 px-3 md:px-5">Featured</div>
                             <motion.div
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
@@ -511,7 +582,7 @@ const Hero = () => {
                             </motion.div>
                         </div>
                         <div className="flex justify-between space-y-1.5 md:space-y-3">
-                            <h1 className="text-[14px] w-[5%] md:text[19px] text-[#333333] font-medium">LED Facial Mask</h1>
+                            <h1 className="text-[14px] w-[5%] md:text[19px] text-[#333333] font-bold">LED Facial Mask</h1>
                             <div className="flex w-[60%] h-[60px] border-1 border-gray-500 bg-[#cccccc39] p-[6px] md:p-[10px] rounded-[8px]">
                                 {/* <Image width={24} height={16} src={"/images/wig1.png"} alt="" className="w-4 md:w-6" /> */}
                             </div>

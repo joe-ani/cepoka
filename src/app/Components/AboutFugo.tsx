@@ -42,7 +42,6 @@ const AboutFugo = () => {
                             <p className="text-sm sm:text-base font-normal leading-[1.8] sm:leading-[2] max-w-[95%] sm:max-w-full">
                                 Founded in 2005 by Ali Ugochicku (aka Fugo), D&apos;Fugo Hair has established itself as a premier
                                 destination for luxury wigs in Nigeria and beyond.
-
                                 With over two decades of expertise, we&apos;ve built our reputation on providing premium quality
                                 wigs and exceptional service to our clients worldwide.
 
@@ -68,5 +67,6 @@ const AboutFugo = () => {
         </div>
     );
 };
+
 
 export default AboutFugo;

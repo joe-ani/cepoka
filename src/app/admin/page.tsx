@@ -13,6 +13,7 @@ import { useSwipeable } from 'react-swipeable';
 import { COLORS } from '../../data/colors';
 import type { Variants } from 'framer-motion';
 import Image from 'next/image';
+import Link from 'next/link';
 import { CATEGORIES } from '@/src/data/categories'
 
 
@@ -306,9 +307,19 @@ const AdminPage = () => {
     return (
         <div className="min-h-screen bg-gray-50 pt-32 sm:pt-40 pb-8 sm:pb-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
-                <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-8 sm:mb-12 text-center tracking-tight">
-                    Product Management
-                </h1>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 sm:mb-12">
+                    <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 text-center sm:text-left tracking-tight">
+                        Product Management
+                    </h1>
+                    <div className="flex justify-center sm:justify-end mt-4 sm:mt-0">
+                        <Link href="/admin/receipt-sender" className="bg-[#333333] text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-200 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Receipt Generator
+                        </Link>
+                    </div>
+                </div>
 
                 {/* Product Form */}
                 <div ref={formRef} className="bg-white p-4 sm:p-8 rounded-xl sm:rounded-2xl shadow-lg mb-8 sm:mb-12 transition-all duration-300 hover:shadow-xl">
@@ -359,7 +370,7 @@ const AdminPage = () => {
                                         onClick={(e) => handleColorClick(color.name, e)}
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
-                                        className={`px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium 
+                                        className={`px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium
                                         transition-all duration-200
                                           ${color.id === 'mixed'
                                                 ? 'bg-gradient-to-r from-pink-300 via-purple-300 via-blue-300 via-green-300 via-yellow-300 to-red-300 text-black'

@@ -151,12 +151,12 @@ const Nav = () => {
         />
       )}
 
-      <nav className={`fixed top-0 w-full z-[100] bg-gradient-to-l from-[#87878780] to-transparent  backdrop-blur-[15px] text-white p-6 sm:p-8 transition-transform duration-300 border-b border-black/10 ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
+      <nav className={`fixed top-0 w-full z-[180] bg-gradient-to-l from-[#87878780] to-transparent  backdrop-blur-[15px] text-white p-6 sm:p-8 transition-transform duration-300 border-b border-black/10 ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
         <div className="container mx-auto relative">
           {/* Main nav content */}
-          <div className="flex justify-between items-center relative z-[110]">
-            {/* Logo - adjusted size */}
-            <Link href={"/"}>
+          <div className={`flex justify-between items-center relative z-[200] ${isMenuOpen ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}>
+            {/* Logo - adjusted size with higher z-index */}
+            <Link href={"/"} className="relative z-[200] bg-transparent p-1 rounded-full">
               <Image src="/logo.png" alt="Logo" width={40} height={50} />
             </Link>
 
@@ -170,11 +170,10 @@ const Nav = () => {
                 {["Home", "Shop", "Contact", "About"].map((link) => (
                   <li
                     key={link}
-                    className={`relative cursor-pointer flex flex-col items-center ${
-                      activeLink === link 
-                        ? "text-[#1E90FF]" 
-                        : "text-white/90 hover:text-white transition-colors duration-200"
-                    }`}
+                    className={`relative cursor-pointer flex flex-col items-center ${activeLink === link
+                      ? "text-[#1E90FF]"
+                      : "text-white/90 hover:text-white transition-colors duration-200"
+                      }`}
                     onClick={() => handleNavClick(link)}
                   >
                     <div>{link}</div>
@@ -245,30 +244,31 @@ const Nav = () => {
 
               {/* Mobile menu button with higher z-index */}
               <div className="md:hidden flex items-center">
-                <button
-                  id="hamburger-button"
-                  className="text-white focus:outline-none z-[120] pr-4" // Added padding-right
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsMenuOpen(!isMenuOpen);
-                  }}
-                >
-                  <motion.svg
-                    animate={isMenuOpen ? "open" : "closed"}
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
+                {!isMenuOpen && (
+                  <button
+                    id="hamburger-button"
+                    className="text-white focus:outline-none z-[120] pr-4" // Added padding-right
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsMenuOpen(true);
+                    }}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16m-7 6h7"}
-                    />
-                  </motion.svg>
-                </button>
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M4 6h16M4 12h16m-7 6h7"
+                      />
+                    </svg>
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -299,41 +299,48 @@ const Nav = () => {
                 }
               }
             }}
-            className="fixed top-0 left-0 w-full bg-[#11111180] backdrop-blur-[12px] z-[110] md:hidden"
+            className="fixed top-0 left-0 w-full bg-[#11111180] backdrop-blur-[12px] z-[150] md:hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Mobile Header */}
-            <div className="flex justify-between items-center px-8 pt-6 pb-4 border-b border-white/10">
-              <Link href={"/"}>
-                <Image src="/logo.png" alt="Logo" width={40} height={50} />
-              </Link>
-              <button
-                className="text-white focus:outline-none p-2"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsMenuOpen(false);
-                }}
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+            {/* Mobile Header - positioned exactly like the main nav */}
+            <div className="h-[90px] relative">
+              <div className="absolute -bottom-10 left-0 w-full h-[1px] bg-black/10 z-[160]"></div>
+              <div className="container mx-auto relative">
+                <div className="flex justify-between items-center relative z-[200] pt-6 px-8">
+                  <Link href={"/"} className="relative z-[200] bg-transparent p-1 rounded-full">
+                    <Image src="/logo.png" alt="Logo" width={40} height={50} />
+                  </Link>
+
+                  <button
+                    className="text-white focus:outline-none p-2 relative z-[170] cursor-pointer hover:text-gray-300 hover:scale-110 transition-all duration-200"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsMenuOpen(false);
+                    }}
+                    aria-label="Close menu"
+                  >
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Mobile Menu Content */}
             <div
-              className="pt-8 pb-8 px-8 flex flex-col items-center gap-8"
+              className="pt-16 pb-8 px-8 flex flex-col items-center gap-8"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Updated Mobile Search Form */}
@@ -371,9 +378,8 @@ const Nav = () => {
                   >
                     <button
                       onClick={() => handleNavClick(link)}
-                      className={`text-center text-lg font-medium py-2 px-4 ${
-                        activeLink === link ? "text-[#1E90FF]" : "text-white"
-                      }`}
+                      className={`text-center text-lg font-medium py-2 px-4 ${activeLink === link ? "text-[#1E90FF]" : "text-white"
+                        }`}
                     >
                       {link}
                     </button>

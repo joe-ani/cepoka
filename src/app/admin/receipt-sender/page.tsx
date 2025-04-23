@@ -3,12 +3,44 @@
 import { useState, useRef, useEffect } from 'react';
 import Script from 'next/script';
 
+interface Html2PdfOptions {
+    margin?: number[];
+    filename?: string;
+    image?: {
+        type: string;
+        quality: number;
+    };
+    html2canvas?: {
+        scale?: number;
+        useCORS?: boolean;
+        scrollX?: number;
+        scrollY?: number;
+        windowWidth?: number;
+        windowHeight?: number;
+        letterRendering?: boolean;
+    };
+    jsPDF?: {
+        unit?: string;
+        format?: string | number[];
+        orientation?: 'portrait' | 'landscape';
+        putOnlyUsedFonts?: boolean;
+        compress?: boolean;
+    };
+}
+
+interface Html2PdfResult {
+    save(): Promise<void>;
+    from(element: HTMLElement): Html2PdfResult;
+    set(options: Html2PdfOptions): Html2PdfResult;
+    output(type: string): Promise<string>;
+}
+
 declare global {
     interface Window {
         html2pdf: {
-            (): any;
-            set: (opt: any) => any;
-            from: (element: HTMLElement) => any;
+            (): Html2PdfResult;
+            set: (opt: Html2PdfOptions) => Html2PdfResult;
+            from: (element: HTMLElement) => Html2PdfResult;
             save: () => Promise<void>;
             output: (type: string) => Promise<string>;
         };

@@ -5,7 +5,13 @@ import Script from 'next/script';
 
 declare global {
     interface Window {
-        html2pdf: any;
+        html2pdf: {
+            (): any;
+            set: (opt: any) => any;
+            from: (element: HTMLElement) => any;
+            save: () => Promise<void>;
+            output: (type: string) => Promise<string>;
+        };
     }
 }
 import Link from 'next/link';
@@ -98,7 +104,7 @@ const ReceiptSender = () => {
     };
 
     const downloadPDF = async () => {
-        if (window.html2pdf && receiptRef.current) {
+        if (typeof window.html2pdf === 'function' && receiptRef.current) {
             const element = receiptRef.current;
 
             const opt = {
@@ -132,7 +138,7 @@ const ReceiptSender = () => {
                 document.body.appendChild(tempContainer);
 
                 // Generate PDF
-                // @ts-ignore - html2pdf is loaded via CDN
+                // @ts-expect-error - html2pdf is loaded via CDN
                 await html2pdf().set(opt).from(tempContainer).save();
 
                 // Cleanup
@@ -144,7 +150,7 @@ const ReceiptSender = () => {
     };
 
     const downloadAndShare = async () => {
-        if (window.html2pdf && receiptRef.current) {
+        if (typeof window.html2pdf === 'function' && receiptRef.current) {
             const opt = {
                 margin: [0.5, 0.5, 0.5, 0.5],
                 filename: `receipt-${formData.customerName}.pdf`,
@@ -172,7 +178,7 @@ const ReceiptSender = () => {
                 receiptClone.style.left = '-9999px';
                 receiptClone.style.top = '0';
 
-                // @ts-ignore - html2pdf is loaded via CDN
+                // @ts-expect-error - html2pdf is loaded via CDN
                 const pdf = await html2pdf().set(opt).from(receiptClone).output('datauristring');
                 document.body.removeChild(receiptClone);
                 return pdf;

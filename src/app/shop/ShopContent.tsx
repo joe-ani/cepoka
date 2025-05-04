@@ -24,7 +24,7 @@ export default function ShopContent() {
   // =============== STATE MANAGEMENT ===============
   // Router is not used in this component
   const searchParams = useSearchParams();
-  const initialSearchQuery = searchParams.get('search') || "";
+  const initialSearchQuery = searchParams ? searchParams.get('search') || "" : "";
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -56,6 +56,8 @@ export default function ShopContent() {
 
   // URL Params Handler
   useEffect(() => {
+    if (!searchParams) return;
+
     const category = searchParams.get('category');
     const search = searchParams.get('search');
 

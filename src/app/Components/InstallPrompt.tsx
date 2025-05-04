@@ -2,53 +2,75 @@
 
 import { useState, useEffect } from 'react';
 
+// Define types for the beforeinstallprompt event
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
+// Declare the event for TypeScript
+declare global {
+  interface WindowEventMap {
+    beforeinstallprompt: BeforeInstallPromptEvent;
+  }
+}
+
 export default function InstallPrompt() {
   const [showPrompt, setShowPrompt] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
     // Check if the app is already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    
+
     // Check if it's iOS
-    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as { MSStream?: unknown }).MSStream;
     setIsIOS(isIOSDevice);
 
     if (!isStandalone) {
       // Listen for the beforeinstallprompt event (works on Android/Chrome)
-      window.addEventListener('beforeinstallprompt', (e) => {
+      const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
         // Prevent Chrome 67 and earlier from automatically showing the prompt
         e.preventDefault();
         // Stash the event so it can be triggered later
         setDeferredPrompt(e);
         // Show the install prompt
         setShowPrompt(true);
-      });
+      };
+
+      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+      return () => {
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      };
     }
 
-    return () => {
-      window.removeEventListener('beforeinstallprompt', () => {});
-    };
+    return undefined;
   }, []);
 
-  const handleInstallClick = () => {
+  const handleInstallClick = async () => {
     if (!deferredPrompt) return;
 
     // Show the install prompt
-    deferredPrompt.prompt();
-    
+    await deferredPrompt.prompt();
+
     // Wait for the user to respond to the prompt
-    deferredPrompt.userChoice.then((choiceResult: any) => {
-      if (choiceResult.outcome === 'accepted') {
-        console.log('User accepted the install prompt');
-      } else {
-        console.log('User dismissed the install prompt');
-      }
-      // Clear the saved prompt since it can't be used again
-      setDeferredPrompt(null);
-      setShowPrompt(false);
-    });
+    const choiceResult = await deferredPrompt.userChoice;
+
+    if (choiceResult.outcome === 'accepted') {
+      console.log('User accepted the install prompt');
+    } else {
+      console.log('User dismissed the install prompt');
+    }
+
+    // Clear the saved prompt since it can't be used again
+    setDeferredPrompt(null);
+    setShowPrompt(false);
   };
 
   const closePrompt = () => {
@@ -62,21 +84,21 @@ export default function InstallPrompt() {
       <div>
         <p className="font-medium">Install Cepoka Beauty Hub</p>
         <p className="text-sm text-gray-600">
-          {isIOS 
-            ? 'Tap the share button and select "Add to Home Screen"' 
+          {isIOS
+            ? 'Tap the share button and select "Add to Home Screen"'
             : 'Install this app on your device for quick access'}
         </p>
       </div>
       <div className="flex gap-2">
         {!isIOS && (
-          <button 
+          <button
             onClick={handleInstallClick}
             className="bg-black text-white px-4 py-2 rounded-lg"
           >
             Install
           </button>
         )}
-        <button 
+        <button
           onClick={closePrompt}
           className="border border-gray-300 px-4 py-2 rounded-lg"
         >

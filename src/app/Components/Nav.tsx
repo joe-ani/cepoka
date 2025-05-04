@@ -155,9 +155,53 @@ const Nav = () => {
         <div className="container mx-auto relative">
           {/* Main nav content */}
           <div className={`flex justify-between items-center relative z-[200] ${isMenuOpen ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}>
-            {/* Logo - adjusted size with higher z-index */}
-            <Link href={"/"} className="relative z-[200] bg-transparent p-1 rounded-full">
-              <Image src="/logo.png" alt="Logo" width={40} height={50} />
+            {/* Logo and brand name with higher z-index */}
+            <Link href={"/"} className="relative z-[200] flex items-center gap-3">
+              <div className="bg-transparent p-1 rounded-full">
+                <Image src="/logo.png" alt="Logo" width={40} height={50} />
+              </div>
+              <div className="block">
+                <motion.span
+                  className="text-[13px] sm:text-xl font-bold bg-clip-text text-transparent inline-block relative"
+                  style={{
+                    backgroundImage: "linear-gradient(90deg, #1E90FF, #FF69B4)",
+                    backgroundSize: "200% 100%",
+                  }}
+                  animate={{
+                    backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
+                  }}
+                  transition={{
+                    duration: 5,
+                    ease: "linear",
+                    repeat: Infinity,
+                  }}
+                >
+                  CEPOKA BEAUTY HUB
+                  <motion.div
+                    className="absolute -bottom-1 left-0 h-[2px] rounded-full"
+                    style={{
+                      backgroundImage: "linear-gradient(90deg, #1E90FF, #FF69B4)",
+                      backgroundSize: "200% 100%",
+                    }}
+                    animate={{
+                      backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
+                      width: ["0%", "100%"],
+                    }}
+                    transition={{
+                      backgroundPosition: {
+                        duration: 5,
+                        ease: "linear",
+                        repeat: Infinity,
+                      },
+                      width: {
+                        duration: 1,
+                        delay: 0.5,
+                        ease: "easeOut",
+                      },
+                    }}
+                  />
+                </motion.span>
+              </div>
             </Link>
 
             <div className="flex items-center space-x-8">
@@ -299,24 +343,73 @@ const Nav = () => {
                 }
               }
             }}
-            className="fixed top-0 left-0 w-full bg-[#11111180] backdrop-blur-[12px] z-[150] md:hidden"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed top-0 left-0 w-full bg-[#11111180] backdrop-blur-[12px] z-[150] md:hidden h-full"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsMenuOpen(false);
+            }}
           >
             {/* Mobile Header - positioned exactly like the main nav */}
             <div className="h-[90px] relative">
               <div className="absolute -bottom-10 left-0 w-full h-[1px] bg-black/10 z-[160]"></div>
               <div className="container mx-auto relative">
                 <div className="flex justify-between items-center relative z-[200] pt-6 px-8">
-                  <Link href={"/"} className="relative z-[200] bg-transparent p-1 rounded-full">
-                    <Image src="/logo.png" alt="Logo" width={40} height={50} />
+                  <Link href={"/"} className="relative z-[200] flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-transparent p-1 rounded-full">
+                      <Image src="/logo.png" alt="Logo" width={40} height={50} />
+                    </div>
+                    <div>
+                      <motion.span
+                        className="text-base font-bold bg-clip-text text-transparent inline-block relative"
+                        style={{
+                          backgroundImage: "linear-gradient(90deg, #1E90FF, #FF69B4)",
+                          backgroundSize: "200% 100%",
+                        }}
+                        animate={{
+                          backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
+                        }}
+                        transition={{
+                          duration: 5,
+                          ease: "linear",
+                          repeat: Infinity,
+                        }}
+                      >
+                        CEPOKA BEAUTY HUB
+                        <motion.div
+                          className="absolute -bottom-1 left-0 h-[2px] rounded-full"
+                          style={{
+                            backgroundImage: "linear-gradient(90deg, #1E90FF, #FF69B4)",
+                            backgroundSize: "200% 100%",
+                          }}
+                          animate={{
+                            backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
+                            width: ["0%", "100%"],
+                          }}
+                          transition={{
+                            backgroundPosition: {
+                              duration: 5,
+                              ease: "linear",
+                              repeat: Infinity,
+                            },
+                            width: {
+                              duration: 1,
+                              delay: 0.5,
+                              ease: "easeOut",
+                            },
+                          }}
+                        />
+                      </motion.span>
+                    </div>
                   </Link>
 
-                  <button
+                  <motion.button
                     className="text-white focus:outline-none p-2 relative z-[170] cursor-pointer hover:text-gray-300 hover:scale-110 transition-all duration-200"
                     onClick={(e) => {
                       e.stopPropagation();
                       setIsMenuOpen(false);
                     }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                     aria-label="Close menu"
                   >
                     <svg
@@ -333,7 +426,7 @@ const Nav = () => {
                         d="M6 18L18 6M6 6l12 12"
                       />
                     </svg>
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             </div>
@@ -356,7 +449,7 @@ const Nav = () => {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-6 py-3 rounded-full bg-white/10 text-white font-light focus:outline-none focus:ring-2 focus:ring-[#FEEF88] transition-all text-left placeholder-white/60"
+                  className="w-full px-6 py-3 rounded-full bg-white/10 text-white font-light focus:outline-none focus:ring-2 focus:ring-[#1E90FF] transition-all text-left placeholder-white/60"
                   placeholder="Search products..."
                 />
                 <button
@@ -376,13 +469,14 @@ const Nav = () => {
                     custom={i + 1}
                     className="relative flex flex-col items-center"
                   >
-                    <button
+                    <motion.button
                       onClick={() => handleNavClick(link)}
-                      className={`text-center text-lg font-medium py-2 px-4 ${activeLink === link ? "text-[#1E90FF]" : "text-white"
-                        }`}
+                      className={`text-center text-lg font-medium py-2 px-4 ${activeLink === link ? "text-[#FF69B4]" : "text-white"}`}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                     >
                       {link}
-                    </button>
+                    </motion.button>
                     {activeLink === link && (
                       <div className="absolute -bottom-2 flex space-x-1">
                         <motion.div

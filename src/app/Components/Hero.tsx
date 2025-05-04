@@ -85,7 +85,7 @@ const Hero = () => {
             router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
         }
         setShowSearch(false);
-        
+
         setSearchQuery("");
     };
 
@@ -284,28 +284,80 @@ const Hero = () => {
                             }
                         }
                     }}
-                    className="fixed top-0 left-0 w-full bg-[#11111180] backdrop-blur-[12px] z-[150] md:hidden"
-                    onClick={(e) => e.stopPropagation()}
+                    className="fixed top-0 left-0 w-full bg-[#11111180] backdrop-blur-[12px] z-[150] md:hidden h-full"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleMenuToggle(false);
+                    }}
                 >
                     {/* Mobile Header - positioned exactly like the main hero header */}
                     <div className="h-[90px] relative">
                         <div className="absolute -bottom-10 left-0 w-full h-[1px] bg-black/10 z-[160]"></div>
                         <div className="container mx-auto max-w-[1536px] relative">
                             <div className="flex justify-between items-center relative z-[200] pt-6 px-8">
-                                <Link href={"/"} className="relative z-[200] bg-transparent p-1 rounded-full">
-                                    <Image
-                                        className="w-10 h-auto md:w-30"
-                                        width={70}
-                                        height={70}
-                                        priority
-                                        alt="Dfugo logo"
-                                        src="/logo.png"
-                                    />
+                                <Link href={"/"} className="relative z-[200] flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                                    <div className="bg-transparent p-1 rounded-full">
+                                        <Image
+                                            className="w-10 h-auto md:w-30"
+                                            width={70}
+                                            height={70}
+                                            priority
+                                            alt="Dfugo logo"
+                                            src="/logo.png"
+                                        />
+                                    </div>
+                                    <div>
+                                        <motion.span
+                                            className="text-base font-bold bg-clip-text text-transparent inline-block relative"
+                                            style={{
+                                                backgroundImage: "linear-gradient(90deg, #1E90FF, #FF69B4)",
+                                                backgroundSize: "200% 100%",
+                                            }}
+                                            animate={{
+                                                backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
+                                            }}
+                                            transition={{
+                                                duration: 5,
+                                                ease: "linear",
+                                                repeat: Infinity,
+                                            }}
+                                        >
+                                            CEPOKA BEAUTY HUB
+                                            <motion.div
+                                                className="absolute -bottom-1 left-0 h-[2px] rounded-full"
+                                                style={{
+                                                    backgroundImage: "linear-gradient(90deg, #1E90FF, #FF69B4)",
+                                                    backgroundSize: "200% 100%",
+                                                }}
+                                                animate={{
+                                                    backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
+                                                    width: ["0%", "100%"],
+                                                }}
+                                                transition={{
+                                                    backgroundPosition: {
+                                                        duration: 5,
+                                                        ease: "linear",
+                                                        repeat: Infinity,
+                                                    },
+                                                    width: {
+                                                        duration: 1,
+                                                        delay: 0.5,
+                                                        ease: "easeOut",
+                                                    },
+                                                }}
+                                            />
+                                        </motion.span>
+                                    </div>
                                 </Link>
 
-                                <button
+                                <motion.button
                                     className="text-white focus:outline-none p-2 relative z-[170] cursor-pointer hover:text-gray-300 hover:scale-110 transition-all duration-200"
-                                    onClick={() => handleMenuToggle(false)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleMenuToggle(false);
+                                    }}
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
                                     aria-label="Close menu"
                                 >
                                     <svg
@@ -322,7 +374,7 @@ const Hero = () => {
                                             d="M6 18L18 6M6 6l12 12"
                                         />
                                     </svg>
-                                </button>
+                                </motion.button>
                             </div>
                         </div>
                     </div>
@@ -334,12 +386,13 @@ const Hero = () => {
                             custom={0}
                             className="relative w-full max-w-[280px]"
                             onSubmit={handleSearch}
+                            onClick={(e) => e.stopPropagation()}
                         >
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full px-6 py-3 rounded-full bg-white/10 text-white font-light focus:outline-none focus:ring-2 focus:ring-[#FEEF88] transition-all text-left placeholder-white/60"
+                                className="w-full px-6 py-3 rounded-full bg-white/10 text-white font-light focus:outline-none focus:ring-2 focus:ring-[#1E90FF] transition-all text-left placeholder-white/60"
                                 placeholder="Search products..."
                             />
                             <button
@@ -359,13 +412,14 @@ const Hero = () => {
                                     custom={i + 1}
                                     className="relative flex flex-col items-center"
                                 >
-                                    <button
+                                    <motion.button
                                         onClick={() => handleNavClick(link)}
-                                        className={`text-center text-lg font-medium py-2 px-4 ${activeLink === link ? "text-[#FF69B4]" : "text-white"
-                                            }`}
+                                        className={`text-center text-lg font-medium py-2 px-4 ${activeLink === link ? "text-[#FF69B4]" : "text-white"}`}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
                                     >
                                         {link}
-                                    </button>
+                                    </motion.button>
                                     {activeLink === link && (
                                         <div className="absolute -bottom-2 flex space-x-1">
                                             <motion.div
@@ -445,7 +499,7 @@ const Hero = () => {
                                                     animate={{ scale: 1 }}
                                                     transition={{ duration: 0.2, delay: 0.3 }}
                                                 />
-                                            </div>      
+                                            </div>
                                         )}
                                     </li>
                                 ))}
@@ -492,9 +546,55 @@ const Hero = () => {
             <div className="cont2 w-full flex flex-col-reverse md:flex-row justify-around items-center px-8 md:px-20 lg:px-40 pb-10 mb-11 pt-28 mb:pt-0">
                 {/* Hero Text Section - Updated colors */}
                 <div className="hero-text text-left pt-40 md:pt-0">
-                    <p className="py-3 font-normal text-sm md:text-base text-[#333333]">Cepoka beauty hub</p>
-
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                        className="py-3 mb-2"
+                    >
+                        <motion.span
+                            className="text-ls md:text-2xl font-bold bg-clip-text text-transparent inline-block relative"
+                            style={{
+                                backgroundImage: "linear-gradient(90deg, #1E90FF, #FF69B4)",
+                                backgroundSize: "200% 100%",
+                            }}
+                            animate={{
+                                backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
+                            }}
+                            transition={{
+                                duration: 5,
+                                ease: "linear",
+                                repeat: Infinity,
+                            }}
+                        >
+                            CEPOKA BEAUTY HUB
+                            <motion.div
+                                className="absolute -top-1 left-0 h-[3px] rounded-full"
+                                style={{
+                                    backgroundImage: "linear-gradient(90deg, #1E90FF, #FF69B4)",
+                                    backgroundSize: "200% 100%",
+                                }}
+                                animate={{
+                                    backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
+                                    width: ["0%", "100%"],
+                                }}
+                                transition={{
+                                    backgroundPosition: {
+                                        duration: 5,
+                                        ease: "linear",
+                                        repeat: Infinity,
+                                    },
+                                    width: {
+                                        duration: 1,
+                                        delay: 0.5,
+                                        ease: "easeOut",
+                                    },
+                                }}
+                            />
+                        </motion.span>
+                    </motion.div>
                     <div className="w-[60%] h-[1.5px] bg-gradient-to-r from-[#9a9a9a] to-transparent rounded-full mx-0"></div>
+
                     <motion.div
                         variants={heroTextVariants}
                         initial="hidden"

@@ -637,9 +637,9 @@ const Hero = () => {
                     variants={highlightVariants}
                     initial="hidden"
                     animate="visible"
-                    className="highlight absolute top-[200px] md:relative md:top-0 w-48 md:w-80 flex items-center justify-center mt-8 md:mt-0">
+                    className="highlight absolute top-[200px] md:relative md:top-0 w-48 md:w-80 flex items-center justify-center mt-9 md:mt-0">
                     {/* Model */}
-                    <motion.div variants={modelImageVariants} className="absolute w-52 md:w-auto top-[-50px] right-[-20px] md:top-[-190px] md:right-[30px]">
+                    <motion.div variants={modelImageVariants} className="absolute w-52 md:w-auto top-[-30px] right-[20px] md:top-[-190px] md:right-[30px]">
                         <AnimatePresence mode="popLayout">
                             <motion.div
                                 key={currentModelIndex}

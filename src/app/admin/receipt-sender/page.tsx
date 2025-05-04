@@ -59,7 +59,6 @@ declare global {
     }
 }
 // Link is used in the JSX
-import BackArrow from '../../Components/BackArrow';
 import SpinningLoader from '../../Components/SpinningLoader';
 import Image from 'next/image';
 import toast from 'react-hot-toast';

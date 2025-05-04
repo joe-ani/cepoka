@@ -122,7 +122,7 @@ const EnhancedMediaCarousel = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [goToPrevSlide, goToNextSlide]);
 
   // Render nothing if no items
   if (items.length === 0) return null;

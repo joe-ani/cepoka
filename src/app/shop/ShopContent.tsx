@@ -37,7 +37,7 @@ export default function ShopContent() {
   // =============== LIFECYCLE HOOKS ===============
   // Component Mount Handler
   useEffect(() => {
-    setIsMounted(true);
+    setIsMounted(true); 
   }, []);
 
   // Scroll Handler

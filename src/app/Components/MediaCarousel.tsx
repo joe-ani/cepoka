@@ -53,8 +53,6 @@ const MediaCarousel = ({ items, interval = 5000, className = '' }: MediaCarousel
   // Render nothing if no items
   if (items.length === 0) return null;
 
-  const currentItem = items[currentIndex];
-
   return (
     <div className={`relative overflow-hidden w-full h-full ${className}`}>
       {/* Dim overlay for transition */}
@@ -146,8 +144,8 @@ const MediaCarousel = ({ items, interval = 5000, className = '' }: MediaCarousel
                 }, 500);
               }}
               className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${index === currentIndex
-                  ? 'bg-white scale-110'
-                  : 'bg-white/50 hover:bg-white/70'
+                ? 'bg-white scale-110'
+                : 'bg-white/50 hover:bg-white/70'
                 }`}
               aria-label={`Go to slide ${index + 1}`}
             />

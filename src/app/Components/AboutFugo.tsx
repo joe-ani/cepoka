@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 
 const AboutFugo = () => {
@@ -86,8 +86,8 @@ const AboutFugo = () => {
                                 key={index}
                                 onClick={() => setCurrentImageIndex(index)}
                                 className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentImageIndex
-                                        ? 'bg-white scale-110'
-                                        : 'bg-white/50 hover:bg-white/70'
+                                    ? 'bg-white scale-110'
+                                    : 'bg-white/50 hover:bg-white/70'
                                     }`}
                                 aria-label={`Go to slide ${index + 1}`}
                             />

@@ -81,7 +81,7 @@ const EnhancedMediaCarousel = ({
         clearInterval(timerRef.current);
       }
     };
-  }, [items.length, interval, autoPlay, isPaused, isTransitioning]);
+  }, [items.length, interval, autoPlay, isPaused, isTransitioning, goToNextSlide]);
 
   // Handle video playback
   useEffect(() => {
@@ -149,9 +149,8 @@ const EnhancedMediaCarousel = ({
         {items.map((item, index) => (
           <div
             key={`${item.src}-${index}`}
-            className={`absolute inset-0 transition-opacity duration-500 ${
-              index === currentIndex ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            }`}
+            className={`absolute inset-0 transition-opacity duration-500 ${index === currentIndex ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}
           >
             {item.type === 'image' ? (
               <div className="relative w-full h-full overflow-hidden">
@@ -273,11 +272,10 @@ const EnhancedMediaCarousel = ({
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                index === currentIndex
+              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${index === currentIndex
                   ? 'bg-white scale-110'
                   : 'bg-white/50 hover:bg-white/70'
-              }`}
+                }`}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}

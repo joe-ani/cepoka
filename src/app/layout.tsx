@@ -18,8 +18,20 @@ export const metadata: Metadata = {
   description: "Your one-stop shop for beauty equipment and supplies",
   manifest: "/manifest.json",
   icons: {
-    icon: "/icons/sitelogo.png",
-    apple: "/icons/sitelogo.png",
+    icon: [
+      {
+        url: "/favicon.svg",
+        sizes: "any",
+        type: "image/svg+xml",
+      }
+    ],
+    apple: [
+      {
+        url: "/favicon.svg",
+        sizes: "180x180",
+        type: "image/svg+xml",
+      }
+    ],
   },
   themeColor: "#ffffff",
   appleWebApp: {

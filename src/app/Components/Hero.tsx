@@ -29,6 +29,7 @@ const Hero = () => {
     const modelImages = [
         "hero-graphis/hero1.png",
         "hero-graphis/facemask model5.png",
+        "images/chair2.png"
         // Add more model image paths as needed
     ];
 
@@ -638,12 +639,7 @@ const Hero = () => {
                     animate="visible"
                     className="highlight absolute top-[200px] md:relative md:top-0 w-48 md:w-80 flex items-center justify-center mt-8 md:mt-0">
                     {/* Model */}
-                    <motion.div variants={modelImageVariants} className="absolute w-52 md:w-auto">
-                        {/* Fixed background circle */}
-                        {/* <div className="bg-gradient-to-b from-[#FEEF88] to-transparent rounded-full w-full h-full absolute top-0"></div> */}
-
-                        {/* Animated model image */}
-                        {/* problem: Two images on top of each other during entrance and exit causing the styling to stretch the bg circle and offset the current image ot of position */}
+                    <motion.div variants={modelImageVariants} className="absolute w-52 md:w-auto top-[-50px] right-[-20px] md:top-[-190px] md:right-[30px]">
                         <AnimatePresence mode="popLayout">
                             <motion.div
                                 key={currentModelIndex}
@@ -654,11 +650,11 @@ const Hero = () => {
                                 className="relative z-10"
                             >
                                 <Image
-                                    width={240}
+                                    width={280}
                                     height={160}
                                     alt={`Model ${currentModelIndex + 1}`}
                                     src={modelImages[currentModelIndex]}
-                                    className="w-52 md:w-auto z-10 relative"
+                                    className="w-52 md:w-80 z-10 relative"
                                     priority
                                 />
                             </motion.div>
@@ -669,7 +665,14 @@ const Hero = () => {
                     {/* Highlight container */}
                     <motion.div
                         variants={cardVariants}
-                        className="w-[170px] md:w-[200px] highlight-box border-[1.5px] border-[#b2b2b2] rounded-[20px] p-[14px] md:p-[20px] md:rounded-[30px] z-10 space-y-2 md:space-y-4 absolute flex flex-col top-[-120px] md:top-[0px]"
+                        initial="hidden"
+                        animate="visible"
+                        whileHover="hover"
+                        className="w-[170px] md:w-[200px] highlight-box border-[1.5px] border-[#b2b2b2] rounded-[20px] p-[14px] md:p-[20px] md:rounded-[30px] z-10 space-y-2 md:space-y-4 absolute flex flex-col top-[-120px] md:top-[-15px]"
+                        style={{
+                            transformStyle: "preserve-3d",
+                            perspective: "1000px"
+                        }}
                     >
                         <div className="flex justify-between items-center relative">
                             <div className="bg-[#d1d1d171] text-[8px] md:text-[12px] text-[#333333] font-semibold rounded-full p-1 px-3 md:px-5">Featured</div>
@@ -681,12 +684,25 @@ const Hero = () => {
                                 <Image className="absolute w-3 md:w-4" width={16} height={16} src={"/icons/arrowwhite.png"} alt="" />
                             </motion.div>
                         </div>
-                        <div className="flex justify-between space-y-1.5 md:space-y-3">
+                        <motion.div
+                            className="flex justify-between space-y-1.5 md:space-y-3"
+                            variants={{
+                                hidden: { y: 20, opacity: 0 },
+                                visible: {
+                                    y: 0,
+                                    opacity: 1,
+                                    transition: {
+                                        delay: 0.2,
+                                        duration: 0.5
+                                    }
+                                }
+                            }}
+                        >
                             <h1 className="text-[14px] w-[5%] md:text[19px] text-[#333333] font-bold">LED Facial Mask</h1>
                             <div className="flex w-[60%] h-[60px] border-1 border-gray-500 bg-[#cccccc39] p-[6px] md:p-[10px] rounded-[8px]">
                                 {/* <Image width={24} height={16} src={"/images/wig1.png"} alt="" className="w-4 md:w-6" /> */}
                             </div>
-                        </div>
+                        </motion.div>
                     </motion.div>
                 </motion.div>
             </div>

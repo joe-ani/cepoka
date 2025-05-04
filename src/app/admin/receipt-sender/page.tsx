@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Script from 'next/script';
+import Link from 'next/link';
 import { storage, appwriteConfig, databases } from '@/src/lib/appwrite';
 import { ID, Query } from 'appwrite';
 
@@ -1112,11 +1113,30 @@ const ReceiptSender = () => {
             <Script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" />
 
             <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+                {/* Back button */}
+                <Link
+                    href="/admin"
+                    className="inline-flex items-center mb-6 text-gray-700 hover:text-black transition-colors duration-200"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                        />
+                    </svg>
+                    Back to Admin
+                </Link>
+
                 <div className="mb-6 sm:mb-8">
-                    <div className="flex items-center gap-4">
-                        <BackArrow href="/admin" className="text-gray-700" />
-                        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Receipt Generator</h1>
-                    </div>
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Receipt Generator</h1>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 lg:items-start">

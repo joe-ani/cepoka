@@ -1,8 +1,8 @@
 "use client"
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useState, useCallback } from "react";
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useState } from "react";
+import AdminAccessModal from './AdminAccessModal';
 
 const Footer = () => {
     const [isMounted, setIsMounted] = useState(false);
@@ -13,14 +13,24 @@ const Footer = () => {
         setIsMounted(true);
     }, []);
 
-    const handleAdminAccess = useCallback(() => {
+    // Direct function instead of useCallback to avoid stale closures
+    const handleAdminAccess = () => {
         if (!isMounted || typeof window === 'undefined') return;
 
         try {
-            if (adminKey === 'fugo101') {
-                window.localStorage.setItem('adminKey', adminKey);
+            // Get the current value directly from state
+            const currentKey = adminKey;
+            console.log("Checking admin key:", currentKey);
+
+            // Hardcoded comparison with the exact string
+            if (currentKey === "fugo101") {
+                console.log("Admin key is valid, setting localStorage and redirecting");
+                // Store the exact string
+                localStorage.setItem('adminKey', "fugo101");
+                // Redirect to admin page
                 window.location.href = '/admin';
             } else {
+                console.log("Invalid admin key:", currentKey);
                 alert('Invalid admin key');
                 setAdminKey('');
             }
@@ -28,7 +38,7 @@ const Footer = () => {
             console.error('Error accessing admin:', error);
             alert('An error occurred');
         }
-    }, [adminKey, isMounted]);
+    };
 
     useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {
@@ -41,7 +51,7 @@ const Footer = () => {
             window.addEventListener('keydown', handleKeyPress);
             return () => window.removeEventListener('keydown', handleKeyPress);
         }
-    }, [showAdminPrompt, adminKey, handleAdminAccess, isMounted]);
+    }, [showAdminPrompt, isMounted]);
 
     const handleGetDirections = () => {
         if (!isMounted || typeof window === 'undefined') return;
@@ -63,48 +73,30 @@ const Footer = () => {
             {/* Top fade gradient */}
             <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-white via-[#ededed]/50 to-[#ededed] z-10" />
 
-            <AnimatePresence>
-                {showAdminPrompt && (
-                    <motion.div
-                        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={handleCloseModal}
-                    >
-                        <motion.div
-                            className="bg-white p-4 sm:p-6 rounded-lg shadow-xl w-full max-w-[320px] sm:max-w-md"
-                            initial={{ scale: 0.8 }}
-                            animate={{ scale: 1 }}
-                            exit={{ scale: 0.8 }}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <h3 className="text-gray-800 font-bold text-lg mb-3 sm:mb-4">Admin Access</h3>
-                            <input
-                                type="password"
-                                value={adminKey}
-                                onChange={(e) => setAdminKey(e.target.value)}
-                                placeholder="Enter admin key"
-                                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border rounded-lg mb-3 sm:mb-4 font-[500] text-black"
-                            />
-                            <div className="flex justify-end space-x-2 sm:space-x-3">
-                                <button
-                                    onClick={handleCloseModal}
-                                    className="px-3 font-[500] sm:px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleAdminAccess}
-                                    className="px-3 sm:px-4 py-2 font-[500] bg-[#333333] text-white rounded-lg hover:bg-gray-800 transition-colors duration-200"
-                                >
-                                    Access
-                                </button>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            <AdminAccessModal
+                isOpen={showAdminPrompt}
+                onClose={handleCloseModal}
+                onAccess={(key) => {
+                    console.log("Received admin key:", key);
+
+                    // Direct check without using state
+                    if (key === "fugo101") {
+                        console.log("Valid admin key, redirecting...");
+                        localStorage.setItem('adminKey', "fugo101");
+
+                        // Add a slight delay before redirecting to show the loading state
+                        setTimeout(() => {
+                            window.location.href = '/admin';
+                        }, 500);
+                    } else {
+                        console.log("Invalid admin key:", key);
+                        // Add a slight delay before showing the alert to make the loading state visible
+                        setTimeout(() => {
+                            alert('Invalid admin key');
+                        }, 500);
+                    }
+                }}
+            />
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {/* Logo and Description */}

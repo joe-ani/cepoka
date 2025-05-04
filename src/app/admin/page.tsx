@@ -8,12 +8,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { useSwipeable } from 'react-swipeable';
-// import { COLORS } from '../../data/colors';
-import type { Variants } from 'framer-motion';
-import Image from 'next/image';
 import Link from 'next/link';
+import Image from 'next/image';
+import LoadingScreen from '../Components/LoadingScreen';
 import { CATEGORIES } from '@/src/data/categories'
 import { fetchCategories, addCategory, deleteCategory, Category } from '@/src/services/categoryService';
 import { initializeCategories } from '@/src/utils/uploadInitialCategories';
@@ -58,6 +57,7 @@ const AdminPage = () => {
     const [products, setProducts] = useState<Product[]>([]);         // List of products
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);  // Selected image files
     const [isLoading, setIsLoading] = useState(false);              // Loading state
+    const [isNavigating, setIsNavigating] = useState(false);        // Navigation loading state
     const [editingProduct, setEditingProduct] = useState<Product | null>(null); // Currently editing product
     const [showImageModal, setShowImageModal] = useState<string | null>(null);  // Image modal visibility
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');        // Sort order for products
@@ -107,10 +107,16 @@ const AdminPage = () => {
     useEffect(() => {
         const checkAuth = async () => {
             const adminKey = localStorage.getItem('adminKey');
-            if (adminKey !== 'fugo101') {
+            console.log("Admin page - checking admin key:", adminKey);
+
+            // Strict equality check with the exact string
+            if (adminKey !== "fugo101") {
+                console.log("Admin key is invalid, redirecting to home page");
                 router.push('/');
                 return;
             }
+
+            console.log("Admin key is valid, setting authorized state");
             setIsAuthorized(true);
             await fetchProducts();
         };
@@ -463,7 +469,32 @@ const AdminPage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 pt-32 sm:pt-40 pb-8 sm:pb-12 px-4 sm:px-6 lg:px-8">
+            {/* Loading screen for navigation */}
+            {isNavigating && <LoadingScreen message="Loading Receipt Generator..." />}
+
             <div className="max-w-7xl mx-auto">
+                {/* Back button */}
+                <Link
+                    href="/"
+                    className="inline-flex items-center mb-6 text-gray-700 hover:text-black transition-colors duration-200"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                        />
+                    </svg>
+                    Back to Home
+                </Link>
+
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 sm:mb-12">
                     <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 text-center sm:text-left tracking-tight">
                         Product Management
@@ -506,12 +537,34 @@ const AdminPage = () => {
                                 )}
                             </button>
                         )}
-                        <Link href="/admin/receipt-sender" className="bg-[#333333] text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Receipt Generator
-                        </Link>
+                        <button
+                            onClick={() => {
+                                setIsNavigating(true);
+                                // Navigate after a short delay to show the loading screen
+                                setTimeout(() => {
+                                    router.push('/admin/receipt-sender');
+                                }, 300);
+                            }}
+                            className="bg-[#333333] text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto"
+                            disabled={isNavigating}
+                        >
+                            {isNavigating ? (
+                                <span className="flex items-center gap-2">
+                                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Loading...
+                                </span>
+                            ) : (
+                                <>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Receipt Generator
+                                </>
+                            )}
+                        </button>
                     </div>
                 </div>
 

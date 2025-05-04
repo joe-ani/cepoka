@@ -2,7 +2,6 @@
 import { motion } from "framer-motion"
 import Image from "next/image"
 import BackArrow from "../Components/BackArrow"
-import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import ClientMap from '../Components/ClientMap'
 

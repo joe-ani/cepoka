@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
@@ -141,7 +141,7 @@ const BestSellers = () => {
                                 drag="x"
                                 dragConstraints={{ left: 0, right: 0 }}
                                 dragElastic={1}
-                                onDragEnd={(e, { offset, velocity }) => {
+                                onDragEnd={(_, { offset, velocity }) => {
                                     const swipe = swipePower(offset.x, velocity.x);
                                     if (swipe < -swipeConfidenceThreshold) {
                                         paginate(1);
@@ -156,10 +156,10 @@ const BestSellers = () => {
                             >
                                 {/* Image container with animation */}
                                 <div className="flex-shrink-0 flex items-center justify-center rounded-[16px] md:rounded-[20px]
-                                      relative before:absolute before:inset-0 before:p-[1.5px] 
-                                      before:rounded-[16px] md:before:rounded-[20px] before:bg-gradient-to-tr 
+                                      relative before:absolute before:inset-0 before:p-[1.5px]
+                                      before:rounded-[16px] md:before:rounded-[20px] before:bg-gradient-to-tr
                                       before:from-[#FF69B4] before:via-[#87CEFA] before:to-[#FF69B4]
-                                      after:absolute after:inset-[1.5px] after:rounded-[15px] md:after:rounded-[18px] 
+                                      after:absolute after:inset-[1.5px] after:rounded-[15px] md:after:rounded-[18px]
                                       after:bg-gradient-to-br after:from-white after:to-[#fafafa]
                                       w-[220px] sm:w-[260px] md:w-[300px] aspect-square
                                       p-2 sm:p-4 md:p-8"
@@ -217,8 +217,8 @@ const BestSellers = () => {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ duration: 0.3, delay: 0.4 }}
-                                        className="font-medium bg-gradient-to-tr from-[#FF69B4] to-[#1E90FF] text-[#fff] 
-                                             text-sm tracking-wide rounded-full py-2.5 px-5 
+                                        className="font-medium bg-gradient-to-tr from-[#FF69B4] to-[#1E90FF] text-[#fff]
+                                             text-sm tracking-wide rounded-full py-2.5 px-5
                                              flex items-center w-44 sm:w-40 md:w-44 gap-2"
                                     >
                                         Discover More

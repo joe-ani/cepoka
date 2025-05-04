@@ -1,6 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+import BackArrow from "../Components/BackArrow";
+import SpinningLoader from "../Components/SpinningLoader";
 import { useState, useMemo, useEffect } from "react";
 import { ProductCard } from "@/src/components/ProductCard";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -132,7 +133,11 @@ export default function ShopContent() {
   // };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <SpinningLoader size="large" text="Loading products..." />
+      </div>
+    );
   }
 
   // =============== RENDER METHODS ===============
@@ -140,14 +145,7 @@ export default function ShopContent() {
     <div className="text-black p-3 sm:p-10 pt-20 sm:pt-28 flex flex-col justify-center items-center">
       {/* Back Button matching ProductPageClient styling */}
       <div className="flex w-full justify-start mb-6 mt-4 sm:mt-0">
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className="cursor-pointer p-2"
-          onClick={() => router.back()}
-        >
-          <ArrowLeft className="text-yellow-500 w-6 h-6 sm:w-8 sm:h-8" />
-        </motion.div>
+        <BackArrow className="text-gray-700" />
       </div>
 
       {/* Search and Filter Section */}
@@ -251,7 +249,7 @@ export default function ShopContent() {
                 onClick={() => setActiveColor(activeColor === color.id ? null : color.id)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium 
+                className={`px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium
                 transition-all duration-200
                   ${activeColor === color.id
                     ? 'ring-1 sm:ring-2 ring-black ring-offset-1'
@@ -307,7 +305,7 @@ export default function ShopContent() {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.5 }}
           onClick={scrollToTop}
-          className="fixed bottom-6 right-6 z-50 bg-black/80 hover:bg-black text-white w-10 h-10 
+          className="fixed bottom-6 right-6 z-50 bg-black/80 hover:bg-black text-white w-10 h-10
           rounded-full flex items-center justify-center shadow-lg cursor-pointer backdrop-blur-sm
           transition-all duration-300 hover:shadow-xl"
           whileHover={{ scale: 1.1 }}

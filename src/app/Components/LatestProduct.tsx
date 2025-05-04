@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import SpinningLoader from "./SpinningLoader";
 import Image from "next/image";
 import { motion, Variants } from "framer-motion";
 import { useInView } from "react-intersection-observer";
@@ -30,9 +31,9 @@ const LatestProduct: React.FC = () => {
   });
 
   useEffect(() => {
-  
-      console.log(products.map((product) => product.imageUrls));
- 
+
+    console.log(products.map((product) => product.imageUrls));
+
   }, [products])
 
   // Fetch latest products from Appwrite
@@ -112,14 +113,7 @@ const LatestProduct: React.FC = () => {
   if (loading) {
     return (
       <div className="latest-product-container flex flex-col items-center space-y-12">
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className="w-[150px] h-[200px] sm:w-[200px] sm:h-[250px] bg-gray-200 rounded-[15px] sm:rounded-[25px] animate-pulse"
-            />
-          ))}
-        </div>
+        <SpinningLoader size="large" text="Loading products..." />
       </div>
     );
   }
@@ -141,7 +135,7 @@ const LatestProduct: React.FC = () => {
             }}
           >
             <motion.div
-              className="latest-product-card w-[150px] h-[200px] sm:w-[200px] sm:h-[250px] flex flex-col items-center 
+              className="latest-product-card w-[150px] h-[200px] sm:w-[200px] sm:h-[250px] flex flex-col items-center
               relative rounded-[15px] sm:rounded-[25px] cursor-pointer transition-colors duration-200 overflow-hidden"
               initial="hidden"
               animate={containerInView ? "visible" : "hidden"}
@@ -192,8 +186,8 @@ const LatestProduct: React.FC = () => {
               </div>
 
               {/* Price Card */}
-              <div className="price-card w-[90%] h-[70px] sm:h-[80px] rounded-[10px] sm:rounded-[15px] 
-              absolute bottom-3 bg-gradient-to-r from-black/80 to-black/40 backdrop-blur-[2px] 
+              <div className="price-card w-[90%] h-[70px] sm:h-[80px] rounded-[10px] sm:rounded-[15px]
+              absolute bottom-3 bg-gradient-to-r from-black/80 to-black/40 backdrop-blur-[2px]
               flex flex-col justify-center gap-1 sm:gap-2">
                 <div className="px-2 sm:px-3 text-white font-semibold text-xs sm:text-sm truncate">
                   {product.name}
@@ -213,7 +207,7 @@ const LatestProduct: React.FC = () => {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.95 }}
-          className="font-medium bg-gradient-to-tr from-[#1E90FF] to-[#FF69B4] text-white 
+          className="font-medium bg-gradient-to-tr from-[#1E90FF] to-[#FF69B4] text-white
           text-base sm:text-[20px] rounded-full p-2 px-8 flex items-center gap-2"
         >
           Shop

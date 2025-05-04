@@ -27,7 +27,7 @@ interface Html2PdfOptions {
         allowTaint?: boolean;
         foreignObjectRendering?: boolean;
         // Add any other properties that might be used
-        [key: string]: any;
+        [key: string]: unknown;
     };
     jsPDF: {
         unit: string;
@@ -58,6 +58,8 @@ declare global {
     }
 }
 import Link from 'next/link';
+import BackArrow from '../../Components/BackArrow';
+import SpinningLoader from '../../Components/SpinningLoader';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 
@@ -291,7 +293,7 @@ const ReceiptSender = () => {
                     response.receiptId ? "YES - Value: " + response.receiptId : "NO - Value is missing or null");
 
                 // Get the current ID if document exists and convert from string to number
-                let idFromDb = response.receiptId ? parseInt(response.receiptId, 10) : 1000;
+                const idFromDb = response.receiptId ? parseInt(response.receiptId, 10) : 1000;
                 console.log("Parsed receiptId to number:", idFromDb);
 
                 // Use 1000 as fallback if parsing results in NaN
@@ -435,7 +437,7 @@ const ReceiptSender = () => {
 
                 // If it exists, just fetch it
                 fetchReceiptId();
-            } catch (error) {
+            } catch (_) {
                 console.log("Receipt counter document doesn't exist, creating it...");
 
                 // Create the document with a default value
@@ -472,6 +474,7 @@ const ReceiptSender = () => {
 
         // Initialize the receipt ID when the component mounts
         initializeReceiptId();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Real-time calculations are now handled directly in the change handlers
@@ -565,8 +568,13 @@ const ReceiptSender = () => {
     const downloadPDF = async () => {
         try {
             if (typeof window.html2pdf === 'function' && receiptRef.current) {
-                // Show loading toast
-                toast.loading('Generating PDF...');
+                // Show loading toast with custom spinner
+                toast.loading(
+                    <div className="flex items-center gap-2">
+                        <SpinningLoader size="small" />
+                        <span>Generating PDF...</span>
+                    </div>
+                );
 
                 // Use a timeout to ensure the UI updates before PDF generation
                 await new Promise(resolve => setTimeout(resolve, 100));
@@ -914,7 +922,12 @@ const ReceiptSender = () => {
 
     const sendWhatsApp = async () => {
         try {
-            toast.loading('Preparing receipt for WhatsApp...');
+            toast.loading(
+                <div className="flex items-center gap-2">
+                    <SpinningLoader size="small" />
+                    <span>Preparing receipt for WhatsApp...</span>
+                </div>
+            );
 
             let fileUrl = "";
 
@@ -1019,7 +1032,7 @@ const ReceiptSender = () => {
                     response.receiptId ? "YES - Value: " + response.receiptId : "NO - Value is missing or null");
 
                 // Get the current ID if document exists and convert from string to number
-                let idFromDb = response.receiptId ? parseInt(response.receiptId, 10) : 1000;
+                const idFromDb = response.receiptId ? parseInt(response.receiptId, 10) : 1000;
                 console.log("Parsed receiptId to number:", idFromDb);
 
                 // Use 1000 as fallback if parsing results in NaN
@@ -1101,15 +1114,7 @@ const ReceiptSender = () => {
             <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
                 <div className="mb-6 sm:mb-8">
                     <div className="flex items-center gap-4">
-                        <Link
-                            href="/admin"
-                            className="inline-flex items-center justify-center w-8 h-8 text-gray-700 hover:text-black transition-all duration-200"
-                            aria-label="Back to admin"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                            </svg>
-                        </Link>
+                        <BackArrow href="/admin" className="text-gray-700" />
                         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Receipt Generator</h1>
                     </div>
                 </div>
@@ -1209,9 +1214,14 @@ const ReceiptSender = () => {
                                                     type="button"
                                                     onClick={setCustomStartingId}
                                                     disabled={isLoadingId}
-                                                    className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded"
+                                                    className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded flex items-center justify-center"
                                                 >
-                                                    {isLoadingId ? 'Setting...' : 'Set ID'}
+                                                    {isLoadingId ? (
+                                                        <div className="flex items-center gap-1">
+                                                            <SpinningLoader size="small" />
+                                                            <span>Setting...</span>
+                                                        </div>
+                                                    ) : 'Set ID'}
                                                 </button>
                                             </div>
                                             <p className="text-xs text-gray-500 mt-1">Current ID: {formData.receiptIdNumber || 'Not set'}</p>

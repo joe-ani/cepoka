@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSwipeable } from 'react-swipeable';
-import { COLORS } from '../../data/colors';
+// import { COLORS } from '../../data/colors';
 import type { Variants } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -321,10 +321,7 @@ const AdminPage = () => {
         trackMouse: true
     });
 
-    const handleColorClick = (colorName: string, event: React.MouseEvent<HTMLButtonElement>) => {
-        event.preventDefault();
-        reset({ description: colorName });
-    };
+    // Removed unused handleColorClick function
 
     const handleCategorySelect = (categoryId: string) => {
         setSelectedCategory(prevCategory => prevCategory === categoryId ? null : categoryId);

@@ -1,7 +1,7 @@
 "use client"
 import { motion } from "framer-motion"
 import Image from "next/image"
-import { ArrowLeft } from "lucide-react"
+import BackArrow from "../Components/BackArrow"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import ClientMap from '../Components/ClientMap'
@@ -27,14 +27,7 @@ export default function ContactPage() {
       <div className="w-full max-w-6xl">
         {/* Simplified Header with only back button */}
         <div className="flex items-center mb-6 mt-4 sm:mt-0">
-          <motion.div
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="cursor-pointer p-2"
-            onClick={() => router.back()}
-          >
-            <ArrowLeft className="text-yellow-500 w-6 h-6 sm:w-8 sm:h-8" />
-          </motion.div>
+          <BackArrow className="text-gray-700" />
         </div>
 
         {/* Main Content Container */}
@@ -81,7 +74,7 @@ export default function ContactPage() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={handleGetDirections}
-                  className="flex items-center justify-center space-x-2 bg-[#333333] text-white 
+                  className="flex items-center justify-center space-x-2 bg-[#333333] text-white
                   py-3 px-8 rounded-md hover:opacity-90 transition-opacity text-base sm:text-lg"
                 >
                   <span>Get Directions</span>

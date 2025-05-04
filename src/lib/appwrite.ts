@@ -11,6 +11,7 @@ export const storage = new Storage(client);
 export const appwriteConfig = {
   databaseId: "6813eadb003e7d64f63c",
   productsCollectionId: "6813eaf40036e52c29b1",
+  categoriesCollectionId: "6817640f000dd0b67c77",
   storageId: "6813ea36001624c1202a",
 };
 

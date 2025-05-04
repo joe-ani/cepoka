@@ -569,7 +569,7 @@ const Hero = () => {
                         >
                             CEPOKA BEAUTY HUB
                             <motion.div
-                                className="absolute -top-1 left-0 h-[3px] rounded-full"
+                                className="absolute -top-1 left-0 h-[2px] rounded-full"
                                 style={{
                                     backgroundImage: "linear-gradient(90deg, #1E90FF, #FF69B4)",
                                     backgroundSize: "200% 100%",

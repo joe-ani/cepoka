@@ -1,0 +1,22 @@
+{
+  "name": "Cepoka Beauty Hub",
+  "short_name": "Cepoka",
+  "description": "Your one-stop shop for beauty equipment and supplies",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/icons/sitelogo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/sitelogo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

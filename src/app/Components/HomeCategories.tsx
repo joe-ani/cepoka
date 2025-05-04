@@ -3,10 +3,7 @@ import Image from "next/image";
 import { motion } from "framer-motion"; // For animations
 import { useInView } from "react-intersection-observer"; // For tracking element visibility
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import { fetchCategories } from '@/src/services/categoryService';
-import { Category } from '@/src/services/categoryService';
-import SpinningLoader from "./SpinningLoader";
+import { CATEGORIES } from '@/src/data/categories';
 
 // Props interface for individual category items
 interface CategoryItemProps {
@@ -17,39 +14,12 @@ interface CategoryItemProps {
 }
 
 // Main Categories component - Renders a grid of category items
-const Categories = () => {
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const loadCategories = async () => {
-            try {
-                setLoading(true);
-                const fetchedCategories = await fetchCategories();
-                setCategories(fetchedCategories);
-            } catch (error) {
-                console.error('Error loading categories:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadCategories();
-    }, []);
-
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center py-20">
-                <SpinningLoader size="medium" text="Loading categories..." />
-            </div>
-        );
-    }
-
+const HomeCategories = () => {
     return (
         // Grid layout with responsive columns (2 on mobile, 3 on desktop)
         <div className="categories grid grid-cols-2 md:grid-cols-3 gap-20 sm:gap-12 md:gap-28 p-8 sm:p-6 md:px-8">
             {/* Map through category data to create individual category items */}
-            {categories.map((category, index) => (
+            {CATEGORIES.map((category, index) => (
                 <CategoryItem
                     key={category.id}
                     imageSrc={category.imageSrc}
@@ -139,7 +109,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({ imageSrc, label, categoryId
                     }
                 }}
                 whileTap={{ scale: 0.97 }}
-                className="relative w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] md:w-[150px] md:h-[150px]
+                className="relative w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] md:w-[150px] md:h-[150px] 
                           bg-[radial-gradient(circle,#E1E1E1,#C3C3C3)] rounded-full overflow-visible"
             >
                 <Image
@@ -158,4 +128,4 @@ const CategoryItem: React.FC<CategoryItemProps> = ({ imageSrc, label, categoryId
     );
 };
 
-export default Categories;
+export default HomeCategories;

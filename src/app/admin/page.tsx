@@ -15,6 +15,8 @@ import type { Variants } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { CATEGORIES } from '@/src/data/categories'
+import { fetchCategories, addCategory, deleteCategory, Category } from '@/src/services/categoryService';
+import { initializeCategories } from '@/src/utils/uploadInitialCategories';
 
 
 // Schema for product form validation using Zod
@@ -66,6 +68,12 @@ const AdminPage = () => {
     const [showNewCategoryInput, setShowNewCategoryInput] = useState(false); // Toggle new category input
     const [selectedIcon, setSelectedIcon] = useState('✨');
     const [showIconSelector, setShowIconSelector] = useState(false);
+    const [customIcon, setCustomIcon] = useState('');
+    const [showCustomIconInput, setShowCustomIconInput] = useState(false);
+    const [appwriteCategories, setAppwriteCategories] = useState<Category[]>([]); // Categories from Appwrite
+    const [categoriesLoading, setCategoriesLoading] = useState(true); // Loading state for categories
+    const [showInitializeButton, setShowInitializeButton] = useState(true); // Show initialize button
+    const [showCategoryDeleteModal, setShowCategoryDeleteModal] = useState<string | null>(null); // Category delete confirmation modal
     const [isDragging, setIsDragging] = useState(false); // State for drag and drop functionality
     const fileInputRef = useRef<HTMLInputElement>(null); // Reference to file input element
 
@@ -109,6 +117,30 @@ const AdminPage = () => {
 
         checkAuth();
     }, [router, fetchProducts]);
+
+    // Fetch categories from Appwrite
+    useEffect(() => {
+        const loadCategories = async () => {
+            try {
+                setCategoriesLoading(true);
+                const fetchedCategories = await fetchCategories();
+                console.log('Fetched categories from Appwrite:', fetchedCategories);
+                setAppwriteCategories(fetchedCategories);
+
+                // Check if we need to show the initialize button
+                setShowInitializeButton(fetchedCategories.length === 0);
+            } catch (error) {
+                console.error('Error loading categories:', error);
+                toast.error('Failed to load categories');
+            } finally {
+                setCategoriesLoading(false);
+            }
+        };
+
+        if (isAuthorized) {
+            loadCategories();
+        }
+    }, [isAuthorized]);
 
     const clearForm = () => {
         reset({
@@ -331,20 +363,91 @@ const AdminPage = () => {
     };
 
     // Handler for adding new category
-    const handleAddCategory = () => {
+    const handleAddCategory = async () => {
         if (newCategory.trim()) {
-            const newCategoryObj = {
-                id: newCategory.toLowerCase().replace(/\s+/g, '-'),
-                name: newCategory.trim(),
-                icon: selectedIcon,
-                imageSrc: '/icons/package.png'
-            };
-            CATEGORIES.push(newCategoryObj);
-            setNewCategory('');
-            setSelectedIcon('✨');
-            setShowNewCategoryInput(false);
-            setShowIconSelector(false);
-            toast.success('Category added successfully');
+            try {
+                setIsLoading(true);
+
+                // Create new category object
+                const newCategoryObj = {
+                    id: newCategory.toLowerCase().replace(/\s+/g, '-'),
+                    name: newCategory.trim(),
+                    icon: selectedIcon,
+                    imageSrc: '/icons/package.png'
+                };
+
+                // Add to local CATEGORIES array for immediate use
+                CATEGORIES.push(newCategoryObj);
+
+                // Save to Appwrite
+                const savedCategory = await addCategory({
+                    name: newCategory.trim(),
+                    icon: selectedIcon
+                });
+
+                if (savedCategory) {
+                    // Add to state
+                    setAppwriteCategories(prev => [...prev, savedCategory]);
+
+                    // Reset form
+                    setNewCategory('');
+                    setSelectedIcon('✨');
+                    setCustomIcon('');
+                    setShowNewCategoryInput(false);
+                    setShowIconSelector(false);
+                    setShowCustomIconInput(false);
+
+                    toast.success('Category added successfully');
+                }
+            } catch (error) {
+                console.error('Error adding category:', error);
+                toast.error('Failed to add category');
+            } finally {
+                setIsLoading(false);
+            }
+        }
+    };
+
+    // Handler for deleting a category
+    const handleDeleteCategory = (categoryId: string) => {
+        console.log('Deleting category with ID:', categoryId);
+        setShowCategoryDeleteModal(categoryId);
+    };
+
+    // Confirm category deletion
+    const confirmCategoryDelete = async () => {
+        if (!showCategoryDeleteModal) return;
+
+        console.log('Confirming deletion of category ID:', showCategoryDeleteModal);
+
+        try {
+            setIsLoading(true);
+            const success = await deleteCategory(showCategoryDeleteModal);
+            console.log('Delete category result:', success);
+
+            if (success) {
+                // Remove from state
+                setAppwriteCategories(prev => {
+                    console.log('Current categories:', prev);
+                    console.log('Filtering out category with ID:', showCategoryDeleteModal);
+                    return prev.filter(cat => cat.id !== showCategoryDeleteModal);
+                });
+
+                // Reset selected category if it was deleted
+                if (selectedCategory === showCategoryDeleteModal) {
+                    setSelectedCategory(null);
+                }
+
+                toast.success('Category deleted successfully');
+            } else {
+                toast.error('Failed to delete category');
+            }
+        } catch (error) {
+            console.error('Error deleting category:', error);
+            toast.error('Failed to delete category');
+        } finally {
+            setIsLoading(false);
+            setShowCategoryDeleteModal(null);
         }
     };
 
@@ -365,8 +468,45 @@ const AdminPage = () => {
                     <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 text-center sm:text-left tracking-tight">
                         Product Management
                     </h1>
-                    <div className="flex justify-center sm:justify-end mt-4 sm:mt-0">
-                        <Link href="/admin/receipt-sender" className="bg-[#333333] text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-200 flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row justify-center sm:justify-end gap-2 mt-4 sm:mt-0">
+                        {showInitializeButton && (
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        setIsLoading(true);
+                                        const result = await initializeCategories();
+                                        if (result.success) {
+                                            toast.success(result.message);
+                                            // Refresh categories
+                                            const fetchedCategories = await fetchCategories();
+                                            setAppwriteCategories(fetchedCategories);
+                                            setShowInitializeButton(false);
+                                        } else {
+                                            toast.error(result.message);
+                                        }
+                                    } catch (error) {
+                                        console.error('Error initializing categories:', error);
+                                        toast.error('Failed to initialize categories');
+                                    } finally {
+                                        setIsLoading(false);
+                                    }
+                                }}
+                                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto mb-2 sm:mb-0"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <span>Initializing...</span>
+                                ) : (
+                                    <>
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                        Initialize Categories
+                                    </>
+                                )}
+                            </button>
+                        )}
+                        <Link href="/admin/receipt-sender" className="bg-[#333333] text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
@@ -421,38 +561,67 @@ const AdminPage = () => {
 
                         <div className="mt-4 sm:mt-8">
                             <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2 sm:mb-4">Category</h3>
-                            <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-3">
-                                {CATEGORIES.map((category) => (
+                            {categoriesLoading ? (
+                                <div className="flex justify-center items-center py-6">
+                                    <div className="animate-pulse flex space-x-4">
+                                        <div className="flex-1 space-y-4 py-1">
+                                            <div className="h-10 bg-gray-200 rounded w-full"></div>
+                                            <div className="grid grid-cols-3 gap-4">
+                                                <div className="h-20 bg-gray-200 rounded"></div>
+                                                <div className="h-20 bg-gray-200 rounded"></div>
+                                                <div className="h-20 bg-gray-200 rounded"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-3">
+                                    {appwriteCategories.map((category) => (
+                                        <motion.div
+                                            key={category.id}
+                                            whileHover={{ scale: 1.03 }}
+                                            whileTap={{ scale: 0.97 }}
+                                            className={`relative cursor-pointer p-2 sm:p-3 rounded-lg text-center transition-colors duration-200 group
+                                                ${selectedCategory === category.id
+                                                    ? 'bg-black text-white'
+                                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+                                                }
+                                            `}
+                                            onClick={() => handleCategorySelect(category.id)}
+                                        >
+                                            {/* Delete button */}
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteCategory(category.id);
+                                                }}
+                                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 transform scale-75 hover:scale-100 z-10"
+                                                title="Delete category"
+                                            >
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                            <div className="text-lg sm:text-2xl mb-1">{category.icon}</div>
+                                            <div className="text-[10px] sm:text-sm font-medium">
+                                                {category.name}
+                                            </div>
+                                        </motion.div>
+                                    ))}
                                     <motion.div
-                                        key={category.id}
                                         whileHover={{ scale: 1.03 }}
                                         whileTap={{ scale: 0.97 }}
-                                        onClick={() => handleCategorySelect(category.id)}
-                                        className={`cursor-pointer p-2 sm:p-3 rounded-lg text-center transition-colors duration-200
-                                            ${selectedCategory === category.id
-                                                ? 'bg-black text-white'
-                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-                                            }
-                                        `}
+                                        onClick={() => setShowNewCategoryInput(true)}
+                                        className="cursor-pointer p-2 sm:p-3 rounded-lg text-center transition-colors duration-200 bg-gray-100 hover:bg-gray-200 text-gray-900"
                                     >
-                                        <div className="text-lg sm:text-2xl mb-1">{category.icon}</div>
+                                        <div className="text-lg sm:text-2xl mb-1">➕</div>
                                         <div className="text-[10px] sm:text-sm font-medium">
-                                            {category.name}
+                                            Add New
                                         </div>
                                     </motion.div>
-                                ))}
-                                <motion.div
-                                    whileHover={{ scale: 1.03 }}
-                                    whileTap={{ scale: 0.97 }}
-                                    onClick={() => setShowNewCategoryInput(true)}
-                                    className="cursor-pointer p-2 sm:p-3 rounded-lg text-center transition-colors duration-200 bg-gray-100 hover:bg-gray-200 text-gray-900"
-                                >
-                                    <div className="text-lg sm:text-2xl mb-1">➕</div>
-                                    <div className="text-[10px] sm:text-sm font-medium">
-                                        Add New
-                                    </div>
-                                </motion.div>
-                            </div>
+                                </div>
+                            )}
                             {showNewCategoryInput && (
                                 <div className="mt-4 space-y-4">
                                     <div className="flex gap-2">
@@ -485,21 +654,67 @@ const AdminPage = () => {
                                             exit={{ opacity: 0, y: -10 }}
                                             className="p-3 border border-gray-200 rounded-lg bg-white shadow-lg"
                                         >
-                                            <div className="grid grid-cols-6 gap-2">
-                                                {AVAILABLE_ICONS.map((icon) => (
+                                            <div className="space-y-4">
+                                                <div className="grid grid-cols-6 gap-2">
+                                                    {AVAILABLE_ICONS.map((icon) => (
+                                                        <button
+                                                            key={icon}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setSelectedIcon(icon);
+                                                                setShowIconSelector(false);
+                                                                setShowCustomIconInput(false);
+                                                            }}
+                                                            className={`p-2 text-xl hover:bg-gray-100 rounded-lg transition-all duration-200 ${selectedIcon === icon ? 'bg-gray-100' : ''
+                                                                }`}
+                                                        >
+                                                            {icon}
+                                                        </button>
+                                                    ))}
+                                                </div>
+
+                                                <div className="border-t border-gray-200 pt-3">
                                                     <button
-                                                        key={icon}
                                                         type="button"
-                                                        onClick={() => {
-                                                            setSelectedIcon(icon);
-                                                            setShowIconSelector(false);
-                                                        }}
-                                                        className={`p-2 text-xl hover:bg-gray-100 rounded-lg transition-all duration-200 ${selectedIcon === icon ? 'bg-gray-100' : ''
-                                                            }`}
+                                                        onClick={() => setShowCustomIconInput(!showCustomIconInput)}
+                                                        className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1"
                                                     >
-                                                        {icon}
+                                                        {showCustomIconInput ? 'Hide custom icon input' : 'Use custom emoji or icon'}
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showCustomIconInput ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"} />
+                                                        </svg>
                                                     </button>
-                                                ))}
+
+                                                    {showCustomIconInput && (
+                                                        <div className="mt-2">
+                                                            <div className="flex gap-2">
+                                                                <input
+                                                                    type="text"
+                                                                    value={customIcon}
+                                                                    onChange={(e) => setCustomIcon(e.target.value)}
+                                                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                                                    placeholder="Paste emoji or icon here"
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        if (customIcon.trim()) {
+                                                                            setSelectedIcon(customIcon);
+                                                                            setShowIconSelector(false);
+                                                                            setShowCustomIconInput(false);
+                                                                        }
+                                                                    }}
+                                                                    className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200"
+                                                                >
+                                                                    Use
+                                                                </button>
+                                                            </div>
+                                                            <p className="text-xs text-gray-500 mt-1">
+                                                                You can copy and paste any emoji or icon character
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </motion.div>
                                     )}
@@ -832,6 +1047,45 @@ const AdminPage = () => {
                                 <button
                                     className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-all duration-200"
                                     onClick={confirmDelete}
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Category Delete Confirmation Modal */}
+            <AnimatePresence>
+                {showCategoryDeleteModal && (
+                    <motion.div
+                        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setShowCategoryDeleteModal(null)}
+                    >
+                        <motion.div
+                            className="bg-white p-4 sm:p-6 rounded-lg shadow-xl w-full max-w-sm"
+                            initial={{ scale: 0.8 }}
+                            animate={{ scale: 1 }}
+                            exit={{ scale: 0.8 }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <h2 className="text-lg font-bold text-gray-900 mb-4">Confirm Delete Category</h2>
+                            <p className="text-gray-600 mb-2">Are you sure you want to delete this category?</p>
+                            <p className="text-red-600 text-sm mb-6">This action cannot be undone and may affect products using this category.</p>
+                            <div className="flex justify-end gap-4">
+                                <button
+                                    className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-all duration-200"
+                                    onClick={() => setShowCategoryDeleteModal(null)}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-all duration-200"
+                                    onClick={confirmCategoryDelete}
                                 >
                                     Delete
                                 </button>

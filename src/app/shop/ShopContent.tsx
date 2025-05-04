@@ -4,10 +4,9 @@ import BackArrow from "../Components/BackArrow";
 import SpinningLoader from "../Components/SpinningLoader";
 import { useState, useMemo, useEffect } from "react";
 import { ProductCard } from "@/src/components/ProductCard";
-import { CATEGORIES } from "@/src/data/categories";
-import { COLORS } from "@/src/data/colors";
 import { databases, appwriteConfig } from "@/src/lib/appwrite";
 import { useSearchParams } from "next/navigation";
+import { fetchCategories, Category } from "@/src/services/categoryService";
 
 // Remove products import since we're using Appwrite data
 // import { products } from "@/src/data/products"
@@ -28,16 +27,17 @@ export default function ShopContent() {
   const initialSearchQuery = searchParams.get('search') || "";
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [activeColor, setActiveColor] = useState<string | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
 
   // =============== LIFECYCLE HOOKS ===============
   // Component Mount Handler
   useEffect(() => {
-    setIsMounted(true); 
+    setIsMounted(true);
   }, []);
 
   // Scroll Handler
@@ -62,6 +62,23 @@ export default function ShopContent() {
     if (category) setActiveCategory(category);
     if (search) setSearchQuery(search);
   }, [searchParams]);
+
+  // Fetch categories from Appwrite
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        setCategoriesLoading(true);
+        const fetchedCategories = await fetchCategories();
+        setCategories(fetchedCategories);
+      } catch (error) {
+        console.error('Error loading categories:', error);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+
+    loadCategories();
+  }, []);
 
   // Appwrite Data Fetching
   useEffect(() => {
@@ -93,17 +110,14 @@ export default function ShopContent() {
       // Search filter
       const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
 
-      // Color filter
-      const matchesColor = !activeColor || product.description?.toLowerCase().includes(activeColor.toLowerCase());
-
-      // Category filter - find the category name from CATEGORIES
-      const selectedCategory = CATEGORIES.find(cat => cat.id === activeCategory)?.name;
+      // Category filter - find the category name from fetched categories
+      const selectedCategory = categories.find(cat => cat.id === activeCategory)?.name;
       const matchesCategory = !activeCategory ||
         (product.category && product.category.toLowerCase() === selectedCategory?.toLowerCase());
 
-      return matchesSearch && matchesColor && matchesCategory;
+      return matchesSearch && matchesCategory;
     });
-  }, [products, searchQuery, activeColor, activeCategory]);
+  }, [products, searchQuery, activeCategory, categories]);
 
   // =============== EVENT HANDLERS ===============
   const handleSearch = (e: React.FormEvent) => {
@@ -219,57 +233,31 @@ export default function ShopContent() {
       {/* Categories Section */}
       <div className="w-full max-w-4xl mt-4 sm:mt-8 px-2 sm:px-4 md:px-8">
         <h3 className="text-sm sm:text-base font-semibold mb-2 sm:mb-4">Categories</h3>
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-3">
-          {CATEGORIES.map((category) => (
-            <motion.div
-              key={category.id}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => setActiveCategory(activeCategory === category.id ? null : category.id)}
-              className={`cursor-pointer p-2 sm:p-3 rounded-lg text-center transition-colors duration-200
-                ${activeCategory === category.id
-                  ? 'bg-black text-white'
-                  : 'bg-gray-100 hover:bg-gray-200'
-                }
-              `}
-            >
-              <div className="text-lg sm:text-2xl">{category.icon}</div>
-              <div className="text-[10px] sm:text-sm font-medium mt-0.5 sm:mt-1">{category.name}</div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Color Filters */}
-        <div className="mt-3 sm:mt-6">
-          <h3 className="text-xs sm:text-sm font-medium mb-2 sm:mb-3 text-gray-600">By Color</h3>
-          <div className="flex flex-wrap gap-1 sm:gap-2">
-            {COLORS.map((color) => (
-              <motion.button
-                key={color.id}
-                onClick={() => setActiveColor(activeColor === color.id ? null : color.id)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium
-                transition-all duration-200
-                  ${activeColor === color.id
-                    ? 'ring-1 sm:ring-2 ring-black ring-offset-1'
-                    : 'hover:ring-1 hover:ring-gray-300'
-                  }
-                  ${color.id === 'mixed'
-                    ? 'bg-gradient-to-r from-pink-300 via-purple-300 via-blue-300 via-green-300 via-yellow-300 to-red-300 text-black'
-                    : ''
+        {categoriesLoading ? (
+          <div className="flex justify-center items-center py-6">
+            <SpinningLoader size="small" text="Loading categories..." />
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-3">
+            {categories.map((category) => (
+              <motion.div
+                key={category.id}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setActiveCategory(activeCategory === category.id ? null : category.id)}
+                className={`cursor-pointer p-2 sm:p-3 rounded-lg text-center transition-colors duration-200
+                  ${activeCategory === category.id
+                    ? 'bg-black text-white'
+                    : 'bg-gray-100 hover:bg-gray-200'
                   }
                 `}
-                style={{
-                  backgroundColor: color.id !== 'mixed' ? color.hex : undefined,
-                  color: ['black', 'burgundy', 'brown'].includes(color.id) ? 'white' : 'black',
-                }}
               >
-                {color.name}
-              </motion.button>
+                <div className="text-lg sm:text-2xl">{category.icon}</div>
+                <div className="text-[10px] sm:text-sm font-medium mt-0.5 sm:mt-1">{category.name}</div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        )}
       </div>
 
       {/* No Results Message */}

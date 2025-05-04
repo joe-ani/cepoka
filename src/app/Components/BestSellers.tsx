@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
@@ -41,24 +41,54 @@ const BestSellers = () => {
     const isMobile = useMediaQuery('(max-width: 768px)');
     const [currentIndex, setCurrentIndex] = useState(0);
     const [direction, setDirection] = useState(0);
+    const [isPaused, setIsPaused] = useState(false);
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Animation variants
+    // Auto-advance carousel every second
+    useEffect(() => {
+        // Clear any existing interval
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+        }
+
+        // Only set interval if not paused
+        if (!isPaused) {
+            intervalRef.current = setInterval(() => {
+                paginate(1); // Move to next slide
+            }, 3000); // Change every 3 seconds for better user experience
+        }
+
+        // Cleanup on component unmount
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+        };
+    }, [currentIndex, isPaused]);
+
+    // Enhanced animation variants with smoother transitions
     const slideVariants = {
         enter: (direction: number) => ({
             x: direction > 0 ? 1000 : -1000,
             opacity: 0,
+            scale: 0.95,
+            filter: 'blur(4px)',
             position: 'absolute' as const
         }),
         center: {
             zIndex: 1,
             x: 0,
             opacity: 1,
+            scale: 1,
+            filter: 'blur(0px)',
             position: 'relative' as const
         },
         exit: (direction: number) => ({
             zIndex: 0,
             x: direction < 0 ? 1000 : -1000,
             opacity: 0,
+            scale: 0.95,
+            filter: 'blur(4px)',
             position: 'absolute' as const
         })
     };
@@ -71,6 +101,16 @@ const BestSellers = () => {
     const paginate = (newDirection: number) => {
         setDirection(newDirection);
         setCurrentIndex((prevIndex) => (prevIndex + newDirection + bestSellers.length) % bestSellers.length);
+    };
+
+    // Pause auto-rotation when user interacts with carousel
+    const pauseAutoRotation = () => {
+        setIsPaused(true);
+
+        // Resume auto-rotation after 5 seconds of inactivity
+        setTimeout(() => {
+            setIsPaused(false);
+        }, 5000);
     };
 
     // Background animation variant
@@ -105,18 +145,28 @@ const BestSellers = () => {
                 <div className="relative">
                     {/* Navigation Buttons */}
                     <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 flex justify-between z-10 px-4">
-                        <button
-                            onClick={() => paginate(-1)}
+                        <motion.button
+                            onClick={() => {
+                                pauseAutoRotation();
+                                paginate(-1);
+                            }}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
                             className="p-2 rounded-full bg-white/80 hover:bg-white shadow-lg transition-all"
                         >
                             <ChevronLeft className="w-6 h-6" />
-                        </button>
-                        <button
-                            onClick={() => paginate(1)}
+                        </motion.button>
+                        <motion.button
+                            onClick={() => {
+                                pauseAutoRotation();
+                                paginate(1);
+                            }}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
                             className="p-2 rounded-full bg-white/80 hover:bg-white shadow-lg transition-all"
                         >
                             <ChevronRight className="w-6 h-6" />
-                        </button>
+                        </motion.button>
                     </div>
 
                     {/* Carousel Content */}
@@ -135,12 +185,15 @@ const BestSellers = () => {
                                 exit="exit"
                                 transition={{
                                     x: { type: "spring", stiffness: 300, damping: 30 },
-                                    opacity: { duration: 0.2 },
+                                    opacity: { duration: 0.5 },
+                                    scale: { duration: 0.5 },
+                                    filter: { duration: 0.5 },
                                     position: { duration: 0 }
                                 }}
                                 drag="x"
                                 dragConstraints={{ left: 0, right: 0 }}
                                 dragElastic={1}
+                                onDragStart={() => pauseAutoRotation()}
                                 onDragEnd={(_, { offset, velocity }) => {
                                     const swipe = swipePower(offset.x, velocity.x);
                                     if (swipe < -swipeConfidenceThreshold) {
@@ -229,19 +282,45 @@ const BestSellers = () => {
                         </AnimatePresence>
                     </div>
 
-                    {/* Dots indicator */}
-                    <div className="flex justify-center gap-2 mt-6">
-                        {bestSellers.map((_, index) => (
-                            <button
-                                key={index}
-                                onClick={() => {
-                                    setDirection(index > currentIndex ? 1 : -1);
-                                    setCurrentIndex(index);
-                                }}
-                                className={`w-2 h-2 rounded-full transition-all ${index === currentIndex ? 'bg-[#FF69B4] w-4' : 'bg-gray-300'
-                                    }`}
-                            />
-                        ))}
+                    {/* Dots indicator with progress */}
+                    <div className="flex flex-col items-center gap-2 mt-6">
+                        <div className="flex justify-center gap-2">
+                            {bestSellers.map((_, index) => (
+                                <motion.button
+                                    key={index}
+                                    onClick={() => {
+                                        pauseAutoRotation();
+                                        setDirection(index > currentIndex ? 1 : -1);
+                                        setCurrentIndex(index);
+                                    }}
+                                    whileHover={{ scale: 1.2 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    className={`w-2 h-2 rounded-full transition-all ${index === currentIndex ? 'bg-[#FF69B4] w-4' : 'bg-gray-300'
+                                        }`}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Progress indicator */}
+                        {!isPaused && (
+                            <motion.div
+                                className="w-16 h-0.5 bg-gray-200 mt-2 overflow-hidden"
+                                initial={{ opacity: 0.6 }}
+                                animate={{ opacity: 1 }}
+                            >
+                                <motion.div
+                                    className="h-full bg-[#FF69B4]"
+                                    initial={{ width: "0%" }}
+                                    animate={{ width: "100%" }}
+                                    transition={{
+                                        duration: 3,
+                                        ease: "linear",
+                                        repeat: Infinity,
+                                        repeatType: "loop"
+                                    }}
+                                />
+                            </motion.div>
+                        )}
                     </div>
                 </div>
             </div>

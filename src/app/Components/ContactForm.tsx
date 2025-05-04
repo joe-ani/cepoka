@@ -85,7 +85,7 @@ const ContactForm = () => {
                 >
                     {/* instagram */}
                     <motion.a
-                        href="https://www.instagram.com/d_fugo_hair"
+                        href="https://www.instagram.com/Cepoka Beauty Hub"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center space-x-2 md:space-x-4 p-2 rounded cursor-pointer"
@@ -94,12 +94,12 @@ const ContactForm = () => {
                         transition={{ duration: 0.2 }}
                     >
                         <Image className="object-contain w-4 md:w-5" width={20} height={20} src="/icons/instagram.png" alt="instagram" />
-                        <div className="font-normal text-xs md:text-base">@d_fugo_hair</div>
+                        <div className="font-normal text-xs md:text-base">@Cepoka Beauty Hub</div>
                     </motion.a>
                     <motion.div className="w-full h-[1px] bg-white" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.3 }}></motion.div>
                     {/* tiktok */}
                     <motion.a
-                        href="https://www.tiktok.com/@d_fugo_hair"
+                        href="https://www.tiktok.com/@Cepoka Beauty Hub"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center space-x-2 md:space-x-4 p-2 rounded cursor-pointer"
@@ -108,7 +108,7 @@ const ContactForm = () => {
                         transition={{ duration: 0.2 }}
                     >
                         <Image className="object-contain w-4 md:w-5" width={20} height={20} src="/icons/tiktok.png" alt="tiktok" />
-                        <div className="font-normal text-xs md:text-base">@d_fugo_hair</div>
+                        <div className="font-normal text-xs md:text-base">@Cepoka Beauty Hub</div>
                     </motion.a>
                     <motion.div className="w-full h-[1px] bg-white" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.3 }}></motion.div>
                     {/* whatsapp */}
@@ -122,7 +122,7 @@ const ContactForm = () => {
                         transition={{ duration: 0.2 }}
                     >
                         <Image className="object-contain w-4 md:w-5" width={20} height={20} src="/icons/whatsapp.png" alt="whatsapp" />
-                        <div className="font-normal text-xs md:text-base">@d_fugo_hair</div>
+                        <div className="font-normal text-xs md:text-base">@Cepoka Beauty Hub</div>
                     </motion.a>
                 </motion.div>
             </motion.div>

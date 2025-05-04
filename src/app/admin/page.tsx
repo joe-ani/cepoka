@@ -66,6 +66,8 @@ const AdminPage = () => {
     const [showNewCategoryInput, setShowNewCategoryInput] = useState(false); // Toggle new category input
     const [selectedIcon, setSelectedIcon] = useState('✨');
     const [showIconSelector, setShowIconSelector] = useState(false);
+    const [isDragging, setIsDragging] = useState(false); // State for drag and drop functionality
+    const fileInputRef = useRef<HTMLInputElement>(null); // Reference to file input element
 
     // Available icons for categories
     const AVAILABLE_ICONS = ['✨', '🌟', '💫', '👑', '💁‍♀️', '🛋️', '💆‍♀️', '💅', '💇‍♀️', '🪑', '🛁', '🧴'];
@@ -230,6 +232,36 @@ const AdminPage = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    // Handle file validation for image uploads
+    const validateFiles = (files: File[]): File[] => {
+        // Filter for image files only
+        const imageFiles = files.filter(file => file.type.startsWith('image/'));
+
+        // Check if any files were filtered out
+        if (imageFiles.length < files.length) {
+            toast.error('Only image files are allowed');
+        }
+
+        // Check file sizes (max 10MB)
+        const validSizeFiles = imageFiles.filter(file => {
+            const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB
+            if (!isValidSize) {
+                toast.error(`File "${file.name}" exceeds 10MB limit`);
+            }
+            return isValidSize;
+        });
+
+        // Limit to 3 images total
+        const totalFiles = [...selectedFiles, ...validSizeFiles].slice(0, 3);
+
+        // Show warning if files were truncated
+        if (selectedFiles.length + validSizeFiles.length > 3) {
+            toast.error('Maximum 3 images allowed');
+        }
+
+        return totalFiles;
     };
 
     // Handle product deletion
@@ -481,24 +513,88 @@ const AdminPage = () => {
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">Product Images</label>
                             <div className="mt-1 flex flex-col space-y-4">
-                                <div className="flex justify-center px-4 sm:px-6 pt-4 pb-4 sm:pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-gray-400 transition-all duration-200">
+                                <div
+                                    className={`flex justify-center px-4 sm:px-6 pt-4 pb-4 sm:pb-6 border-2 border-dashed rounded-lg transition-all duration-200 cursor-pointer ${isDragging
+                                        ? 'border-blue-500 bg-blue-50'
+                                        : selectedFiles.length > 0
+                                            ? 'border-green-500 hover:border-green-600'
+                                            : 'border-gray-300 hover:border-gray-400'
+                                        }`}
+                                    onDragEnter={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setIsDragging(true);
+                                    }}
+                                    onDragOver={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setIsDragging(true);
+                                    }}
+                                    onDragLeave={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setIsDragging(false);
+                                    }}
+                                    onDrop={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setIsDragging(false);
+
+                                        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                                            const droppedFiles = Array.from(e.dataTransfer.files);
+                                            const validatedFiles = validateFiles(droppedFiles);
+
+                                            if (validatedFiles.length > selectedFiles.length) {
+                                                setSelectedFiles(validatedFiles);
+                                                const newFilesCount = validatedFiles.length - selectedFiles.length;
+                                                toast.success(`${newFilesCount} image${newFilesCount > 1 ? 's' : ''} added`);
+                                            }
+                                        }
+                                    }}
+                                    onClick={() => fileInputRef.current?.click()}
+                                >
                                     <div className="space-y-1 text-center">
-                                        <svg className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                        <svg className={`mx-auto h-10 w-10 sm:h-12 sm:w-12 ${isDragging ? 'text-blue-500' : 'text-gray-400'}`} stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
                                             <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
-                                        <div className="flex text-sm text-gray-600">
+                                        <div className="flex flex-col items-center">
                                             <input
                                                 type="file"
                                                 multiple
+                                                ref={fileInputRef}
                                                 onChange={(e) => {
-                                                    const files = Array.from(e.target.files || []);
-                                                    setSelectedFiles(files);
+                                                    if (e.target.files && e.target.files.length > 0) {
+                                                        const selectedInputFiles = Array.from(e.target.files);
+                                                        const validatedFiles = validateFiles(selectedInputFiles);
+
+                                                        if (validatedFiles.length > selectedFiles.length) {
+                                                            setSelectedFiles(validatedFiles);
+                                                            const newFilesCount = validatedFiles.length - selectedFiles.length;
+                                                            toast.success(`${newFilesCount} image${newFilesCount > 1 ? 's' : ''} selected`);
+                                                        }
+                                                    }
                                                 }}
-                                                className="relative w-full cursor-pointer rounded-md font-medium text-gray-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-gray-400 focus-within:ring-offset-2 hover:text-gray-800"
+                                                className="hidden"
                                                 accept="image/*"
                                             />
+                                            <button
+                                                type="button"
+                                                className="mt-2 text-sm font-medium text-blue-600 hover:text-blue-700 focus:outline-none"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    fileInputRef.current?.click();
+                                                }}
+                                            >
+                                                Click to upload
+                                            </button>
+                                            <p className="text-xs text-gray-500 mt-1">or drag and drop</p>
                                         </div>
-                                        <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB (Max 3 images)</p>
+                                        <p className="text-xs text-gray-500 mt-2">PNG, JPG, GIF up to 10MB (Max 3 images)</p>
+                                        {selectedFiles.length > 0 && (
+                                            <p className="text-xs font-medium text-green-600 mt-2">
+                                                {selectedFiles.length} image{selectedFiles.length > 1 ? 's' : ''} selected
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
 
@@ -506,27 +602,50 @@ const AdminPage = () => {
                                 {selectedFiles.length > 0 && (
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                                         {selectedFiles.map((file, index) => (
-                                            <div key={index} className="relative group">
-                                                <Image
-                                                    src={URL.createObjectURL(file)}
-                                                    alt={`Selected ${index + 1}`}
-                                                    width={100}
-                                                    height={100}
-                                                    className="w-full h-24 object-cover rounded-lg"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
-                                                    }}
-                                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                >
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                                    </svg>
-                                                </button>
+                                            <div key={index} className="relative group overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all duration-300">
+                                                <div className="relative h-24 sm:h-32 bg-gray-100">
+                                                    <Image
+                                                        src={URL.createObjectURL(file)}
+                                                        alt={`Selected ${index + 1}`}
+                                                        width={100}
+                                                        height={100}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300"></div>
+                                                </div>
+                                                <div className="absolute top-2 right-2 flex gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
+                                                            toast.success('Image removed');
+                                                        }}
+                                                        className="bg-red-500 text-white rounded-full p-1.5 shadow-md transform scale-90 opacity-0 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300"
+                                                        title="Remove image"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs py-1 px-2 truncate">
+                                                    {file.name}
+                                                </div>
                                             </div>
                                         ))}
+                                        {selectedFiles.length < 3 && (
+                                            <div
+                                                className="relative h-24 sm:h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-gray-400 transition-all duration-200"
+                                                onClick={() => fileInputRef.current?.click()}
+                                            >
+                                                <div className="text-center">
+                                                    <svg className="mx-auto h-8 w-8 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                                    </svg>
+                                                    <p className="text-xs text-gray-500 mt-1">Add more</p>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>

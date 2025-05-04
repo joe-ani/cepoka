@@ -33,7 +33,7 @@ const AboutFugo = () => {
                     transition={{ duration: 0.6, delay: 0.3 }}
                     viewport={{ once: true }}
                 >
-                    <h1 className="text-2xl sm:text-4xl font-medium tracking-wide">Mr Monday.</h1>
+                    <h1 className="text-2xl sm:text-4xl font-medium tracking-wide">Ugochickwu.</h1>
                     <div className="relative">
                         <div
                             className={`relative overflow-hidden transition-all duration-500 ease-in-out

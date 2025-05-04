@@ -107,8 +107,8 @@ const WhatsAppButton = () => {
                                 />
                                 <button
                                     onClick={openWhatsApp}
-                                    className="w-full mt-4 bg-gradient-to-r from-[#fee88e] to-[#CFAA3D]
-                                        text-black font-medium py-2 px-4 rounded-lg
+                                    className="w-full mt-4 bg-gradient-to-r from-[#fe8ef3] to-[#4782ff]
+                                        text-white font-medium py-2 px-4 rounded-lg
                                         hover:opacity-90 transition-opacity"
                                 >
                                     Send Message

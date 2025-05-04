@@ -4,10 +4,10 @@ import BackArrow from "../Components/BackArrow";
 import SpinningLoader from "../Components/SpinningLoader";
 import { useState, useMemo, useEffect } from "react";
 import { ProductCard } from "@/src/components/ProductCard";
-import { useRouter, useSearchParams } from "next/navigation";
 import { CATEGORIES } from "@/src/data/categories";
 import { COLORS } from "@/src/data/colors";
 import { databases, appwriteConfig } from "@/src/lib/appwrite";
+import { useSearchParams } from "next/navigation";
 
 // Remove products import since we're using Appwrite data
 // import { products } from "@/src/data/products"

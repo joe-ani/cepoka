@@ -51,7 +51,7 @@ const Footer = () => {
             window.addEventListener('keydown', handleKeyPress);
             return () => window.removeEventListener('keydown', handleKeyPress);
         }
-    }, [showAdminPrompt, isMounted]);
+    }, [showAdminPrompt, isMounted, handleAdminAccess]);
 
     const handleGetDirections = () => {
         if (!isMounted || typeof window === 'undefined') return;

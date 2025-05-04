@@ -115,7 +115,12 @@ const MediaCarousel = ({ items, interval = 5000, className = '' }: MediaCarousel
                   } : { y: 0, scale: 1 }}
                 >
                   <video
-                    ref={(el) => (videoRefs.current[index] = el)}
+                    ref={(el) => {
+                      if (videoRefs.current) {
+                        videoRefs.current[index] = el;
+                      }
+                      return undefined;
+                    }}
                     src={item.src}
                     className="w-full h-full object-cover"
                     style={{ objectPosition: 'center' }}

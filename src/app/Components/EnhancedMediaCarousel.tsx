@@ -191,7 +191,12 @@ const EnhancedMediaCarousel = ({
                   } : { y: 0, scale: 1 }}
                 >
                   <video
-                    ref={(el) => (videoRefs.current[index] = el)}
+                    ref={(el) => {
+                      if (videoRefs.current) {
+                        videoRefs.current[index] = el;
+                      }
+                      return undefined;
+                    }}
                     src={item.src}
                     className="w-full h-full object-cover"
                     style={{ objectPosition: 'center' }}
@@ -273,8 +278,8 @@ const EnhancedMediaCarousel = ({
               key={index}
               onClick={() => goToSlide(index)}
               className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${index === currentIndex
-                  ? 'bg-white scale-110'
-                  : 'bg-white/50 hover:bg-white/70'
+                ? 'bg-white scale-110'
+                : 'bg-white/50 hover:bg-white/70'
                 }`}
               aria-label={`Go to slide ${index + 1}`}
             />

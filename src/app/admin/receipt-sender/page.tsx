@@ -57,7 +57,7 @@ declare global {
         };
     }
 }
-import Link from 'next/link';
+// Link is used in the JSX
 import BackArrow from '../../Components/BackArrow';
 import SpinningLoader from '../../Components/SpinningLoader';
 import Image from 'next/image';
@@ -437,7 +437,7 @@ const ReceiptSender = () => {
 
                 // If it exists, just fetch it
                 fetchReceiptId();
-            } catch (_) {
+            } catch {
                 console.log("Receipt counter document doesn't exist, creating it...");
 
                 // Create the document with a default value

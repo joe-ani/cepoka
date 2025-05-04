@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import BackArrow from "../../Components/BackArrow";
 import SpinningLoader from "../../Components/SpinningLoader";
-import Skeleton from '@/src/components/Skeleton';
+// Skeleton is no longer used since we're using SpinningLoader
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { sendWhatsAppMessage } from '@/src/utils/client/whatsapp';

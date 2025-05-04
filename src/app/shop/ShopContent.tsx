@@ -23,7 +23,7 @@ interface Product {
 
 export default function ShopContent() {
   // =============== STATE MANAGEMENT ===============
-  const router = useRouter();
+  // Router is not used in this component
   const searchParams = useSearchParams();
   const initialSearchQuery = searchParams.get('search') || "";
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);

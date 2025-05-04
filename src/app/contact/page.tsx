@@ -7,7 +7,7 @@ import { useState, useEffect } from "react"
 import ClientMap from '../Components/ClientMap'
 
 export default function ContactPage() {
-  const router = useRouter();
+  // Router is not used in this component
   const targetLocation = { lat: 6.456559134970387, lng: 3.3842979366622847 };
   const [isMounted, setIsMounted] = useState(false);
 

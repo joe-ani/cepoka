@@ -12,13 +12,28 @@ const OpeningHours = () => {
   });
   const [isMounted, setIsMounted] = useState(false);
   const [currentDay, setCurrentDay] = useState<string>("");
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Images for the carousel
+  const carouselImages = [
+    "/images/sho1.jpg",
+    "/images/sho2.jpg",
+    "/images/sho3.jpg"
+  ];
 
   useEffect(() => {
     setIsMounted(true);
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const today = days[new Date().getDay()];
     setCurrentDay(today);
-  }, []);
+
+    // Set up image carousel rotation
+    const imageInterval = setInterval(() => {
+      setCurrentImageIndex(prevIndex => (prevIndex + 1) % carouselImages.length);
+    }, 4000);
+
+    return () => clearInterval(imageInterval);
+  }, [carouselImages.length]);
 
   useEffect(() => {
     if (inView) {
@@ -127,21 +142,70 @@ const OpeningHours = () => {
         <div className="w-[200px] h-[180px] md:w-full md:h-[320px] bg-black rounded-[20px] overflow-hidden md:overscroll-none md:relative">
           {/* Image shop and map */}
           <div className="h-full w-full md:absolute md:w-full">
-            {/* Image */}
-            <div className="relative h-full w-full">
-              <Image
-                className="object-cover scale-[1] md:scale-100 object-[50%_45%] md:object-[-80%_center]"
-                fill
-                sizes="(max-width: 768px) 200px, 100vw"
-                src="/images/oceanshop.png"
-                alt="fugo shop"
-                priority
+            {/* Image Carousel */}
+            <div className="relative h-full w-full overflow-hidden">
+              {carouselImages.map((image, index) => (
+                <motion.div
+                  key={image}
+                  className="absolute inset-0"
+                  initial={{ opacity: 0 }}
+                  animate={{
+                    opacity: index === currentImageIndex ? 1 : 0,
+                    scale: index === currentImageIndex ? [1, 1.05] : 1,
+                    y: index === currentImageIndex ? ['0%', '-5%'] : '0%'
+                  }}
+                  transition={{
+                    opacity: { duration: 1 },
+                    scale: { duration: 8, ease: "easeInOut" },
+                    y: { duration: 8, ease: "easeInOut" }
+                  }}
+                >
+                  <Image
+                    className="object-cover scale-[1] md:scale-100 object-center"
+                    fill
+                    sizes="(max-width: 768px) 200px, 100vw"
+                    src={image}
+                    alt={`Cepoka shop ${index + 1}`}
+                    priority={index === 0}
+                  />
+                </motion.div>
+              ))}
+
+              {/* Dim fade overlay for transition */}
+              <motion.div
+                className="absolute inset-0 bg-black z-10"
+                initial={{ opacity: 0 }}
+                animate={{
+                  opacity: [0, 0.3, 0]
+                }}
+                transition={{
+                  duration: 4,
+                  ease: "easeInOut",
+                  repeat: Infinity,
+                  repeatDelay: 4
+                }}
               />
-              {/* image fade overlay */}
-              <div className="hidden md:block top-0 left-0 w-full h-full absolute rounded-[10px] md:rounded-[30px] bg-gradient-to-r from-black to-transparent"></div>
+
+              {/* Image fade overlay */}
+              <div className="hidden md:block top-0 left-0 w-full h-full absolute rounded-[10px] md:rounded-[30px] bg-gradient-to-r from-black to-transparent z-20"></div>
+
+              {/* Navigation dots */}
+              <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2 z-30">
+                {carouselImages.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentImageIndex
+                      ? 'bg-white scale-110'
+                      : 'bg-white/50 hover:bg-white/70'
+                      }`}
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
+                ))}
+              </div>
             </div>
             {/*Map */}
-            <div className="absolute flex flex-col top-[200px] md:top-[25%] left-0 md:left-[10%] space-y-2">
+            <div className="absolute flex flex-col top-[200px] md:top-[25%] left-0 md:left-[10%] space-y-2 z-40">
               <div className="relative w-[200px] md:w-[250px] border-2 border-[#333333] rounded-lg md:border-0">
                 <ClientMap height="150px" />
               </div>

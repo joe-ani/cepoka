@@ -113,7 +113,7 @@ const ContactForm = () => {
                     <motion.div className="w-full h-[1px] bg-white" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.3 }}></motion.div>
                     {/* whatsapp */}
                     <motion.a
-                        href="https://wa.me/2347016027618?text=Hello!%20I'm%20interested%20in%20your%20wigs.%20"
+                        href="https://wa.me/2348033262453?text=Hello!%20I'm%20interested%20in%20your%20wigs.%20"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center space-x-2 md:space-x-4 p-2 rounded cursor-pointer"

@@ -1,11 +1,28 @@
 "use client";
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
 
 const AboutFugo = () => {
     const [isExpanded, setIsExpanded] = useState(false);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+    // Images for the carousel
+    const carouselImages = [
+        "/images/mrmonday.png",
+        "/images/sho1.jpg",
+        "/images/sho2.jpg",
+        "/images/sho3.jpg"
+    ];
+
+    // Set up image carousel rotation
+    useEffect(() => {
+        const imageInterval = setInterval(() => {
+            setCurrentImageIndex(prevIndex => (prevIndex + 1) % carouselImages.length);
+        }, 4000);
+
+        return () => clearInterval(imageInterval);
+    }, [carouselImages.length]);
 
     // IDEA: For better visibility of the showroom and shop images and videos make the image fill on its on and the text should stand apart with its own Bg blending in with the img/vid displaying.
 
@@ -18,16 +35,68 @@ const AboutFugo = () => {
                 transition={{ duration: 0.6 }}
                 viewport={{ once: true }}
             >
-                <Image
-                    className="w-full h-full object-cover"
-                    width={100}
-                    height={100}
-                    src={"/images/mrmonday.png"}
-                    alt={""}
-                />
-                <div className="absolute w-full h-full bg-gradient-to-b from-black top-0"></div>
+                {/* Image Carousel */}
+                <div className="relative w-full h-full overflow-hidden">
+                    {carouselImages.map((image, index) => (
+                        <motion.div
+                            key={image}
+                            className="absolute inset-0"
+                            initial={{ opacity: 0 }}
+                            animate={{
+                                opacity: index === currentImageIndex ? 1 : 0,
+                                scale: index === currentImageIndex ? [1, 1.05] : 1,
+                                y: index === currentImageIndex ? ['0%', '-5%'] : '0%'
+                            }}
+                            transition={{
+                                opacity: { duration: 1 },
+                                scale: { duration: 8, ease: "easeInOut" },
+                                y: { duration: 8, ease: "easeInOut" }
+                            }}
+                        >
+                            <Image
+                                className="w-full h-full object-cover"
+                                fill
+                                sizes="100vw"
+                                src={image}
+                                alt={`Cepoka image ${index + 1}`}
+                                priority={index === 0}
+                            />
+                        </motion.div>
+                    ))}
+
+                    {/* Dim fade overlay for transition */}
+                    <motion.div
+                        className="absolute inset-0 bg-black z-10"
+                        initial={{ opacity: 0 }}
+                        animate={{
+                            opacity: [0, 0.3, 0]
+                        }}
+                        transition={{
+                            duration: 4,
+                            ease: "easeInOut",
+                            repeat: Infinity,
+                            repeatDelay: 4
+                        }}
+                    />
+
+                    {/* Navigation dots */}
+                    <div className="absolute bottom-4 right-4 flex space-x-2 z-30">
+                        {carouselImages.map((_, index) => (
+                            <button
+                                key={index}
+                                onClick={() => setCurrentImageIndex(index)}
+                                className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentImageIndex
+                                        ? 'bg-white scale-110'
+                                        : 'bg-white/50 hover:bg-white/70'
+                                    }`}
+                                aria-label={`Go to slide ${index + 1}`}
+                            />
+                        ))}
+                    </div>
+                </div>
+                <div className="absolute w-full h-full bg-gradient-to-b from-black top-0 z-20"></div>
                 <motion.div
-                    className="flex flex-col z-10 absolute top-0 text-white p-8 sm:p-16 space-y-6 sm:space-y-5"
+                    className="flex flex-col z-30 absolute top-0 text-white p-8 sm:p-16 space-y-6 sm:space-y-5"
                     initial={{ y: 50, opacity: 0 }}
                     whileInView={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.6, delay: 0.3 }}

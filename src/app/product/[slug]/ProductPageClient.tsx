@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import BackArrow from "../../Components/BackArrow";
 import SpinningLoader from "../../Components/SpinningLoader";
+import LoadingScreen from "../../Components/LoadingScreen";
 // Skeleton is no longer used since we're using SpinningLoader
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -28,6 +29,7 @@ export default function ProductPageClient({ params }: Props) {
     const router = useRouter();
     const [product, setProduct] = useState<ProductType | null>(null);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [isLocateLoading, setIsLocateLoading] = useState(false);
 
     useEffect(() => {
         try {
@@ -105,6 +107,13 @@ export default function ProductPageClient({ params }: Props) {
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-white text-[#333333] p-4 pt-20 sm:pt-28">
+            {/* Loading Screen for Locate Us button */}
+            {isLocateLoading && (
+                <LoadingScreen
+                    message="Loading location page..."
+                />
+            )}
+
             <div className="w-full max-w-6xl">
                 {/* Header - Only Back Button */}
                 <div className="flex items-center mb-6 mt-4 sm:mt-0">
@@ -229,7 +238,15 @@ export default function ProductPageClient({ params }: Props) {
                                 whileTap={{ scale: 0.98 }}
                                 className="bg-[#333333] text-white py-3 px-6 rounded-md hover:opacity-90
                                 transition-opacity text-base sm:text-lg"
-                                onClick={() => router.push('/contact')}
+                                onClick={() => {
+                                    setIsLocateLoading(true);
+                                    toast.loading('Loading location page...', {
+                                        duration: 1500,
+                                    });
+                                    setTimeout(() => {
+                                        router.push('/contact');
+                                    }, 800);
+                                }}
                             >
                                 Locate Us
                             </motion.button>

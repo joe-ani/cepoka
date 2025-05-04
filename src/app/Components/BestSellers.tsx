@@ -32,7 +32,7 @@ const bestSellers: BestSellerProduct[] = [
         id: 3,
         name: "Deluxe Massage Table",
         description: "Professional-grade massage table with memory foam padding and adjustable height settings.",
-        image: "/public/icons/spa-bed.png",
+        image: "/hero-graphis/facemask.png",
         price: "$799"
     }
 ];

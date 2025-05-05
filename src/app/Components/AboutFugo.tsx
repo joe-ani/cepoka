@@ -9,10 +9,12 @@ const AboutFugo = () => {
 
     // Images for the carousel
     const carouselImages = [
-        "/images/mrmonday.png",
+        "/images/ceo2.jpg",
+        "/images/ceo3.jpg",
         "/images/sho1.jpg",
         "/images/sho2.jpg",
-        "/images/sho3.jpg"
+        "/images/sho3.jpg",
+        "/images/ceo1.jpg"
     ];
 
     // Set up image carousel rotation

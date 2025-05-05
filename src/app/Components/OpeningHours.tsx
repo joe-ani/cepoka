@@ -18,6 +18,8 @@ const OpeningHours = () => {
   const carouselImages = [
     "/images/sho1.jpg",
     "/images/sho2.jpg",
+    "/images/shop4.jpg",
+    "/images/shop3.jpg",
     "/images/sho3.jpg"
   ];
 

@@ -25,7 +25,7 @@ const AllCategoriesButton = () => {
                               text-white rounded-full text-sm sm:text-base font-medium shadow-md hover:shadow-lg transition-all mx-auto"
                 >
                     <Grid size={16} className="sm:hidden" />
-                    <Grid size={18} className="hidden sm:block" />
+                    <Grid size={18} className="hidden sm:block" /> 
                     <span>All Categories</span>
                 </motion.button>
             </div>

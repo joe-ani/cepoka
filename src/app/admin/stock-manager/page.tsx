@@ -223,15 +223,22 @@ const StockManagerPage = () => {
 
   return (
     <div className="p-4 max-w-7xl mt-28 sm:mt-32 md:mt-40 mx-auto pt-8 sm:pt-10">
-      {/* Back button with animation */}
-      <motion.div
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="inline-block mb-4 sm:mb-6"
-      >
-        <Link
-          href="/admin"
-          className="inline-flex items-center px-3 py-2 rounded-lg text-gray-700 hover:text-black hover:bg-gray-100 transition-all duration-200"
+      {/* Back button with animation - improved for mobile */}
+      <div className="mb-4 sm:mb-6">
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Create a direct navigation function
+            const navigateDirectly = () => {
+              window.location.href = '/admin';
+            };
+
+            // Navigate immediately
+            navigateDirectly();
+          }}
+          className="inline-flex items-center px-4 py-3 rounded-lg text-gray-700 hover:text-black hover:bg-gray-100 active:bg-gray-200 transition-all duration-200 touch-manipulation"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -248,8 +255,8 @@ const StockManagerPage = () => {
             />
           </svg>
           Back to Admin
-        </Link>
-      </motion.div>
+        </button>
+      </div>
 
       <div className="mb-4 sm:mb-6">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-pink-500 bg-clip-text text-transparent flex items-center">

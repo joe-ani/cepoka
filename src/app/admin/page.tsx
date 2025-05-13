@@ -549,7 +549,7 @@ const AdminPage = () => {
                                 )}
                             </button>
                         )}
-                        <motion.button
+                        <button
                             onClick={(e) => {
                                 e.preventDefault(); // Prevent default behavior
                                 e.stopPropagation(); // Stop event propagation
@@ -560,30 +560,16 @@ const AdminPage = () => {
                                 // Show loading screen
                                 document.body.style.overflow = 'hidden'; // Prevent scrolling
 
-                                // Create a direct navigation function that bypasses the Nav component's handleNavClick
+                                // Navigate directly using window.location for better mobile compatibility
                                 const navigateDirectly = () => {
-                                    // Remove any event listeners that might interfere
-                                    const oldLink = document.querySelector('a#direct-nav-link');
-                                    if (oldLink) {
-                                        document.body.removeChild(oldLink);
-                                    }
-
-                                    // Create a temporary link element and trigger a direct navigation
-                                    const link = document.createElement('a');
-                                    link.id = 'direct-nav-link';
-                                    link.href = '/admin/receipt-sender';
-                                    link.style.display = 'none';
-                                    document.body.appendChild(link);
-                                    link.click();
+                                    window.location.href = '/admin/receipt-sender';
                                 };
 
                                 // Use setTimeout to ensure the loading screen is visible
-                                setTimeout(navigateDirectly, 800);
+                                setTimeout(navigateDirectly, 300);
                             }}
-                            className="bg-[#333333] text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto"
+                            className="bg-[#333333] text-white px-4 py-3 rounded-lg hover:bg-gray-800 active:bg-gray-900 transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto touch-manipulation"
                             disabled={isNavigating}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
                         >
                             {isNavigating ? (
                                 <span className="flex items-center gap-2">
@@ -601,8 +587,8 @@ const AdminPage = () => {
                                     Receipt Generator
                                 </>
                             )}
-                        </motion.button>
-                        <motion.button
+                        </button>
+                        <button
                             onClick={(e) => {
                                 e.preventDefault(); // Prevent default behavior
                                 e.stopPropagation(); // Stop event propagation
@@ -613,30 +599,16 @@ const AdminPage = () => {
                                 // Show loading screen
                                 document.body.style.overflow = 'hidden'; // Prevent scrolling
 
-                                // Create a direct navigation function that bypasses the Nav component's handleNavClick
+                                // Navigate directly using window.location for better mobile compatibility
                                 const navigateDirectly = () => {
-                                    // Remove any event listeners that might interfere
-                                    const oldLink = document.querySelector('a#direct-nav-link-stock');
-                                    if (oldLink) {
-                                        document.body.removeChild(oldLink);
-                                    }
-
-                                    // Create a temporary link element and trigger a direct navigation
-                                    const link = document.createElement('a');
-                                    link.id = 'direct-nav-link-stock';
-                                    link.href = '/admin/stock-manager';
-                                    link.style.display = 'none';
-                                    document.body.appendChild(link);
-                                    link.click();
+                                    window.location.href = '/admin/stock-manager';
                                 };
 
                                 // Use setTimeout to ensure the loading screen is visible
-                                setTimeout(navigateDirectly, 800);
+                                setTimeout(navigateDirectly, 300);
                             }}
-                            className="bg-[#333333] text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto"
+                            className="bg-[#333333] text-white px-4 py-3 rounded-lg hover:bg-gray-800 active:bg-gray-900 transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto touch-manipulation"
                             disabled={isStockNavigating}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
                         >
                             {isStockNavigating ? (
                                 <span className="flex items-center gap-2">
@@ -654,7 +626,7 @@ const AdminPage = () => {
                                     Stock Manager
                                 </>
                             )}
-                        </motion.button>
+                        </button>
                     </div>
                 </div>
 

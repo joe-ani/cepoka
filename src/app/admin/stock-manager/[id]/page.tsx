@@ -354,9 +354,20 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
         <div className="bg-white p-6 rounded-lg shadow-sm border text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Stock Product Not Found</h2>
           <p className="text-gray-700 mb-4">The stock product you're looking for doesn't exist or has been deleted.</p>
-          <Link
-            href="/admin/stock-manager"
-            className="inline-flex items-center text-blue-600 hover:text-blue-800"
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+
+              // Create a direct navigation function
+              const navigateDirectly = () => {
+                window.location.href = '/admin/stock-manager';
+              };
+
+              // Navigate immediately
+              navigateDirectly();
+            }}
+            className="inline-flex items-center text-blue-600 hover:text-blue-800 px-4 py-2 rounded-lg active:bg-blue-50 transition-all duration-200 touch-manipulation"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -373,7 +384,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
               />
             </svg>
             Back to Stock Manager
-          </Link>
+          </button>
         </div>
       </div>
     );
@@ -383,15 +394,22 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
     <div className="p-4 max-w-7xl mt-28 sm:mt-32 md:mt-40 mx-auto pt-8 sm:pt-10">
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" />
 
-      {/* Back button with animation */}
-      <motion.div
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="inline-block mb-6"
-      >
-        <Link
-          href="/admin/stock-manager"
-          className="inline-flex items-center px-3 py-2 rounded-lg text-gray-700 hover:text-black hover:bg-gray-100 transition-all duration-200"
+      {/* Back button with animation - improved for mobile */}
+      <div className="mb-6">
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Create a direct navigation function
+            const navigateDirectly = () => {
+              window.location.href = '/admin/stock-manager';
+            };
+
+            // Navigate immediately
+            navigateDirectly();
+          }}
+          className="inline-flex items-center px-4 py-3 rounded-lg text-gray-700 hover:text-black hover:bg-gray-100 active:bg-gray-200 transition-all duration-200 touch-manipulation"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -408,8 +426,8 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
             />
           </svg>
           Back to Stock Manager
-        </Link>
-      </motion.div>
+        </button>
+      </div>
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">

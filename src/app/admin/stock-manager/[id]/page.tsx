@@ -350,7 +350,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
 
   if (!stockProduct) {
     return (
-      <div className="p-4 max-w-7xl mt-32 mx-auto">
+      <div className="p-4 max-w-7xl mt-28 sm:mt-32 md:mt-40 mx-auto pt-8 sm:pt-10">
         <div className="bg-white p-6 rounded-lg shadow-sm border text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Stock Product Not Found</h2>
           <p className="text-gray-700 mb-4">The stock product you're looking for doesn't exist or has been deleted.</p>
@@ -380,30 +380,36 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
   }
 
   return (
-    <div className="p-4 max-w-7xl mt-32 mx-auto">
+    <div className="p-4 max-w-7xl mt-28 sm:mt-32 md:mt-40 mx-auto pt-8 sm:pt-10">
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" />
 
-      {/* Back button */}
-      <Link
-        href="/admin/stock-manager"
-        className="inline-flex items-center mb-6 text-gray-700 hover:text-black transition-colors duration-200"
+      {/* Back button with animation */}
+      <motion.div
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="inline-block mb-6"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5 mr-2"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+        <Link
+          href="/admin/stock-manager"
+          className="inline-flex items-center px-3 py-2 rounded-lg text-gray-700 hover:text-black hover:bg-gray-100 transition-all duration-200"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M10 19l-7-7m0 0l7-7m-7 7h18"
-          />
-        </svg>
-        Back to Stock Manager
-      </Link>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 mr-2"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            />
+          </svg>
+          Back to Stock Manager
+        </Link>
+      </motion.div>
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">

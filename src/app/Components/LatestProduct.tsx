@@ -23,11 +23,13 @@ const LatestProduct: React.FC = () => {
   const { setActiveLink } = useActiveLink();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingProduct, setLoadingProduct] = useState(false);
   const [likedProducts, setLikedProducts] = useState<{ [key: string]: boolean }>({});
 
   const { ref: containerRef, inView: containerInView } = useInView({
     triggerOnce: true,
-    threshold: 0.1
+    threshold: 0.1,
+    rootMargin: "0px 0px -100px 0px" // Trigger animation before element is fully in view
   });
 
   useEffect(() => {
@@ -74,7 +76,8 @@ const LatestProduct: React.FC = () => {
     }));
   };
 
-  const cardVariants: Variants = {
+  // Container animation variants
+  const containerVariants: Variants = {
     hidden: {
       opacity: 0,
       y: 20,
@@ -84,14 +87,39 @@ const LatestProduct: React.FC = () => {
       y: 0,
       transition: {
         type: "spring",
+        stiffness: 50,
+        damping: 20,
+        staggerChildren: 0.1, // Stagger the animation of children
+        delayChildren: 0.2,   // Delay before starting children animations
+        when: "beforeChildren"
+      }
+    }
+  };
+
+  // Card animation variants
+  const cardVariants: Variants = {
+    hidden: {
+      opacity: 0,
+      y: 50,
+      scale: 0.9,
+      rotateX: 10,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      rotateX: 0,
+      transition: {
+        type: "spring",
         stiffness: 100,
         damping: 15,
-        duration: 0.4
+        duration: 0.5,
+        delay: 0.1
       }
     },
     hover: {
-      y: -8,
-      scale: 1.02,
+      y: -12,
+      scale: 1.05,
       transition: {
         type: "spring",
         stiffness: 400,
@@ -101,6 +129,7 @@ const LatestProduct: React.FC = () => {
     },
     tap: {
       scale: 0.98,
+      y: -5,
       boxShadow: "0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -4px rgba(0, 0, 0, 0.1)",
       transition: {
         type: "spring",
@@ -108,6 +137,7 @@ const LatestProduct: React.FC = () => {
         damping: 15
       }
     }
+
   };
 
   if (loading) {
@@ -119,13 +149,33 @@ const LatestProduct: React.FC = () => {
   }
 
   return (
-    <div className="latest-product-container flex flex-col items-center space-y-12">
-      <div ref={containerRef} className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="latest-product-container flex flex-col items-center space-y-8 relative">
+      {/* Loading overlay for product clicks */}
+      {loadingProduct && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 shadow-xl flex flex-col items-center">
+            <SpinningLoader size="large" text="Loading product..." />
+          </div>
+        </div>
+      )}
+
+      <motion.div
+        ref={containerRef}
+        className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 w-full px-4 md:px-0"
+        variants={containerVariants}
+        initial="hidden"
+        animate={containerInView ? "visible" : "hidden"}
+      >
         {products.map((product) => (
           <Link
             href={`/product/${product.name.toLowerCase().replace(/\s+/g, '-')}`}
             key={product.$id}
             onClick={() => {
+              // Show loading screen
+              setLoadingProduct(true);
+              // Prevent scrolling
+              document.body.style.overflow = 'hidden';
+
               localStorage.setItem("selectedProduct", JSON.stringify({
                 name: product.name,
                 price: product.price,
@@ -135,37 +185,13 @@ const LatestProduct: React.FC = () => {
             }}
           >
             <motion.div
-              className="latest-product-card w-[150px] h-[200px] sm:w-[200px] sm:h-[250px] flex flex-col items-center
-              relative rounded-[15px] sm:rounded-[25px] cursor-pointer transition-colors duration-200 overflow-hidden"
-              initial="hidden"
-              animate={containerInView ? "visible" : "hidden"}
-              whileHover="hover"
-              whileTap="tap"
+              className="product-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300"
               variants={cardVariants}
-              style={{
-                backfaceVisibility: "hidden",
-                WebkitFontSmoothing: "subpixel-antialiased"
-              }}
+              whileHover={{ y: -5 }}
+              whileTap={{ y: 0 }}
             >
-              {/* Heart icon */}
-              <div
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  toggleLike(product.$id);
-                }}
-                className="absolute right-2 sm:right-4 top-2 sm:top-4 z-10 p-1 sm:p-2 cursor-pointer hover:scale-110 transition-transform"
-              >
-                <Heart
-                  className="stroke-none"
-                  fill={likedProducts[product.$id] ? "#ff3b5c" : "#ffffff50"}
-                  size={24}
-                  strokeWidth={1}
-                />
-              </div>
-
-              {/* Product Image */}
-              <div className="w-full h-full relative">
+              {/* Product Image Container */}
+              <div className="relative w-full h-40 md:h-48">
                 {product.imageUrls && product.imageUrls.length > 0 ? (
                   <Image
                     className="object-cover"
@@ -173,7 +199,6 @@ const LatestProduct: React.FC = () => {
                     alt={product.name}
                     src={product.imageUrls[0]}
                     priority
-                    unoptimized
                     sizes="(max-width: 640px) 150px, 200px"
                   />
                 ) : (
@@ -181,39 +206,58 @@ const LatestProduct: React.FC = () => {
                     <p className="text-gray-400">No Image</p>
                   </div>
                 )}
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+
+                {/* Heart icon */}
+                <div
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleLike(product.$id);
+                  }}
+                  className="absolute right-2 top-2 z-10 p-1 bg-white/30 backdrop-blur-sm rounded-full cursor-pointer hover:bg-white/50 transition-all"
+                >
+                  <Heart
+                    className="stroke-none"
+                    fill={likedProducts[product.$id] ? "#ff3b5c" : "#ffffff"}
+                    size={20}
+                    strokeWidth={1}
+                  />
+                </div>
               </div>
 
-              {/* Price Card */}
-              <div className="price-card w-[90%] h-[70px] sm:h-[80px] rounded-[10px] sm:rounded-[15px]
-              absolute bottom-3 bg-gradient-to-r from-black/80 to-black/40 backdrop-blur-[2px]
-              flex flex-col justify-center gap-1 sm:gap-2">
-                <div className="px-2 sm:px-3 text-white font-semibold text-xs sm:text-sm truncate">
+              {/* Product Info */}
+              <div className="p-3 md:p-4">
+                <h3 className="font-semibold text-sm md:text-base text-gray-800 truncate">
                   {product.name}
-                </div>
-                <div className="w-full h-[1px] bg-[#dddd]"></div>
-                <div className="flex items-center justify-between px-2 sm:px-3">
-                  <p className="text-white font-medium text-xs">₦{product.price}</p>
-                </div>
+                </h3>
+                <p className="text-sm font-medium text-gray-900 mt-1">
+                  ₦{product.price}
+                </p>
               </div>
             </motion.div>
           </Link>
         ))}
-      </div>
+      </motion.div>
 
       {/* Shop button */}
-      <Link href={"/shop"} onClick={() => setActiveLink("Shop")}>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.95 }}
-          className="font-medium bg-gradient-to-tr from-[#1E90FF] to-[#FF69B4] text-white
-          text-base sm:text-[20px] rounded-full p-2 px-8 flex items-center gap-2"
-        >
-          Shop
-          <ArrowRight size={20} />
-        </motion.button>
-      </Link>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={containerInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+        transition={{ delay: 0.5, duration: 0.5 }}
+        className="mt-4 md:mt-8"
+      >
+        <Link href={"/shop"} onClick={() => setActiveLink("Shop")}>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="font-medium bg-gradient-to-tr from-[#1E90FF] to-[#FF69B4] text-white
+                text-base sm:text-[20px] rounded-full p-2 px-8 flex items-center gap-2 shadow-lg"
+          >
+            Shop
+            <ArrowRight size={20} />
+          </motion.button>
+        </Link>
+      </motion.div>
     </div>
   );
 };

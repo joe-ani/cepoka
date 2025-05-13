@@ -66,6 +66,12 @@ const Nav = () => {
     setActiveLink(link);
     setIsMenuOpen(false);
 
+    // Don't interfere with admin routes
+    if (pathname && pathname.startsWith('/admin')) {
+      console.log('Navigation in admin area - not handling nav clicks');
+      return;
+    }
+
     if (pathname === '/') {
       switch (link.toLowerCase()) {
         case 'contact':

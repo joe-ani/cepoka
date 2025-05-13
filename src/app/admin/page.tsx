@@ -470,32 +470,42 @@ const AdminPage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 pt-32 sm:pt-40 pb-8 sm:pb-12 px-4 sm:px-6 lg:px-8">
-            {/* Loading screen for navigation */}
-            {isNavigating && <LoadingScreen message="Loading Receipt Generator..." />}
-            {isStockNavigating && <LoadingScreen message="Loading Stock Manager..." />}
+            {/* Loading screen for navigation - using LoadingScreen component for consistency */}
+            {isNavigating && (
+                <LoadingScreen message="Loading Receipt Generator..." isFullScreen={true} />
+            )}
+            {isStockNavigating && (
+                <LoadingScreen message="Loading Stock Manager..." isFullScreen={true} />
+            )}
 
             <div className="max-w-7xl mx-auto">
-                {/* Back button */}
-                <Link
-                    href="/"
-                    className="inline-flex items-center mb-6 text-gray-700 hover:text-black transition-colors duration-200"
+                {/* Back button with animation */}
+                <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="inline-block mb-6"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 mr-2"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
+                    <Link
+                        href="/"
+                        className="inline-flex items-center px-3 py-2 rounded-lg text-gray-700 hover:text-black hover:bg-gray-100 transition-all duration-200"
                     >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                        />
-                    </svg>
-                    Back to Home
-                </Link>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5 mr-2"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                            />
+                        </svg>
+                        Back to Home
+                    </Link>
+                </motion.div>
 
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 sm:mb-12">
                     <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 text-center sm:text-left tracking-tight">
@@ -539,16 +549,41 @@ const AdminPage = () => {
                                 )}
                             </button>
                         )}
-                        <button
-                            onClick={() => {
+                        <motion.button
+                            onClick={(e) => {
+                                e.preventDefault(); // Prevent default behavior
+                                e.stopPropagation(); // Stop event propagation
+
+                                // Set loading state
                                 setIsNavigating(true);
-                                // Navigate after a short delay to show the loading screen
-                                setTimeout(() => {
-                                    router.push('/admin/receipt-sender');
-                                }, 300);
+
+                                // Show loading screen
+                                document.body.style.overflow = 'hidden'; // Prevent scrolling
+
+                                // Create a direct navigation function that bypasses the Nav component's handleNavClick
+                                const navigateDirectly = () => {
+                                    // Remove any event listeners that might interfere
+                                    const oldLink = document.querySelector('a#direct-nav-link');
+                                    if (oldLink) {
+                                        document.body.removeChild(oldLink);
+                                    }
+
+                                    // Create a temporary link element and trigger a direct navigation
+                                    const link = document.createElement('a');
+                                    link.id = 'direct-nav-link';
+                                    link.href = '/admin/receipt-sender';
+                                    link.style.display = 'none';
+                                    document.body.appendChild(link);
+                                    link.click();
+                                };
+
+                                // Use setTimeout to ensure the loading screen is visible
+                                setTimeout(navigateDirectly, 800);
                             }}
                             className="bg-[#333333] text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto"
                             disabled={isNavigating}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                         >
                             {isNavigating ? (
                                 <span className="flex items-center gap-2">
@@ -566,17 +601,42 @@ const AdminPage = () => {
                                     Receipt Generator
                                 </>
                             )}
-                        </button>
-                        <button
-                            onClick={() => {
+                        </motion.button>
+                        <motion.button
+                            onClick={(e) => {
+                                e.preventDefault(); // Prevent default behavior
+                                e.stopPropagation(); // Stop event propagation
+
+                                // Set loading state
                                 setIsStockNavigating(true);
-                                // Navigate after a short delay to show the loading screen
-                                setTimeout(() => {
-                                    router.push('/admin/stock-manager');
-                                }, 300);
+
+                                // Show loading screen
+                                document.body.style.overflow = 'hidden'; // Prevent scrolling
+
+                                // Create a direct navigation function that bypasses the Nav component's handleNavClick
+                                const navigateDirectly = () => {
+                                    // Remove any event listeners that might interfere
+                                    const oldLink = document.querySelector('a#direct-nav-link-stock');
+                                    if (oldLink) {
+                                        document.body.removeChild(oldLink);
+                                    }
+
+                                    // Create a temporary link element and trigger a direct navigation
+                                    const link = document.createElement('a');
+                                    link.id = 'direct-nav-link-stock';
+                                    link.href = '/admin/stock-manager';
+                                    link.style.display = 'none';
+                                    document.body.appendChild(link);
+                                    link.click();
+                                };
+
+                                // Use setTimeout to ensure the loading screen is visible
+                                setTimeout(navigateDirectly, 800);
                             }}
                             className="bg-[#333333] text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto"
                             disabled={isStockNavigating}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                         >
                             {isStockNavigating ? (
                                 <span className="flex items-center gap-2">
@@ -594,7 +654,7 @@ const AdminPage = () => {
                                     Stock Manager
                                 </>
                             )}
-                        </button>
+                        </motion.button>
                     </div>
                 </div>
 

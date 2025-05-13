@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- White circular background -->
-  <circle cx="256" cy="256" r="256" fill="white"/>
+  <!-- White circular background with subtle shadow -->
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-opacity="0.15"/>
+    </filter>
+  </defs>
 
-  <!-- Logo will be placed in the center with proper padding and aspect ratio preserved -->
-  <image href="/logo.png" x="102.4" y="102.4" width="307.2" height="307.2" preserveAspectRatio="xMidYMid meet"/>
+  <!-- White circular background with shadow -->
+  <circle cx="256" cy="256" r="240" fill="white" filter="url(#shadow)"/>
+
+  <!-- Logo placed at the top center with proper padding and aspect ratio preserved -->
+  <image href="/logo.png" x="96" y="56" width="320" height="320" preserveAspectRatio="xMidYMid meet"/>
 </svg>

@@ -6,6 +6,8 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
+  "orientation": "portrait",
+  "scope": "/",
   "icons": [
     {
       "src": "/favicon.svg",
@@ -16,7 +18,39 @@
     {
       "src": "/favicon.svg",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Shop",
+      "short_name": "Shop",
+      "description": "Browse our products",
+      "url": "/shop",
+      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/images/screenshot1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Cepoka Beauty Hub"
+    },
+    {
+      "src": "/images/screenshot2.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Cepoka Beauty Hub Mobile"
     }
   ]
 }

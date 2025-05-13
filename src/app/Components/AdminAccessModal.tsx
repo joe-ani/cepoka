@@ -70,6 +70,16 @@ export default function AdminAccessModal({ isOpen, onClose, onAccess }: AdminAcc
     }
   }, [adminKey, onAccess]);
 
+  // Function to cancel verification process
+  const handleCancel = useCallback(() => {
+    if (isLoading) {
+      setIsLoading(false);
+      console.log("Verification process cancelled");
+    } else {
+      onClose();
+    }
+  }, [isLoading, onClose]);
+
   // Focus the input field when the modal opens
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -158,14 +168,15 @@ export default function AdminAccessModal({ isOpen, onClose, onAccess }: AdminAcc
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  onClose();
+                  handleCancel();
                 }}
-                disabled={isLoading}
-                className={`px-3 font-[500] sm:px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                className={`px-3 sm:px-4 py-2 font-[500] ${isLoading
+                  ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                  : 'text-gray-600 hover:text-gray-800'}
+                  transition-colors duration-200 rounded-lg`}
                 style={{ touchAction: 'manipulation' }}
               >
-                Cancel
+                {isLoading ? 'Stop Verification' : 'Cancel'}
               </button>
               <button
                 onClick={(e) => {

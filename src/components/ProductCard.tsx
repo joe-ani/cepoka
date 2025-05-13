@@ -60,10 +60,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       };
       localStorage.setItem("selectedProduct", JSON.stringify(productData));
 
-      // Navigate to product page after a short delay to show loading screen
+      // Navigate to product page after a delay to show loading screen
+      // Using a longer delay on mobile for better visibility
+      const isMobile = window.innerWidth < 768;
       setTimeout(() => {
         router.push(`/product/${slug}`);
-      }, 800);
+      }, isMobile ? 1200 : 800);
     } catch (error) {
       console.error("Error saving product data:", error);
       setIsLoading(false);

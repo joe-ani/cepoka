@@ -13,10 +13,45 @@ import SpinningLoader from '@/src/app/Components/SpinningLoader';
 import { databases, appwriteConfig } from '@/src/lib/appwrite';
 import { ID } from 'appwrite';
 
+// Define stock product categories
+const STOCK_CATEGORIES = [
+    {
+        id: "spa-salon-furniture",
+        name: "Spa & Salon Furniture",
+        icon: "🪑",
+        color: "from-blue-500 to-blue-700",
+    },
+    {
+        id: "beauty-equipment",
+        name: "Beauty Equipment",
+        icon: "⚙️",
+        color: "from-pink-500 to-pink-700",
+    },
+    {
+        id: "facial-waxing",
+        name: "Facial & Waxing",
+        icon: "🧖‍♀️",
+        color: "from-purple-500 to-purple-700",
+    },
+    {
+        id: "skincare-accessories",
+        name: "Skin Care Products & Accessories",
+        icon: "🧴",
+        color: "from-green-500 to-green-700",
+    },
+    {
+        id: "pedicure-manicure",
+        name: "Pedicure & Manicure",
+        icon: "💅",
+        color: "from-yellow-500 to-yellow-700",
+    },
+];
+
 // Schema for stock product form validation
 const stockProductSchema = z.object({
     name: z.string().min(1, "Product name is required"),
     initialStock: z.string().min(1, "Initial stock is required"),
+    category: z.string().min(1, "Category is required"),
     remarks: z.string().optional(),
 });
 
@@ -36,6 +71,7 @@ const CreateStockProductPage = () => {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isNavigating, setIsNavigating] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState<string>('');
     const formRef = useRef<HTMLDivElement>(null);
 
     // Form setup using react-hook-form with Zod validation
@@ -44,6 +80,7 @@ const CreateStockProductPage = () => {
         defaultValues: {
             name: '',
             initialStock: '0',
+            category: '',
             remarks: '',
         }
     });
@@ -125,6 +162,7 @@ const CreateStockProductPage = () => {
             // The collection expects an array of strings
             const stockProductData = {
                 name: data.name,
+                category: data.category,
                 stockMovements: [stockMovementString], // Array of strings
                 lastUpdated: new Date().toISOString(),
             };
@@ -145,6 +183,7 @@ const CreateStockProductPage = () => {
                 // Format the data for Appwrite
                 const formattedData = {
                     name: String(stockProductData.name),
+                    category: String(stockProductData.category),
                     stockMovements: stockProductData.stockMovements, // Keep as array
                     lastUpdated: String(stockProductData.lastUpdated)
                 };
@@ -205,28 +244,34 @@ const CreateStockProductPage = () => {
     }
 
     return (
-        <div className="p-4 max-w-7xl mt-32 mx-auto">
-            {/* Back button */}
-            <Link
-                href="/admin/stock-manager"
-                className="inline-flex items-center mb-6 text-gray-700 hover:text-black transition-colors duration-200"
+        <div className="p-4 max-w-7xl mt-28 sm:mt-32 md:mt-40 mx-auto pt-8 sm:pt-10">
+            {/* Back button with animation */}
+            <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="inline-block mb-6"
             >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 mr-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+                <Link
+                    href="/admin/stock-manager"
+                    className="inline-flex items-center px-3 py-2 rounded-lg text-gray-700 hover:text-black hover:bg-gray-100 transition-all duration-200"
                 >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                    />
-                </svg>
-                Back to Stock Manager
-            </Link>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                        />
+                    </svg>
+                    Back to Stock Manager
+                </Link>
+            </motion.div>
 
             <div className="mb-6">
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-pink-500 bg-clip-text text-transparent flex items-center">
@@ -248,7 +293,7 @@ const CreateStockProductPage = () => {
                                 id="name"
                                 type="text"
                                 {...register('name')}
-                                className="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 font-medium placeholder-gray-500"
                                 placeholder="e.g. Salon Chair"
                             />
                             {errors.name && (
@@ -266,11 +311,47 @@ const CreateStockProductPage = () => {
                                 type="number"
                                 min="0"
                                 {...register('initialStock')}
-                                className="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 font-medium placeholder-gray-500"
                                 placeholder="0"
                             />
                             {errors.initialStock && (
                                 <p className="mt-1 text-sm text-red-600">{errors.initialStock.message}</p>
+                            )}
+                        </div>
+
+                        {/* Category Selection */}
+                        <div>
+                            <label htmlFor="category" className="block text-sm font-medium text-gray-800 mb-1">
+                                Product Category
+                            </label>
+                            <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 mb-3">
+                                {STOCK_CATEGORIES.map((category) => (
+                                    <label
+                                        key={category.id}
+                                        className="cursor-pointer"
+                                    >
+                                        <input
+                                            type="radio"
+                                            value={category.id}
+                                            {...register('category')}
+                                            className="sr-only"
+                                            onChange={() => setSelectedCategory(category.id)}
+                                        />
+                                        <div className={`p-3 rounded-lg text-center transition-all duration-200 shadow-sm
+                                            ${errors.category ? 'border-red-500' : 'border border-gray-200'}
+                                            hover:border-blue-500
+                                            ${selectedCategory === category.id ? 'bg-gradient-to-br ' + category.color + ' text-white' : 'bg-white'}`}
+                                        >
+                                            <div className="text-2xl mb-1">{category.icon}</div>
+                                            <div className="text-xs font-medium line-clamp-2">
+                                                {category.name}
+                                            </div>
+                                        </div>
+                                    </label>
+                                ))}
+                            </div>
+                            {errors.category && (
+                                <p className="mt-1 text-sm text-red-600">{errors.category.message}</p>
                             )}
                         </div>
 
@@ -283,7 +364,7 @@ const CreateStockProductPage = () => {
                                 id="remarks"
                                 {...register('remarks')}
                                 rows={3}
-                                className="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 font-medium placeholder-gray-500"
                                 placeholder="Any additional notes about this stock"
                             />
                         </div>
@@ -310,8 +391,8 @@ const CreateStockProductPage = () => {
                         </div>
                     </form>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 

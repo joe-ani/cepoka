@@ -9,10 +9,40 @@ import SpinningLoader from '@/src/app/Components/SpinningLoader';
 import { databases, appwriteConfig } from '@/src/lib/appwrite';
 import { ID } from 'appwrite';
 
+// Define stock product categories
+const STOCK_CATEGORIES = [
+  {
+    id: "spa-salon-furniture",
+    name: "Spa & Salon Furniture",
+    icon: "🪑",
+  },
+  {
+    id: "beauty-equipment",
+    name: "Beauty Equipment",
+    icon: "⚙️",
+  },
+  {
+    id: "facial-waxing",
+    name: "Facial & Waxing",
+    icon: "🧖‍♀️",
+  },
+  {
+    id: "skincare-accessories",
+    name: "Skin Care Products & Accessories",
+    icon: "🧴",
+  },
+  {
+    id: "pedicure-manicure",
+    name: "Pedicure & Manicure",
+    icon: "💅",
+  },
+];
+
 // Mock data for stock products
 const mockStockProducts = [
   {
     name: "Salon Chair",
+    category: "spa-salon-furniture",
     stockMovements: [
       {
         date: new Date("2023-05-01").toISOString(),
@@ -46,6 +76,7 @@ const mockStockProducts = [
   },
   {
     name: "Hair Dryer",
+    category: "beauty-equipment",
     stockMovements: [
       {
         date: new Date("2023-05-10").toISOString(),
@@ -70,6 +101,7 @@ const mockStockProducts = [
   },
   {
     name: "Facial Steamer",
+    category: "facial-waxing",
     stockMovements: [
       {
         date: new Date("2023-05-20").toISOString(),
@@ -85,6 +117,7 @@ const mockStockProducts = [
   },
   {
     name: "Makeup Brushes Set",
+    category: "skincare-accessories",
     stockMovements: [
       {
         date: new Date("2023-06-10").toISOString(),
@@ -109,6 +142,7 @@ const mockStockProducts = [
   },
   {
     name: "Nail Polish Collection",
+    category: "pedicure-manicure",
     stockMovements: [
       {
         date: new Date("2023-07-01").toISOString(),
@@ -153,6 +187,7 @@ const MockDataPage = () => {
             documentId,
             {
               name: product.name,
+              category: product.category,
               stockMovements: stringifiedStockMovements, // Array of strings
               lastUpdated: product.lastUpdated
             }
@@ -180,28 +215,34 @@ const MockDataPage = () => {
   };
 
   return (
-    <div className="p-4 max-w-7xl mt-32 mx-auto">
-      {/* Back button */}
-      <Link
-        href="/admin/stock-manager"
-        className="inline-flex items-center mb-6 text-gray-700 hover:text-black transition-colors duration-200"
+    <div className="p-4 max-w-7xl mt-28 sm:mt-32 md:mt-40 mx-auto pt-8 sm:pt-10">
+      {/* Back button with animation */}
+      <motion.div
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="inline-block mb-6"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5 mr-2"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+        <Link
+          href="/admin/stock-manager"
+          className="inline-flex items-center px-3 py-2 rounded-lg text-gray-700 hover:text-black hover:bg-gray-100 transition-all duration-200"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M10 19l-7-7m0 0l7-7m-7 7h18"
-          />
-        </svg>
-        Back to Stock Manager
-      </Link>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 mr-2"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            />
+          </svg>
+          Back to Stock Manager
+        </Link>
+      </motion.div>
 
       <div className="mb-6">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-pink-500 bg-clip-text text-transparent flex items-center">
@@ -221,17 +262,26 @@ const MockDataPage = () => {
           </p>
 
           <ul className="mt-4 space-y-2">
-            {mockStockProducts.map((product, index) => (
-              <li key={index} className="flex items-center">
-                <span className="w-6 h-6 flex items-center justify-center bg-blue-100 text-blue-800 rounded-full mr-2 text-xs font-medium">
-                  {index + 1}
-                </span>
-                <span className="font-medium text-gray-900">{product.name}</span>
-                <span className="ml-2 text-sm text-gray-600">
-                  ({product.stockMovements.length} stock movements)
-                </span>
-              </li>
-            ))}
+            {mockStockProducts.map((product, index) => {
+              const category = STOCK_CATEGORIES.find(cat => cat.id === product.category);
+              return (
+                <li key={index} className="flex items-center">
+                  <span className="w-6 h-6 flex items-center justify-center bg-blue-100 text-blue-800 rounded-full mr-2 text-xs font-medium">
+                    {index + 1}
+                  </span>
+                  <span className="font-medium text-gray-900">{product.name}</span>
+                  {category && (
+                    <span className="ml-2 flex items-center text-sm">
+                      <span className="mr-1">{category.icon}</span>
+                      <span className="text-gray-700">{category.name}</span>
+                    </span>
+                  )}
+                  <span className="ml-2 text-sm text-gray-600">
+                    ({product.stockMovements.length} stock movements)
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         </div>
 

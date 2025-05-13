@@ -3,6 +3,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from "react";
 import AdminAccessModal from './AdminAccessModal';
+import toast from 'react-hot-toast';
+import LoadingScreen from './LoadingScreen';
+import * as ReactDOM from 'react-dom/client';
 
 const Footer = () => {
     const [isMounted, setIsMounted] = useState(false);
@@ -84,15 +87,39 @@ const Footer = () => {
                         console.log("Valid admin key, redirecting...");
                         localStorage.setItem('adminKey', "fugo101");
 
+                        // Add the LoadingScreen component to the DOM
+                        const loadingScreenContainer = document.createElement('div');
+                        loadingScreenContainer.id = 'admin-loading-screen';
+                        document.body.appendChild(loadingScreenContainer);
+
+                        // Render the LoadingScreen component
+                        const root = ReactDOM.createRoot(loadingScreenContainer);
+                        root.render(
+                            <LoadingScreen message="Accessing Admin Panel..." isFullScreen={true} />
+                        );
+
                         // Add a slight delay before redirecting to show the loading state
                         setTimeout(() => {
+                            // Clean up the loading screen container before navigation
+                            const loadingScreenContainer = document.getElementById('admin-loading-screen');
+                            if (loadingScreenContainer) {
+                                document.body.removeChild(loadingScreenContainer);
+                            }
                             window.location.href = '/admin';
-                        }, 500);
+                        }, 800);
                     } else {
                         console.log("Invalid admin key:", key);
                         // Add a slight delay before showing the alert to make the loading state visible
                         setTimeout(() => {
-                            alert('Invalid admin key');
+                            toast.error('Invalid admin key', {
+                                duration: 3000,
+                                position: 'top-center',
+                                style: {
+                                    background: '#FEE2E2',
+                                    color: '#B91C1C',
+                                    fontWeight: 'bold'
+                                },
+                            });
                         }, 500);
                     }
                 }}

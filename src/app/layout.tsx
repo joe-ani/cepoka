@@ -32,19 +32,42 @@ export const metadata: Metadata = {
         type: "image/svg+xml",
       }
     ],
+    shortcut: [
+      {
+        url: "/favicon.svg",
+        sizes: "192x192",
+        type: "image/svg+xml",
+      }
+    ],
   },
   themeColor: "#ffffff",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "Cepoka Beauty Hub",
+    startupImage: [
+      {
+        url: "/favicon.svg",
+        media: "(device-width: 768px) and (device-height: 1024px)",
+      },
+    ],
   },
   viewport: {
     width: "device-width",
     initialScale: 1,
-    maximumScale: 1,
+    maximumScale: 5,
+    minimumScale: 1,
   },
   applicationName: "Cepoka Beauty Hub",
+  formatDetection: {
+    telephone: false,
+  },
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+    "mobile-web-app-capable": "yes",
+    "msapplication-TileColor": "#ffffff",
+    "msapplication-tap-highlight": "no",
+  },
 };
 
 export default function RootLayout({

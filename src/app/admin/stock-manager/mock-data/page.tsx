@@ -13,150 +13,113 @@ import { ID } from 'appwrite';
 const STOCK_CATEGORIES = [
   {
     id: "spa-salon-furniture",
-    name: "Spa & Salon Furniture",
+    name: "Spa and salon furnitures",
     icon: "🪑",
+    products: [
+      "Massage bed",
+      "saloon Chairs",
+      "pedicure chair",
+      "manicure chair",
+      "salon/spa trolleys",
+      "mirrors",
+      "massage equipment",
+      "side drawers",
+      "hair washing basin"
+    ]
   },
   {
     id: "beauty-equipment",
-    name: "Beauty Equipment",
+    name: "Beauty equipment",
     icon: "⚙️",
+    products: [
+      "Hydrofacial machine",
+      "Micro dermabrasion machine",
+      "Facial steamers | standing Dryer",
+      "Cavitio machine",
+      "Hair steamers",
+      "Clippers | straightner | wall dryers",
+      "Towel warmers Strilizer | Towels",
+      "Apron | Cape | scissors",
+      "vacuum Machine",
+      "tatoo Machine",
+      "G-5"
+    ]
   },
   {
     id: "facial-waxing",
-    name: "Facial & Waxing",
+    name: "Facials and waxing",
     icon: "🧖‍♀️",
+    products: [
+      "3D Beauty mask",
+      "Omega liquid | Jelly Mask | Face mask",
+      "Cucumber eye pad | gold eye mask",
+      "Razor/planning blade | eye brow razor",
+      "Facial soap | Extraction pin",
+      "small medium & large wax pot",
+      "Wax beans",
+      "Paraffin wax",
+      "After/Before wax oil",
+      "Roll on wax",
+      "Cotton pads"
+    ]
   },
   {
     id: "skincare-accessories",
-    name: "Skin Care Products & Accessories",
+    name: "Skincare products & accessories",
     icon: "🧴",
+    products: [
+      "Cleanser | Toner | Moisturizer",
+      "sunScreen",
+      "Facial mask | Scrub | moroccan prrling cream | moroccan sponge",
+      "Aloe vera gel",
+      "Body Ampoules",
+      "Body Scrub",
+      "Collagen facial mask",
+      "24K Gold toner",
+      "Facial Foam"
+    ]
   },
   {
     id: "pedicure-manicure",
-    name: "Pedicure & Manicure",
+    name: "Pedicure and manicure",
     icon: "💅",
+    products: [
+      "Foot file",
+      "Scrapper",
+      "manicure bowl",
+      "pedicure bowl",
+      "Callous removal",
+      "foot mask | foot scrub | hand foot cream",
+      "paraffin bath | gloves & socks",
+      "cotton wool | cutile softener | removal"
+    ]
   },
 ];
 
-// Mock data for stock products
-const mockStockProducts = [
-  {
-    name: "Salon Chair",
-    category: "spa-salon-furniture",
-    stockMovements: [
-      {
-        date: new Date("2023-05-01").toISOString(),
-        stockedIn: 10,
-        stockedOut: 0,
-        remarks: "Initial stock",
-        totalStock: 10,
-        balance: 10,
-        sign: "Admin"
-      },
-      {
-        date: new Date("2023-05-15").toISOString(),
-        stockedIn: 5,
-        stockedOut: 0,
-        remarks: "Restocked",
-        totalStock: 15,
-        balance: 15,
-        sign: "Admin"
-      },
-      {
-        date: new Date("2023-06-01").toISOString(),
-        stockedIn: 0,
-        stockedOut: 3,
-        remarks: "Sold to customer",
-        totalStock: 15,
-        balance: 12,
-        sign: "Admin"
-      }
-    ],
-    lastUpdated: new Date().toISOString()
-  },
-  {
-    name: "Hair Dryer",
-    category: "beauty-equipment",
-    stockMovements: [
-      {
-        date: new Date("2023-05-10").toISOString(),
-        stockedIn: 8,
-        stockedOut: 0,
-        remarks: "Initial stock",
-        totalStock: 8,
-        balance: 8,
-        sign: "Admin"
-      },
-      {
-        date: new Date("2023-06-05").toISOString(),
-        stockedIn: 0,
-        stockedOut: 2,
-        remarks: "Sold to customer",
-        totalStock: 8,
-        balance: 6,
-        sign: "Admin"
-      }
-    ],
-    lastUpdated: new Date().toISOString()
-  },
-  {
-    name: "Facial Steamer",
-    category: "facial-waxing",
-    stockMovements: [
-      {
-        date: new Date("2023-05-20").toISOString(),
-        stockedIn: 5,
-        stockedOut: 0,
-        remarks: "Initial stock",
-        totalStock: 5,
-        balance: 5,
-        sign: "Admin"
-      }
-    ],
-    lastUpdated: new Date().toISOString()
-  },
-  {
-    name: "Makeup Brushes Set",
-    category: "skincare-accessories",
-    stockMovements: [
-      {
-        date: new Date("2023-06-10").toISOString(),
-        stockedIn: 15,
-        stockedOut: 0,
-        remarks: "Initial stock",
-        totalStock: 15,
-        balance: 15,
-        sign: "Admin"
-      },
-      {
-        date: new Date("2023-06-20").toISOString(),
-        stockedIn: 0,
-        stockedOut: 5,
-        remarks: "Sold to customer",
-        totalStock: 15,
-        balance: 10,
-        sign: "Admin"
-      }
-    ],
-    lastUpdated: new Date().toISOString()
-  },
-  {
-    name: "Nail Polish Collection",
-    category: "pedicure-manicure",
-    stockMovements: [
-      {
-        date: new Date("2023-07-01").toISOString(),
-        stockedIn: 20,
-        stockedOut: 0,
-        remarks: "Initial stock",
-        totalStock: 20,
-        balance: 20,
-        sign: "Admin"
-      }
-    ],
-    lastUpdated: new Date().toISOString()
-  }
-];
+// Generate mock stock products from the categories
+const mockStockProducts = [];
+
+// Create a stock product for each product in each category
+STOCK_CATEGORIES.forEach(category => {
+  category.products.forEach(productName => {
+    mockStockProducts.push({
+      name: productName,
+      category: category.id,
+      stockMovements: [
+        {
+          date: new Date().toISOString(),
+          stockedIn: 10, // Default initial stock
+          stockedOut: 0,
+          remarks: "Initial stock",
+          totalStock: 10,
+          balance: 10,
+          sign: "Admin"
+        }
+      ],
+      lastUpdated: new Date().toISOString()
+    });
+  });
+});
 
 const MockDataPage = () => {
   const router = useRouter();
@@ -168,9 +131,11 @@ const MockDataPage = () => {
     try {
       setIsLoading(true);
       setAddedCount(0);
+      let successCount = 0;
 
       // Add each mock stock product to Appwrite
-      for (const product of mockStockProducts) {
+      for (let i = 0; i < mockStockProducts.length; i++) {
+        const product = mockStockProducts[i];
         try {
           // Generate a unique ID
           const documentId = ID.unique();
@@ -193,19 +158,57 @@ const MockDataPage = () => {
             }
           );
 
-          // Increment the counter
-          setAddedCount(prev => prev + 1);
+          // Increment the counters
+          successCount++;
+          setAddedCount(successCount);
 
           // Add a small delay to avoid rate limiting
-          await new Promise(resolve => setTimeout(resolve, 300));
+          await new Promise(resolve => setTimeout(resolve, 200));
 
         } catch (error: any) {
           console.error(`Error adding mock product ${product.name}:`, error);
-          toast.error(`Failed to add ${product.name}: ${error.message || 'Unknown error'}`);
+
+          // Only show toast for first few errors to avoid flooding
+          if (successCount < 5) {
+            toast.error(`Failed to add ${product.name}: ${error.message || 'Unknown error'}`);
+          }
+
+          // Try again with a longer delay
+          try {
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Generate a unique ID
+            const documentId = ID.unique();
+
+            // Convert each stock movement to a string
+            const stringifiedStockMovements = product.stockMovements.map(movement =>
+              JSON.stringify(movement)
+            );
+
+            // Create the document with stringified stock movements
+            await databases.createDocument(
+              appwriteConfig.databaseId,
+              appwriteConfig.stockProductsCollectionId,
+              documentId,
+              {
+                name: product.name,
+                category: product.category,
+                stockMovements: stringifiedStockMovements, // Array of strings
+                lastUpdated: product.lastUpdated
+              }
+            );
+
+            // Increment the counters
+            successCount++;
+            setAddedCount(successCount);
+
+          } catch (retryError) {
+            console.error(`Failed retry for ${product.name}:`, retryError);
+          }
         }
       }
 
-      toast.success(`Added ${addedCount} mock stock products successfully!`);
+      toast.success(`Added ${successCount} mock stock products successfully!`);
     } catch (error: any) {
       console.error('Error adding mock data:', error);
       toast.error(`Failed to add mock data: ${error.message || 'Unknown error'}`);
@@ -218,20 +221,10 @@ const MockDataPage = () => {
     <div className="p-4 max-w-7xl mt-28 sm:mt-32 md:mt-40 mx-auto pt-8 sm:pt-10">
       {/* Back button with animation - improved for mobile */}
       <div className="mb-6">
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            // Create a direct navigation function
-            const navigateDirectly = () => {
-              window.location.href = '/admin/stock-manager';
-            };
-
-            // Navigate immediately
-            navigateDirectly();
-          }}
+        <a
+          href="/admin/stock-manager"
           className="inline-flex items-center px-4 py-3 rounded-lg text-gray-700 hover:text-black hover:bg-gray-100 active:bg-gray-200 transition-all duration-200 touch-manipulation"
+          style={{ WebkitTapHighlightColor: 'transparent' }}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -248,7 +241,7 @@ const MockDataPage = () => {
             />
           </svg>
           Back to Stock Manager
-        </button>
+        </a>
       </div>
 
       <div className="mb-6">
@@ -263,33 +256,35 @@ const MockDataPage = () => {
 
       <div className="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Available Mock Products</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Available Categories and Products</h2>
           <p className="text-gray-700 mt-1">
-            The following mock products will be added to your database:
+            The following {mockStockProducts.length} products will be added to your database:
           </p>
 
-          <ul className="mt-4 space-y-2">
-            {mockStockProducts.map((product, index) => {
-              const category = STOCK_CATEGORIES.find(cat => cat.id === product.category);
-              return (
-                <li key={index} className="flex items-center">
-                  <span className="w-6 h-6 flex items-center justify-center bg-blue-100 text-blue-800 rounded-full mr-2 text-xs font-medium">
-                    {index + 1}
+          <div className="mt-4 space-y-4">
+            {STOCK_CATEGORIES.map((category, catIndex) => (
+              <div key={catIndex} className="border border-gray-200 rounded-lg p-4">
+                <div className="flex items-center mb-2">
+                  <span className="text-xl mr-2">{category.icon}</span>
+                  <h3 className="text-lg font-semibold text-gray-900">{category.name}</h3>
+                  <span className="ml-2 text-sm bg-gray-100 px-2 py-1 rounded-full text-gray-700">
+                    {category.products.length} products
                   </span>
-                  <span className="font-medium text-gray-900">{product.name}</span>
-                  {category && (
-                    <span className="ml-2 flex items-center text-sm">
-                      <span className="mr-1">{category.icon}</span>
-                      <span className="text-gray-700">{category.name}</span>
-                    </span>
-                  )}
-                  <span className="ml-2 text-sm text-gray-600">
-                    ({product.stockMovements.length} stock movements)
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
+                </div>
+
+                <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                  {category.products.map((product, prodIndex) => (
+                    <li key={prodIndex} className="flex items-center bg-white p-2 rounded border border-gray-100">
+                      <span className="w-5 h-5 flex items-center justify-center bg-blue-100 text-blue-800 rounded-full mr-2 text-xs font-medium">
+                        {prodIndex + 1}
+                      </span>
+                      <span className="text-gray-800 text-sm">{product}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="flex justify-center">
@@ -305,11 +300,11 @@ const MockDataPage = () => {
               <div className="flex items-center">
                 <SpinningLoader size="small" className="mr-2" />
                 <span>
-                  Adding Mock Data ({addedCount}/{totalCount})...
+                  Adding Products ({addedCount}/{totalCount})...
                 </span>
               </div>
             ) : (
-              'Add Mock Stock Products'
+              `Add All ${mockStockProducts.length} Stock Products`
             )}
           </motion.button>
         </div>

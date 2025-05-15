@@ -6,10 +6,34 @@ export interface Category {
 }
 
 export const CATEGORIES: Category[] = [
-  { id: "Spa Equipment", name: "Spa Equipment", icon: "🌟", imageSrc: "/icons/spa-bed.png" },
-  { id: "Salon Chairs", name: "Salon Chairs", icon: "🌊", imageSrc: "/icons/barber-chair.png" },
-  { id: "Massage & Wellness", name: "Massage & Wellness", icon: "💫", imageSrc: "/icons/hot-stone.png" },
-  { id: "Nail Care", name: "Nail Care", icon: "✨", imageSrc: "/icons/nails.png" },
-  { id: "Hair Tools", name: "Hair Tools", icon: "👑", imageSrc: "/icons/hairdryer.png" },
-  { id: "Body Sliming", name: "Body Sliming", icon: "💁‍♀️", imageSrc: "/icons/slim.png" }
+  {
+    id: "spa-salon-furniture",
+    name: "Spa and salon furnitures",
+    icon: "🪑",
+    imageSrc: "/icons/spa-bed.png",
+  },
+  {
+    id: "beauty-equipment",
+    name: "Beauty equipment",
+    icon: "⚙️",
+    imageSrc: "/icons/hairdryer.png",
+  },
+  {
+    id: "facial-waxing",
+    name: "Facials and waxing",
+    icon: "🧖‍♀️",
+    imageSrc: "/icons/hot-stone.png",
+  },
+  {
+    id: "skincare-accessories",
+    name: "Skincare products & accessories",
+    icon: "🧴",
+    imageSrc: "/icons/slim.png",
+  },
+  {
+    id: "pedicure-manicure",
+    name: "Pedicure and manicure",
+    icon: "💅",
+    imageSrc: "/icons/nails.png",
+  },
 ];

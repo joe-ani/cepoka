@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 
 interface BestSellerProduct {
@@ -143,31 +143,7 @@ const BestSellers = () => {
 
             <div className="container mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-12 md:py-20">
                 <div className="relative">
-                    {/* Navigation Buttons */}
-                    <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 flex justify-between z-10 px-4">
-                        <motion.button
-                            onClick={() => {
-                                pauseAutoRotation();
-                                paginate(-1);
-                            }}
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            className="p-2 rounded-full bg-white/80 hover:bg-white shadow-lg transition-all"
-                        >
-                            <ChevronLeft className="w-6 h-6" />
-                        </motion.button>
-                        <motion.button
-                            onClick={() => {
-                                pauseAutoRotation();
-                                paginate(1);
-                            }}
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            className="p-2 rounded-full bg-white/80 hover:bg-white shadow-lg transition-all"
-                        >
-                            <ChevronRight className="w-6 h-6" />
-                        </motion.button>
-                    </div>
+                    {/* Navigation Buttons removed as requested */}
 
                     {/* Carousel Content */}
                     <div className="relative min-h-[400px] md:min-h-[500px]">
@@ -275,7 +251,7 @@ const BestSellers = () => {
                                              flex items-center w-44 sm:w-40 md:w-44 gap-2"
                                     >
                                         Discover More
-                                        <ArrowRight size={16} strokeWidth={2.5} className="text-white" />
+                                        <ArrowRight size={16} />
                                     </motion.button>
                                 </div>
                             </motion.div>

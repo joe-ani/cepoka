@@ -20,23 +20,28 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "/favicon.svg",
-        sizes: "any",
-        type: "image/svg+xml",
+        url: "/logo.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        url: "/logo.png",
+        sizes: "512x512",
+        type: "image/png",
       }
     ],
     apple: [
       {
-        url: "/favicon.svg",
+        url: "/apple-icon.png",
         sizes: "180x180",
-        type: "image/svg+xml",
+        type: "image/png",
       }
     ],
     shortcut: [
       {
-        url: "/favicon.svg",
+        url: "/logo.png",
         sizes: "192x192",
-        type: "image/svg+xml",
+        type: "image/png",
       }
     ],
   },
@@ -47,7 +52,7 @@ export const metadata: Metadata = {
     title: "Cepoka Beauty Hub",
     startupImage: [
       {
-        url: "/favicon.svg",
+        url: "/logo.png",
         media: "(device-width: 768px) and (device-height: 1024px)",
       },
     ],

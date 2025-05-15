@@ -161,7 +161,7 @@ const LatestProduct: React.FC = () => {
 
       <motion.div
         ref={containerRef}
-        className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 w-full px-4 md:px-0"
+        className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full px-4 md:px-8 mx-auto"
         variants={containerVariants}
         initial="hidden"
         animate={containerInView ? "visible" : "hidden"}
@@ -185,20 +185,27 @@ const LatestProduct: React.FC = () => {
             }}
           >
             <motion.div
-              className="product-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300"
+              className="latest-product-card w-[150px] sm:w-[180px] h-[200px] sm:h-[250px] flex flex-col items-center mx-auto
+              relative rounded-[15px] sm:rounded-[25px] cursor-pointer transition-colors duration-200 overflow-hidden"
               variants={cardVariants}
               whileHover={{ y: -5 }}
-              whileTap={{ y: 0 }}
+              whileTap={{ scale: 0.98 }}
+              style={{
+                backfaceVisibility: "hidden",
+                WebkitFontSmoothing: "subpixel-antialiased"
+              }}
             >
-              {/* Product Image Container */}
-              <div className="relative w-full h-40 md:h-48">
+              {/* Product Image */}
+              <div className="w-full h-full relative">
                 {product.imageUrls && product.imageUrls.length > 0 ? (
                   <Image
                     className="object-cover"
                     fill
-                    alt={product.name}
+                    alt={product.name || "Product image"}
                     src={product.imageUrls[0]}
-                    priority
+                    priority={true}
+                    loader={({ src }) => src}
+                    unoptimized={true}
                     sizes="(max-width: 640px) 150px, 200px"
                   />
                 ) : (
@@ -206,33 +213,38 @@ const LatestProduct: React.FC = () => {
                     <p className="text-gray-400">No Image</p>
                   </div>
                 )}
-
-                {/* Heart icon */}
-                <div
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    toggleLike(product.$id);
-                  }}
-                  className="absolute right-2 top-2 z-10 p-1 bg-white/30 backdrop-blur-sm rounded-full cursor-pointer hover:bg-white/50 transition-all"
-                >
-                  <Heart
-                    className="stroke-none"
-                    fill={likedProducts[product.$id] ? "#ff3b5c" : "#ffffff"}
-                    size={20}
-                    strokeWidth={1}
-                  />
-                </div>
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
               </div>
 
-              {/* Product Info */}
-              <div className="p-3 md:p-4">
-                <h3 className="font-semibold text-sm md:text-base text-gray-800 truncate">
+              {/* Heart icon */}
+              <div
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleLike(product.$id);
+                }}
+                className="absolute right-2 sm:right-4 top-2 sm:top-4 z-10 p-1 sm:p-2 cursor-pointer hover:scale-110 transition-transform"
+              >
+                <Heart
+                  className="stroke-none"
+                  fill={likedProducts[product.$id] ? "#ff3b5c" : "#ffffff50"}
+                  size={24}
+                  strokeWidth={1}
+                />
+              </div>
+
+              {/* Price Card */}
+              <div className="price-card w-[90%] h-[70px] sm:h-[80px] rounded-[10px] sm:rounded-[15px]
+                absolute bottom-3 bg-gradient-to-r from-black/80 to-black/40 backdrop-blur-[2px]
+                flex flex-col justify-center gap-1 sm:gap-2">
+                <div className="px-2 sm:px-3 text-white font-semibold text-xs sm:text-sm truncate">
                   {product.name}
-                </h3>
-                <p className="text-sm font-medium text-gray-900 mt-1">
-                  ₦{product.price}
-                </p>
+                </div>
+                <div className="w-full h-[1px] bg-[#dddd]"></div>
+                <div className="flex items-center justify-between px-2 sm:px-3">
+                  <p className="text-white font-medium text-xs">₦{product.price}</p>
+                </div>
               </div>
             </motion.div>
           </Link>

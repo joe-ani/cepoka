@@ -354,20 +354,10 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
         <div className="bg-white p-6 rounded-lg shadow-sm border text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Stock Product Not Found</h2>
           <p className="text-gray-700 mb-4">The stock product you're looking for doesn't exist or has been deleted.</p>
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-
-              // Create a direct navigation function
-              const navigateDirectly = () => {
-                window.location.href = '/admin/stock-manager';
-              };
-
-              // Navigate immediately
-              navigateDirectly();
-            }}
+          <a
+            href="/admin/stock-manager"
             className="inline-flex items-center text-blue-600 hover:text-blue-800 px-4 py-2 rounded-lg active:bg-blue-50 transition-all duration-200 touch-manipulation"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -384,7 +374,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
               />
             </svg>
             Back to Stock Manager
-          </button>
+          </a>
         </div>
       </div>
     );
@@ -396,20 +386,10 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
 
       {/* Back button with animation - improved for mobile */}
       <div className="mb-6">
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            // Create a direct navigation function
-            const navigateDirectly = () => {
-              window.location.href = '/admin/stock-manager';
-            };
-
-            // Navigate immediately
-            navigateDirectly();
-          }}
+        <a
+          href="/admin/stock-manager"
           className="inline-flex items-center px-4 py-3 rounded-lg text-gray-700 hover:text-black hover:bg-gray-100 active:bg-gray-200 transition-all duration-200 touch-manipulation"
+          style={{ WebkitTapHighlightColor: 'transparent' }}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -426,7 +406,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
             />
           </svg>
           Back to Stock Manager
-        </button>
+        </a>
       </div>
 
       {/* Header */}

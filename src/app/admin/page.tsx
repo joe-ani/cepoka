@@ -13,6 +13,7 @@ import { useSwipeable } from 'react-swipeable';
 import Link from 'next/link';
 import Image from 'next/image';
 import LoadingScreen from '../Components/LoadingScreen';
+import SpinningLoader from '../Components/SpinningLoader';
 import { CATEGORIES } from '@/src/data/categories'
 import { fetchCategories, addCategory, deleteCategory, Category } from '@/src/services/categoryService';
 import { initializeCategories } from '@/src/utils/uploadInitialCategories';
@@ -59,6 +60,8 @@ const AdminPage = () => {
     const [isLoading, setIsLoading] = useState(false);              // Loading state
     const [isNavigating, setIsNavigating] = useState(false);        // Navigation loading state
     const [isStockNavigating, setIsStockNavigating] = useState(false);        // Navigation loading state
+    const [debugInfo, setDebugInfo] = useState<string[]>([]);                // Debug information for mobile troubleshooting
+    const [showDebug, setShowDebug] = useState(false);                       // Toggle debug panel visibility
     const [editingProduct, setEditingProduct] = useState<Product | null>(null); // Currently editing product
     const [showImageModal, setShowImageModal] = useState<string | null>(null);  // Image modal visibility
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');        // Sort order for products
@@ -77,6 +80,11 @@ const AdminPage = () => {
     const [showCategoryDeleteModal, setShowCategoryDeleteModal] = useState<string | null>(null); // Category delete confirmation modal
     const [isDragging, setIsDragging] = useState(false); // State for drag and drop functionality
     const fileInputRef = useRef<HTMLInputElement>(null); // Reference to file input element
+    const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false); // Bulk delete confirmation modal
+    const [isBulkDeleting, setIsBulkDeleting] = useState(false); // Bulk delete loading state
+    const [bulkDeleteProgress, setBulkDeleteProgress] = useState({ current: 0, total: 0 }); // Bulk delete progress
+    const [selectedProducts, setSelectedProducts] = useState<string[]>([]); // Selected products for multi-delete
+    const [isMultiSelectMode, setIsMultiSelectMode] = useState(false); // Multi-select mode toggle
 
     // Available icons for categories
     const AVAILABLE_ICONS = ['✨', '🌟', '💫', '👑', '💁‍♀️', '🛋️', '💆‍♀️', '💅', '💇‍♀️', '🪑', '🛁', '🧴'];
@@ -458,6 +466,84 @@ const AdminPage = () => {
         }
     };
 
+    // Bulk delete all products
+    const bulkDeleteProducts = async () => {
+        try {
+            setIsBulkDeleting(true);
+            const totalProducts = products.length;
+            setBulkDeleteProgress({ current: 0, total: totalProducts });
+
+            // Delete products one by one
+            for (let i = 0; i < totalProducts; i++) {
+                const product = products[i];
+                setBulkDeleteProgress({ current: i + 1, total: totalProducts });
+
+                await databases.deleteDocument(
+                    appwriteConfig.databaseId,
+                    appwriteConfig.productsCollectionId,
+                    product.$id
+                );
+            }
+
+            toast.success('All products deleted successfully');
+            await fetchProducts(); // Refresh the products list
+        } catch (error) {
+            console.error('Error bulk deleting products:', error);
+            toast.error('Failed to delete all products');
+        } finally {
+            setIsBulkDeleting(false);
+            setShowBulkDeleteModal(false);
+        }
+    };
+
+    // Delete selected products
+    const deleteSelectedProducts = async () => {
+        try {
+            if (selectedProducts.length === 0) {
+                toast.error('No products selected');
+                return;
+            }
+
+            setIsBulkDeleting(true);
+            const totalSelected = selectedProducts.length;
+            setBulkDeleteProgress({ current: 0, total: totalSelected });
+
+            // Delete selected products one by one
+            for (let i = 0; i < totalSelected; i++) {
+                const productId = selectedProducts[i];
+                setBulkDeleteProgress({ current: i + 1, total: totalSelected });
+
+                await databases.deleteDocument(
+                    appwriteConfig.databaseId,
+                    appwriteConfig.productsCollectionId,
+                    productId
+                );
+            }
+
+            toast.success(`${totalSelected} product${totalSelected > 1 ? 's' : ''} deleted successfully`);
+            setSelectedProducts([]); // Clear selection
+            setIsMultiSelectMode(false); // Exit multi-select mode
+            await fetchProducts(); // Refresh the products list
+        } catch (error) {
+            console.error('Error deleting selected products:', error);
+            toast.error('Failed to delete selected products');
+        } finally {
+            setIsBulkDeleting(false);
+            setShowBulkDeleteModal(false);
+        }
+    };
+
+    // Toggle product selection
+    const toggleProductSelection = (productId: string) => {
+        setSelectedProducts(prev => {
+            if (prev.includes(productId)) {
+                return prev.filter(id => id !== productId);
+            } else {
+                return [...prev, productId];
+            }
+        });
+    };
+
     if (!isAuthorized) {
         return null; // or return a loading state
     }
@@ -511,7 +597,9 @@ const AdminPage = () => {
                     <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 text-center sm:text-left tracking-tight">
                         Product Management
                     </h1>
-                    <div className="flex flex-col sm:flex-row justify-center sm:justify-end gap-2 mt-4 sm:mt-0">
+                    {/* Mobile-optimized navigation buttons */}
+                    <div className="flex flex-col sm:flex-row justify-center sm:justify-end gap-3 mt-4 sm:mt-0">
+                        {/* Initialize Categories Button */}
                         {showInitializeButton && (
                             <button
                                 onClick={async () => {
@@ -534,7 +622,7 @@ const AdminPage = () => {
                                         setIsLoading(false);
                                     }
                                 }}
-                                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto mb-2 sm:mb-0"
+                                className="bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto mb-2 sm:mb-0"
                                 disabled={isLoading}
                             >
                                 {isLoading ? (
@@ -549,84 +637,182 @@ const AdminPage = () => {
                                 )}
                             </button>
                         )}
-                        <button
-                            onClick={(e) => {
-                                e.preventDefault(); // Prevent default behavior
-                                e.stopPropagation(); // Stop event propagation
 
-                                // Set loading state
-                                setIsNavigating(true);
-
-                                // Show loading screen
-                                document.body.style.overflow = 'hidden'; // Prevent scrolling
-
-                                // Navigate directly using window.location for better mobile compatibility
-                                const navigateDirectly = () => {
-                                    window.location.href = '/admin/receipt-sender';
-                                };
-
-                                // Use setTimeout to ensure the loading screen is visible
-                                setTimeout(navigateDirectly, 300);
-                            }}
-                            className="bg-[#333333] text-white px-4 py-3 rounded-lg hover:bg-gray-800 active:bg-gray-900 transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto touch-manipulation"
-                            disabled={isNavigating}
-                        >
-                            {isNavigating ? (
-                                <span className="flex items-center gap-2">
-                                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Loading...
-                                </span>
-                            ) : (
-                                <>
+                        {/* Receipt Generator Button - Direct Link */}
+                        <div className="relative w-full sm:w-auto">
+                            <a
+                                href="/admin/receipt-sender"
+                                className="w-full text-center px-5 py-3 rounded-lg transition-all duration-200
+                                    flex items-center justify-center gap-2
+                                    bg-[#333333] hover:bg-gray-800 active:bg-gray-700
+                                    text-white font-medium"
+                                style={{
+                                    WebkitTapHighlightColor: 'transparent',
+                                    touchAction: 'manipulation',
+                                    userSelect: 'none'
+                                }}
+                            >
+                                <div className="flex items-center justify-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
-                                    Receipt Generator
-                                </>
-                            )}
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.preventDefault(); // Prevent default behavior
-                                e.stopPropagation(); // Stop event propagation
+                                    <span>Receipt Generator</span>
+                                </div>
+                            </a>
+                        </div>
 
-                                // Set loading state
-                                setIsStockNavigating(true);
-
-                                // Show loading screen
-                                document.body.style.overflow = 'hidden'; // Prevent scrolling
-
-                                // Navigate directly using window.location for better mobile compatibility
-                                const navigateDirectly = () => {
-                                    window.location.href = '/admin/stock-manager';
-                                };
-
-                                // Use setTimeout to ensure the loading screen is visible
-                                setTimeout(navigateDirectly, 300);
-                            }}
-                            className="bg-[#333333] text-white px-4 py-3 rounded-lg hover:bg-gray-800 active:bg-gray-900 transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto touch-manipulation"
-                            disabled={isStockNavigating}
-                        >
-                            {isStockNavigating ? (
-                                <span className="flex items-center gap-2">
-                                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Loading...
-                                </span>
-                            ) : (
-                                <>
+                        {/* Stock Manager Button - Direct Link */}
+                        <div className="relative w-full sm:w-auto">
+                            <a
+                                href="/admin/stock-manager"
+                                className="w-full text-center px-5 py-3 rounded-lg transition-all duration-200
+                                    flex items-center justify-center gap-2
+                                    bg-[#333333] hover:bg-gray-800 active:bg-gray-700
+                                    text-white font-medium"
+                                style={{
+                                    WebkitTapHighlightColor: 'transparent',
+                                    touchAction: 'manipulation',
+                                    userSelect: 'none'
+                                }}
+                            >
+                                <div className="flex items-center justify-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                     </svg>
+                                    <span>Stock Manager</span>
+                                </div>
+                            </a>
+                        </div>
+
+                        {/* Product Uploader Button */}
+                        <div className="relative w-full sm:w-auto">
+                            <a
+                                href="/admin/product-uploader"
+                                className="w-full text-center px-5 py-3 rounded-lg transition-all duration-200
+                                    flex items-center justify-center gap-2
+                                    bg-gradient-to-r from-blue-600 to-pink-500 hover:shadow-md
+                                    text-white font-medium"
+                                style={{
+                                    WebkitTapHighlightColor: 'transparent',
+                                    touchAction: 'manipulation',
+                                    userSelect: 'none'
+                                }}
+                            >
+                                <div className="flex items-center justify-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                    </svg>
+                                    <span>Bulk Upload Products</span>
+                                </div>
+                            </a>
+                        </div>
+
+
+
+                        {/* Mobile-specific navigation buttons (visible only on small screens) */}
+                        <div className="block sm:hidden mt-4 border-t border-gray-200 pt-4">
+                            <p className="text-sm text-gray-500 mb-3 text-center">If buttons above don't work, try these direct links:</p>
+                            <div className="grid grid-cols-2 gap-3 mb-3">
+                                <a
+                                    href="/admin/receipt-sender"
+                                    id="direct-receipt-link"
+                                    className="bg-gray-200 text-gray-800 px-4 py-3 rounded-lg text-center font-medium"
+                                    onClick={() => {
+                                        // Add debug info
+                                        setDebugInfo(prev => [...prev, `Direct receipt link clicked at ${new Date().toISOString()}`]);
+                                    }}
+                                >
+                                    Receipt Generator
+                                </a>
+                                <a
+                                    href="/admin/stock-manager"
+                                    id="direct-stock-link"
+                                    className="bg-gray-200 text-gray-800 px-4 py-3 rounded-lg text-center font-medium"
+                                    onClick={() => {
+                                        // Add debug info
+                                        setDebugInfo(prev => [...prev, `Direct stock link clicked at ${new Date().toISOString()}`]);
+                                    }}
+                                >
                                     Stock Manager
-                                </>
+                                </a>
+                            </div>
+                            <div className="mb-3">
+                                <a
+                                    href="/admin/product-uploader"
+                                    id="direct-product-uploader-link"
+                                    className="block w-full bg-gradient-to-r from-blue-600 to-pink-500 text-white px-4 py-3 rounded-lg text-center font-medium"
+                                >
+                                    Bulk Upload Products
+                                </a>
+                            </div>
+
+
+                            {/* Debug toggle button */}
+                            <div className="mt-4 text-center">
+                                <button
+                                    onClick={() => setShowDebug(!showDebug)}
+                                    className="text-xs text-blue-600 underline"
+                                >
+                                    {showDebug ? 'Hide Debug Info' : 'Show Debug Info'}
+                                </button>
+                            </div>
+
+                            {/* Debug panel */}
+                            {showDebug && (
+                                <div className="mt-2 p-3 bg-gray-100 rounded-lg text-xs font-mono overflow-auto max-h-40">
+                                    <div className="font-bold mb-1">Debug Information:</div>
+                                    <div>Screen Width: {typeof window !== 'undefined' ? window.innerWidth : 'N/A'}px</div>
+                                    <div>User Agent: {typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'}</div>
+                                    <div className="mt-2 font-bold">Event Log:</div>
+                                    {debugInfo.length === 0 ? (
+                                        <div className="text-gray-500">No events logged yet</div>
+                                    ) : (
+                                        <ul className="list-disc pl-4">
+                                            {debugInfo.map((info, index) => (
+                                                <li key={index}>{info}</li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                    <div className="mt-2">
+                                        <button
+                                            onClick={() => {
+                                                // Test navigation
+                                                setDebugInfo(prev => [...prev, `Test navigation button clicked at ${new Date().toISOString()}`]);
+
+                                                // Try different navigation methods
+                                                try {
+                                                    const testMethod = Math.floor(Math.random() * 3);
+                                                    if (testMethod === 0) {
+                                                        setDebugInfo(prev => [...prev, 'Testing window.location.href method']);
+                                                        window.location.href = '/admin/receipt-sender';
+                                                    } else if (testMethod === 1) {
+                                                        setDebugInfo(prev => [...prev, 'Testing window.open method']);
+                                                        window.open('/admin/receipt-sender', '_self');
+                                                    } else {
+                                                        setDebugInfo(prev => [...prev, 'Testing document.location method']);
+                                                        document.location.href = '/admin/receipt-sender';
+                                                    }
+                                                } catch (error) {
+                                                    setDebugInfo(prev => [...prev, `Navigation error: ${error}`]);
+                                                }
+                                            }}
+                                            className="bg-blue-500 text-white px-2 py-1 rounded text-xs"
+                                        >
+                                            Test Navigation
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                // Clear debug info
+                                                setDebugInfo([]);
+                                            }}
+                                            className="bg-gray-500 text-white px-2 py-1 rounded text-xs ml-2"
+                                        >
+                                            Clear Log
+                                        </button>
+                                    </div>
+                                </div>
                             )}
-                        </button>
+                        </div>
                     </div>
                 </div>
 
@@ -1010,26 +1196,95 @@ const AdminPage = () => {
                             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Products List</h2>
                             <p className="text-gray-600">
                                 Total Products: <span className="font-semibold text-[#333333]">{products.length}</span>
+                                {isMultiSelectMode && (
+                                    <span className="ml-2 text-blue-600">
+                                        Selected: <span className="font-semibold">{selectedProducts.length}</span>
+                                    </span>
+                                )}
                             </p>
                         </div>
-                        <div className="flex items-center gap-2 sm:gap-4">
-                            <label className="text-sm text-gray-600 whitespace-nowrap">Sort by:</label>
-                            <select
-                                className="w-full sm:w-auto px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-all duration-200"
-                                onChange={(e) => {
-                                    const order = e.target.value === 'newest' ? 'desc' : 'asc';
-                                    setSortOrder(order);
-                                    fetchProducts();
-                                }}
-                            >
-                                <option value="newest">Newest First</option>
-                                <option value="oldest">Oldest First</option>
-                            </select>
+                        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 sm:gap-4">
+                            {/* Multi-select mode toggle */}
+                            {products.length > 0 && (
+                                <button
+                                    onClick={() => {
+                                        setIsMultiSelectMode(!isMultiSelectMode);
+                                        if (isMultiSelectMode) {
+                                            setSelectedProducts([]);
+                                        }
+                                    }}
+                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1
+                                        ${isMultiSelectMode
+                                            ? 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        }`}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                    {isMultiSelectMode ? 'Exit Selection' : 'Select Multiple'}
+                                </button>
+                            )}
+
+                            {/* Delete Selected Button */}
+                            {isMultiSelectMode && selectedProducts.length > 0 && (
+                                <button
+                                    onClick={() => setShowBulkDeleteModal(true)}
+                                    className="px-3 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition-all duration-200 flex items-center gap-1"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Delete Selected ({selectedProducts.length})
+                                </button>
+                            )}
+
+                            {/* Delete All Products Button */}
+                            {products.length > 0 && !isMultiSelectMode && (
+                                <button
+                                    onClick={() => {
+                                        setSelectedProducts([]); // Clear any previous selection
+                                        setShowBulkDeleteModal(true);
+                                    }}
+                                    className="px-3 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition-all duration-200 flex items-center gap-1"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Delete All
+                                </button>
+                            )}
+
+                            <div className="flex items-center gap-2 sm:gap-4">
+                                <label className="text-sm text-gray-600 whitespace-nowrap">Sort by:</label>
+                                <select
+                                    className="w-full sm:w-auto px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-all duration-200"
+                                    onChange={(e) => {
+                                        const order = e.target.value === 'newest' ? 'desc' : 'asc';
+                                        setSortOrder(order);
+                                        fetchProducts();
+                                    }}
+                                >
+                                    <option value="newest">Newest First</option>
+                                    <option value="oldest">Oldest First</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                         {products.map((product) => (
-                            <div key={product.$id} className="bg-white rounded-lg sm:rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100">
+                            <div
+                                key={product.$id}
+                                className={`bg-white rounded-lg sm:rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border ${isMultiSelectMode && selectedProducts.includes(product.$id)
+                                    ? 'border-blue-500 ring-2 ring-blue-200'
+                                    : 'border-gray-100'
+                                    }`}
+                                onClick={() => {
+                                    if (isMultiSelectMode) {
+                                        toggleProductSelection(product.$id);
+                                    }
+                                }}
+                            >
                                 {product.imageUrls && product.imageUrls.length > 0 && (
                                     <div className="relative h-48 sm:h-64 overflow-hidden">
                                         {product.imageUrls.length > 0 && (
@@ -1053,7 +1308,27 @@ const AdminPage = () => {
                                     </div>
                                 )}
                                 <div className="p-4 sm:p-6">
-                                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">{product.name}</h3>
+                                    <div className="flex justify-between items-start">
+                                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">{product.name}</h3>
+                                        {isMultiSelectMode && (
+                                            <div
+                                                className={`w-5 h-5 rounded border flex items-center justify-center ${selectedProducts.includes(product.$id)
+                                                    ? 'bg-blue-500 border-blue-500'
+                                                    : 'border-gray-300'
+                                                    }`}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleProductSelection(product.$id);
+                                                }}
+                                            >
+                                                {selectedProducts.includes(product.$id) && (
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
                                     <p className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">₦{product.price}</p>
                                     <p className="text-gray-600 mb-4 sm:mb-6 line-clamp-2">{product.description}</p>
                                     <div className="flex gap-2 sm:gap-3">
@@ -1205,6 +1480,74 @@ const AdminPage = () => {
                                     Delete
                                 </button>
                             </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Bulk Delete Products Confirmation Modal */}
+            <AnimatePresence>
+                {showBulkDeleteModal && (
+                    <motion.div
+                        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => !isBulkDeleting && setShowBulkDeleteModal(false)}
+                    >
+                        <motion.div
+                            className="bg-white p-4 sm:p-6 rounded-lg shadow-xl w-full max-w-md"
+                            initial={{ scale: 0.8 }}
+                            animate={{ scale: 1 }}
+                            exit={{ scale: 0.8 }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {isBulkDeleting ? (
+                                <div className="flex flex-col items-center py-4">
+                                    <SpinningLoader size="large" />
+                                    <p className="mt-4 text-gray-800 font-medium">
+                                        Deleting products... ({bulkDeleteProgress.current} of {bulkDeleteProgress.total})
+                                    </p>
+                                    <div className="w-full mt-4 bg-gray-200 rounded-full h-2.5">
+                                        <div
+                                            className="bg-gradient-to-r from-blue-500 to-pink-500 h-2.5 rounded-full"
+                                            style={{ width: `${(bulkDeleteProgress.current / bulkDeleteProgress.total) * 100}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <h2 className="text-lg font-bold text-gray-900 mb-4">
+                                        {selectedProducts.length > 0 ? 'Delete Selected Products' : 'Delete All Products'}
+                                    </h2>
+                                    <p className="text-gray-600 mb-2">
+                                        {selectedProducts.length > 0
+                                            ? 'Are you sure you want to delete the selected products?'
+                                            : 'Are you sure you want to delete all products?'
+                                        }
+                                    </p>
+                                    <p className="text-red-600 text-sm mb-6">
+                                        This will delete <span className="font-bold">
+                                            {selectedProducts.length > 0 ? selectedProducts.length : products.length}
+                                            product{(selectedProducts.length > 0 ? selectedProducts.length : products.length) !== 1 ? 's' : ''}
+                                        </span> and cannot be undone.
+                                    </p>
+                                    <div className="flex justify-end gap-4">
+                                        <button
+                                            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-all duration-200"
+                                            onClick={() => setShowBulkDeleteModal(false)}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-all duration-200"
+                                            onClick={selectedProducts.length > 0 ? deleteSelectedProducts : bulkDeleteProducts}
+                                        >
+                                            {selectedProducts.length > 0 ? 'Delete Selected' : 'Delete All'}
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </motion.div>
                     </motion.div>
                 )}

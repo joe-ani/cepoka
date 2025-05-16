@@ -10,7 +10,6 @@ import SpinningLoader from '@/src/app/Components/SpinningLoader';
 import Script from 'next/script';
 import { format, parseISO } from 'date-fns';
 import { databases, appwriteConfig } from '@/src/lib/appwrite';
-import Head from 'next/head';
 
 // Interface for stock movement data
 interface StockMovement {

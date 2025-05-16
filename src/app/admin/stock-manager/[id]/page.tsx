@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -41,13 +41,12 @@ interface StockMovementFormData {
   sign: string;
 }
 
-// We'll use a type assertion in the function instead of declaring the global interface
-
-// Define the component as a proper Next.js page component
-export default function Page({ params }: { params: { id: string } }) {
-  // Access the ID directly from params
-  // Note: In future Next.js versions, this will need to be unwrapped with React.use()
-  const productId = params.id;
+// We'll use a different approach to get the ID from the URL
+// Define the component as a client component that gets params from useParams
+export default function StockProductPage() {
+  // Get the ID from the URL using useParams
+  const params = useParams();
+  const productId = params?.id as string;
 
   const router = useRouter();
   const [stockProduct, setStockProduct] = useState<StockProduct | null>(null);

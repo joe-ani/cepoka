@@ -98,8 +98,17 @@ const PRODUCT_CATEGORIES = [
   }
 ];
 
+// Define the product interface
+interface Product {
+  name: string;
+  price: string;
+  description: string;
+  category: string;
+  imageUrls: string[];
+}
+
 // Generate mock products from the categories
-const mockProducts = [];
+const mockProducts: Product[] = [];
 
 // Create a product for each product in each category
 PRODUCT_CATEGORIES.forEach(category => {
@@ -121,7 +130,7 @@ const ProductUploaderPage = () => {
   const [isNavigating, setIsNavigating] = useState(false);
 
   // Function to create a single product
-  const createProduct = async (product) => {
+  const createProduct = async (product: Product) => {
     try {
       // Generate a unique ID
       const documentId = ID.unique();
@@ -223,7 +232,10 @@ const ProductUploaderPage = () => {
       <div className="max-w-4xl mx-auto">
         {/* Back button */}
         <div className="mb-6">
-          <BackArrow href="/admin" text="Back to Admin" />
+          <Link href="/admin" className="inline-flex items-center text-gray-700 hover:text-black transition-all duration-200">
+            <BackArrow href="/admin" />
+            <span className="ml-2">Back to Admin</span>
+          </Link>
         </div>
 
         <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg">

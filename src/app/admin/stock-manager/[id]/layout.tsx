@@ -1,12 +1,13 @@
 import { Metadata } from 'next';
 
-interface LayoutProps {
+type LayoutProps = {
   children: React.ReactNode;
-}
+  params: {
+    id: string;
+  };
+};
 
-export default function StockProductLayout({
-  children,
-}: LayoutProps) {
+export default function StockProductLayout({ children }: LayoutProps) {
   return children;
 }
 

@@ -244,6 +244,7 @@ const StockProductDetailPage = ({ params }: { params: Promise<{ id: string }> | 
       // Convert movements to strings for Appwrite
       const updatedMovementStrings = updatedMovements.map(movement => {
         // Create a copy without the id field which is only used for UI
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { id, ...movementWithoutId } = movement;
         return JSON.stringify(movementWithoutId);
       });
@@ -424,11 +425,14 @@ const StockProductDetailPage = ({ params }: { params: Promise<{ id: string }> | 
 
         // Use unknown type and then cast to appropriate type
         // This avoids complex type definition issues with the html2pdf library
-        const html2pdf = window.html2pdf as unknown as () => {
-          set: (options: Record<string, unknown>) => any;
-          from: (element: HTMLElement) => any;
+        interface Html2PdfReturn {
+          set: (options: Record<string, unknown>) => Html2PdfReturn;
+          from: (element: HTMLElement) => Html2PdfReturn;
           save: () => Promise<void>;
-        };
+        }
+
+        // Use a more specific type without any
+        const html2pdf = window.html2pdf as unknown as () => Html2PdfReturn;
         const pdfInstance = html2pdf();
 
         // Configure and generate PDF with better print settings

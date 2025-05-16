@@ -24,7 +24,7 @@ const HomeCategories = () => {
     const beautyEquipmentIndex = displayCategories.findIndex(cat => cat.id === "beauty-equipment");
 
     // If Beauty Equipment is found, move it to the center (index 2)
-    let arrangedCategories = [...displayCategories];
+    const arrangedCategories = [...displayCategories];
     if (beautyEquipmentIndex !== -1 && beautyEquipmentIndex !== 2) {
         // Remove Beauty Equipment from its current position
         const beautyEquipment = arrangedCategories.splice(beautyEquipmentIndex, 1)[0];

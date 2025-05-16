@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
-import { databases, appwriteConfig } from '@/src/lib/appwrite';
-import { ID, Query } from 'appwrite';
 import SpinningLoader from '@/src/app/Components/SpinningLoader';
 import LoadingScreen from '@/src/app/Components/LoadingScreen';
 import BackArrow from '@/src/app/Components/BackArrow';
@@ -76,45 +74,45 @@ const CategoryResetPage = () => {
   const resetCategories = async () => {
     try {
       setIsLoading(true);
-      
+
       // Step 1: Delete all existing categories
       setProgress({ step: 'Deleting existing categories', details: '0/' + currentCategories.length });
-      
+
       for (let i = 0; i < currentCategories.length; i++) {
         const category = currentCategories[i];
-        setProgress({ 
-          step: 'Deleting existing categories', 
-          details: `${i+1}/${currentCategories.length}: ${category.name}` 
+        setProgress({
+          step: 'Deleting existing categories',
+          details: `${i+1}/${currentCategories.length}: ${category.name}`
         });
-        
+
         await deleteCategory(category.id);
       }
-      
+
       // Step 2: Create the 5 desired categories
       setProgress({ step: 'Creating new categories', details: '0/5' });
-      
+
       for (let i = 0; i < DESIRED_CATEGORIES.length; i++) {
         const category = DESIRED_CATEGORIES[i];
-        setProgress({ 
-          step: 'Creating new categories', 
-          details: `${i+1}/5: ${category.name}` 
+        setProgress({
+          step: 'Creating new categories',
+          details: `${i+1}/5: ${category.name}`
         });
-        
+
         await addCategory({
           name: category.name,
           icon: category.icon
         });
       }
-      
+
       // Success message
       toast.success('Categories have been reset successfully');
-      
+
       // Navigate back to admin page after a short delay
       setTimeout(() => {
         setIsNavigating(true);
         router.push('/admin');
       }, 2000);
-      
+
     } catch (error) {
       console.error('Error resetting categories:', error);
       toast.error('Failed to reset categories');

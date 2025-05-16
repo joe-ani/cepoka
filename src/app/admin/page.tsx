@@ -640,7 +640,7 @@ const AdminPage = () => {
 
                         {/* Receipt Generator Button - Direct Link */}
                         <div className="relative w-full sm:w-auto">
-                            <a
+                            <Link
                                 href="/admin/receipt-sender"
                                 className="w-full text-center px-5 py-3 rounded-lg transition-all duration-200
                                     flex items-center justify-center gap-2
@@ -658,12 +658,12 @@ const AdminPage = () => {
                                     </svg>
                                     <span>Receipt Generator</span>
                                 </div>
-                            </a>
+                            </Link>
                         </div>
 
                         {/* Stock Manager Button - Direct Link */}
                         <div className="relative w-full sm:w-auto">
-                            <a
+                            <Link
                                 href="/admin/stock-manager"
                                 className="w-full text-center px-5 py-3 rounded-lg transition-all duration-200
                                     flex items-center justify-center gap-2
@@ -681,12 +681,12 @@ const AdminPage = () => {
                                     </svg>
                                     <span>Stock Manager</span>
                                 </div>
-                            </a>
+                            </Link>
                         </div>
 
                         {/* Product Uploader Button */}
                         <div className="relative w-full sm:w-auto">
-                            <a
+                            <Link
                                 href="/admin/product-uploader"
                                 className="w-full text-center px-5 py-3 rounded-lg transition-all duration-200
                                     flex items-center justify-center gap-2
@@ -704,16 +704,16 @@ const AdminPage = () => {
                                     </svg>
                                     <span>Bulk Upload Products</span>
                                 </div>
-                            </a>
+                            </Link>
                         </div>
 
 
 
                         {/* Mobile-specific navigation buttons (visible only on small screens) */}
                         <div className="block sm:hidden mt-4 border-t border-gray-200 pt-4">
-                            <p className="text-sm text-gray-500 mb-3 text-center">If buttons above don't work, try these direct links:</p>
+                            <p className="text-sm text-gray-500 mb-3 text-center">If buttons above don&apos;t work, try these direct links:</p>
                             <div className="grid grid-cols-2 gap-3 mb-3">
-                                <a
+                                <Link
                                     href="/admin/receipt-sender"
                                     id="direct-receipt-link"
                                     className="bg-gray-200 text-gray-800 px-4 py-3 rounded-lg text-center font-medium"
@@ -723,8 +723,8 @@ const AdminPage = () => {
                                     }}
                                 >
                                     Receipt Generator
-                                </a>
-                                <a
+                                </Link>
+                                <Link
                                     href="/admin/stock-manager"
                                     id="direct-stock-link"
                                     className="bg-gray-200 text-gray-800 px-4 py-3 rounded-lg text-center font-medium"
@@ -734,16 +734,16 @@ const AdminPage = () => {
                                     }}
                                 >
                                     Stock Manager
-                                </a>
+                                </Link>
                             </div>
                             <div className="mb-3">
-                                <a
+                                <Link
                                     href="/admin/product-uploader"
                                     id="direct-product-uploader-link"
                                     className="block w-full bg-gradient-to-r from-blue-600 to-pink-500 text-white px-4 py-3 rounded-lg text-center font-medium"
                                 >
                                     Bulk Upload Products
-                                </a>
+                                </Link>
                             </div>
 
 

@@ -233,9 +233,8 @@ const StockManagerPage: React.FC = () => {
   const formatDate = (dateString: string) => {
     try {
       return format(parseISO(dateString), "MMM dd, yyyy");
-    } catch (_) {
+    } catch {
       // Silently handle parsing errors and return the original string
-      // Using underscore to indicate intentionally unused variable
       return dateString;
     }
   };

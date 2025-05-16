@@ -35,12 +35,16 @@ const BlurImage: React.FC<BlurImageProps> = ({
   quality,
   objectFit = 'cover',
   objectPosition,
+  // placeholder is not used directly but is part of the Image component props
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   placeholder = 'blur',
   blurDataURL,
   unoptimized = false,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentSrc, setCurrentSrc] = useState(src);
+  // We track error state but don't directly use the variable in JSX
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState(false);
 
   // Generate a simple blur data URL if none is provided

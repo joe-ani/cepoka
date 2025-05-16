@@ -957,10 +957,3 @@ export default function StockProductPage() {
     </div>
   );
 }
-
-// Export is at the function declaration
-
-export const metadata = {
-  title: 'Stock Product Details',
-  description: 'View and manage stock product details',
-};

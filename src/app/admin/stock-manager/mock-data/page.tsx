@@ -95,8 +95,26 @@ const STOCK_CATEGORIES = [
   },
 ];
 
+// Define interfaces for stock movement and stock product
+interface StockMovement {
+  date: string;
+  stockedIn: number;
+  stockedOut: number;
+  remarks: string;
+  totalStock: number;
+  balance: number;
+  sign: string;
+}
+
+interface StockProduct {
+  name: string;
+  category: string;
+  stockMovements: StockMovement[];
+  lastUpdated: string;
+}
+
 // Generate mock stock products from the categories
-const mockStockProducts = [];
+const mockStockProducts: StockProduct[] = [];
 
 // Create a stock product for each product in each category
 STOCK_CATEGORIES.forEach(category => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -43,14 +43,12 @@ interface StockMovementFormData {
 
 // We'll use a type assertion in the function instead of declaring the global interface
 
-// Define the correct type for Next.js page props
-type StockProductDetailPageProps = {
-  params: { id: string };
-}
-
-const StockProductDetailPage = ({ params }: StockProductDetailPageProps) => {
-  // Get the product ID directly from params
-  const productId = params.id;
+// Define the component as a proper Next.js page component
+// Using the correct type for Next.js App Router pages with React.use() for future compatibility
+export default function Page({ params }: { params: Promise<{ id: string }> | { id: string } }) {
+  // Unwrap params using React.use() to support future Next.js versions
+  const unwrappedParams = params instanceof Promise ? React.use(params) : params;
+  const productId = unwrappedParams.id;
 
   const router = useRouter();
   const [stockProduct, setStockProduct] = useState<StockProduct | null>(null);
@@ -959,6 +957,6 @@ const StockProductDetailPage = ({ params }: StockProductDetailPageProps) => {
       )}
     </div>
   );
-};
+}
 
-export default StockProductDetailPage;
+// Export is at the function declaration

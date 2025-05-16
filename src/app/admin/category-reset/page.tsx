@@ -46,9 +46,16 @@ const DESIRED_CATEGORIES = [
 
 const CategoryResetPage = () => {
   const router = useRouter();
+  interface Category {
+    id: string;
+    name: string;
+    icon: string;
+    imageSrc: string;
+  }
+
   const [isLoading, setIsLoading] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
-  const [currentCategories, setCurrentCategories] = useState([]);
+  const [currentCategories, setCurrentCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [progress, setProgress] = useState({ step: '', details: '' });
 
@@ -82,7 +89,7 @@ const CategoryResetPage = () => {
         const category = currentCategories[i];
         setProgress({
           step: 'Deleting existing categories',
-          details: `${i+1}/${currentCategories.length}: ${category.name}`
+          details: `${i + 1}/${currentCategories.length}: ${category.name}`
         });
 
         await deleteCategory(category.id);
@@ -95,7 +102,7 @@ const CategoryResetPage = () => {
         const category = DESIRED_CATEGORIES[i];
         setProgress({
           step: 'Creating new categories',
-          details: `${i+1}/5: ${category.name}`
+          details: `${i + 1}/5: ${category.name}`
         });
 
         await addCategory({
@@ -130,7 +137,10 @@ const CategoryResetPage = () => {
       <div className="max-w-4xl mx-auto">
         {/* Back button */}
         <div className="mb-6">
-          <BackArrow href="/admin" text="Back to Admin" />
+          <Link href="/admin" className="inline-flex items-center text-gray-700 hover:text-black transition-all duration-200">
+            <BackArrow href="/admin" />
+            <span className="ml-2">Back to Admin</span>
+          </Link>
         </div>
 
         <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg">

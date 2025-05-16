@@ -2,7 +2,6 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -104,25 +103,27 @@ const CreateStockProductPage = () => {
                 );
                 console.log('Appwrite connection test successful:', response);
                 return true;
-            } catch (listError: any) {
+            } catch (listError: unknown) {
+                const error = listError as { code?: number; message?: string };
                 // If the error is that the collection doesn't exist (404)
-                if (listError.code === 404) {
+                if (error.code === 404) {
                     console.log('Collection not found. This is expected for a new collection.');
                     return true; // We can still proceed if the collection doesn't exist yet
                 }
 
                 // For other errors, log and return false
                 console.error('Error listing documents:', listError);
-                if (listError.message) {
-                    console.error('Error message:', listError.message);
+                if (error.message) {
+                    console.error('Error message:', error.message);
                 }
-                if (listError.code) {
-                    console.error('Error code:', listError.code);
+                if (error.code) {
+                    console.error('Error code:', error.code);
                 }
                 return false;
             }
-        } catch (error: any) {
-            console.error('Appwrite connection test failed:', error);
+        } catch (err: unknown) {
+            const error = err as { code?: number; message?: string };
+            console.error('Appwrite connection test failed:', err);
             if (error.message) {
                 console.error('Error message:', error.message);
             }
@@ -199,9 +200,10 @@ const CreateStockProductPage = () => {
                 );
 
                 console.log('Stock product created successfully:', newStockProduct);
-            } catch (error: any) {
+            } catch (err: unknown) {
+                const error = err as { code?: number; message?: string; response?: unknown };
                 // More detailed error logging
-                console.error('Error creating stock product in Appwrite:', error);
+                console.error('Error creating stock product in Appwrite:', err);
 
                 // Log specific error details if available
                 if (error.message) {
@@ -216,7 +218,7 @@ const CreateStockProductPage = () => {
 
                 // Show a more specific error message to the user
                 toast.error(`Failed to create stock product: ${error.message || 'Unknown error'}`);
-                throw error; // Re-throw to be caught by the outer try-catch
+                throw err; // Re-throw to be caught by the outer try-catch
             }
 
             toast.success('Stock product created successfully');
@@ -226,8 +228,9 @@ const CreateStockProductPage = () => {
                 setIsNavigating(true);
                 router.push('/admin/stock-manager');
             }, 1000);
-        } catch (error: any) {
-            console.error('Error creating stock product:', error);
+        } catch (err: unknown) {
+            const error = err as { message?: string };
+            console.error('Error creating stock product:', err);
 
             // We already show a specific error message from the inner catch block
             // This is just a fallback in case the error wasn't caught there

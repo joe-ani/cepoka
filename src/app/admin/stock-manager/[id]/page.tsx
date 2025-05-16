@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import SpinningLoader from '@/src/app/Components/SpinningLoader';
@@ -465,7 +466,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
       <div className="p-4 max-w-7xl mt-28 sm:mt-32 md:mt-40 mx-auto pt-8 sm:pt-10">
         <div className="bg-white p-6 rounded-lg shadow-sm border text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Stock Product Not Found</h2>
-          <p className="text-gray-700 mb-4">The stock product you're looking for doesn't exist or has been deleted.</p>
+          <p className="text-gray-700 mb-4">The stock product you&apos;re looking for doesn&apos;t exist or has been deleted.</p>
           <Link
             href="/admin/stock-manager"
             className="inline-flex items-center text-blue-600 hover:text-blue-800 px-4 py-2 rounded-lg active:bg-blue-50 transition-all duration-200 touch-manipulation"
@@ -560,10 +561,12 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
           <div className="mb-6">
             <div className="flex items-center justify-center mb-2">
               <div className="flex items-center">
-                <img
+                <Image
                   src="/logo.png"
                   alt="Cepoka Logo"
-                  className="h-16 w-16 mr-5 object-contain drop-shadow-md"
+                  width={64}
+                  height={64}
+                  className="mr-5 drop-shadow-md"
                   style={{ objectFit: "contain" }}
                 />
                 <div>
@@ -574,11 +577,13 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
             </div>
             <div className="border-t border-b border-gray-300 py-3 my-4 relative overflow-hidden">
               <div className="absolute inset-0 flex items-center justify-center opacity-10 blur-md print-watermark">
-                <img
+                <Image
                   src="/logo.png"
                   alt="Cepoka Logo"
-                  className="w-48 h-auto object-contain"
-                  style={{ aspectRatio: "1/1" }}
+                  width={192}
+                  height={192}
+                  className="object-contain"
+                  priority={false}
                 />
               </div>
               <div className="flex justify-between items-center px-4 relative z-10">

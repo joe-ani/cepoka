@@ -6,7 +6,6 @@ import { ActiveLinkProvider } from "./context/ActiveLinkContext";
 import { Toaster } from 'react-hot-toast';
 import PWA from './pwa';
 import InstallPrompt from './Components/InstallPrompt';
-import Offline from './offline';
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",

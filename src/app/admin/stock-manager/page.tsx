@@ -7,7 +7,6 @@ import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import LoadingScreen from "@/src/app/Components/LoadingScreen";
 import SpinningLoader from "@/src/app/Components/SpinningLoader";
-import BlurImage from "@/src/app/Components/BlurImage";
 import { format, parseISO } from "date-fns";
 import { databases, appwriteConfig } from "@/src/lib/appwrite";
 import { Models, Query } from "appwrite";
@@ -234,7 +233,8 @@ const StockManagerPage: React.FC = () => {
   const formatDate = (dateString: string) => {
     try {
       return format(parseISO(dateString), "MMM dd, yyyy");
-    } catch (_) {
+    } catch (error) {
+      // Silently handle parsing errors and return the original string
       return dateString;
     }
   };

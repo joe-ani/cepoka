@@ -58,8 +58,8 @@ const AdminPage = () => {
     const [products, setProducts] = useState<Product[]>([]);         // List of products
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);  // Selected image files
     const [isLoading, setIsLoading] = useState(false);              // Loading state
-    const [isNavigating, setIsNavigating] = useState(false);        // Navigation loading state
-    const [isStockNavigating, setIsStockNavigating] = useState(false);        // Navigation loading state
+    const [isNavigating] = useState(false);        // Navigation loading state
+    const [isStockNavigating] = useState(false);        // Navigation loading state
     const [debugInfo, setDebugInfo] = useState<string[]>([]);                // Debug information for mobile troubleshooting
     const [showDebug, setShowDebug] = useState(false);                       // Toggle debug panel visibility
     const [editingProduct, setEditingProduct] = useState<Product | null>(null); // Currently editing product

@@ -43,7 +43,11 @@ interface StockMovementFormData {
 
 // We'll use a type assertion in the function instead of declaring the global interface
 
-const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
+const StockProductDetailPage = ({ params }: { params: Promise<{ id: string }> | { id: string } }) => {
+  // Unwrap params using React.use() to support future Next.js versions
+  const unwrappedParams = params instanceof Promise ? React.use(params) : params;
+  const productId = unwrappedParams.id;
+
   const router = useRouter();
   const [stockProduct, setStockProduct] = useState<StockProduct | null>(null);
   const [loading, setLoading] = useState(true);
@@ -73,10 +77,10 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
           const response = await databases.getDocument(
             appwriteConfig.databaseId,
             appwriteConfig.stockProductsCollectionId,
-            params.id
+            productId
           );
 
-          const stockProductData = response as unknown as any;
+          const stockProductData = response as unknown as Record<string, unknown>;
 
           // Ensure stockMovements is an array
           if (!stockProductData.stockMovements) {
@@ -84,7 +88,11 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
           }
 
           // Parse each stock movement from string to object
-          const parsedStockMovements = stockProductData.stockMovements.map((movement: any, index: number) => {
+          const stockMovementsArray = Array.isArray(stockProductData.stockMovements)
+            ? stockProductData.stockMovements as (string | Record<string, unknown>)[]
+            : [];
+
+          const parsedStockMovements = stockMovementsArray.map((movement, index: number) => {
             if (typeof movement === 'string') {
               try {
                 const parsedMovement = JSON.parse(movement);
@@ -101,7 +109,10 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
 
           // Create a properly formatted StockProduct object
           const formattedStockProduct: StockProduct = {
-            ...stockProductData,
+            $id: (stockProductData.$id as string) || productId,
+            name: (stockProductData.name as string) || 'Unknown Product',
+            $createdAt: (stockProductData.$createdAt as string) || new Date().toISOString(),
+            lastUpdated: (stockProductData.lastUpdated as string) || new Date().toISOString(),
             stockMovements: parsedStockMovements
           };
 
@@ -141,8 +152,8 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
           ];
 
           const dummyProduct: StockProduct = {
-            $id: params.id,
-            name: params.id === "1" ? "Salon Chair" : params.id === "2" ? "Hair Dryer" : "Facial Steamer",
+            $id: productId,
+            name: productId === "1" ? "Salon Chair" : productId === "2" ? "Hair Dryer" : "Facial Steamer",
             stockMovements: dummyStockMovements,
             lastUpdated: "2023-05-15T09:45:00.000Z",
             $createdAt: "2023-05-01T12:00:00.000Z"
@@ -161,7 +172,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
     };
 
     fetchStockProduct();
-  }, [params.id, router]);
+  }, [productId, router]);
 
   // Handle form input changes for new movement
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -241,7 +252,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
       await databases.updateDocument(
         appwriteConfig.databaseId,
         appwriteConfig.stockProductsCollectionId,
-        params.id,
+        productId,
         {
           stockMovements: updatedMovementStrings,
           lastUpdated: new Date().toISOString()
@@ -304,7 +315,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
         const currentDoc = await databases.getDocument(
           appwriteConfig.databaseId,
           appwriteConfig.stockProductsCollectionId,
-          params.id
+          productId
         );
 
         currentStockMovementsStrings = currentDoc.stockMovements || [];
@@ -327,7 +338,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
         await databases.updateDocument(
           appwriteConfig.databaseId,
           appwriteConfig.stockProductsCollectionId,
-          params.id,
+          productId,
           {
             stockMovements: updatedStockMovementsStrings, // Send array of strings
             lastUpdated: new Date().toISOString()
@@ -369,7 +380,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
         await databases.deleteDocument(
           appwriteConfig.databaseId,
           appwriteConfig.stockProductsCollectionId,
-          params.id
+          productId
         );
       } catch (error) {
         console.error('Error deleting stock product from Appwrite:', error);
@@ -411,8 +422,13 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
         // Generate PDF with filename
         const filename = `Stock_Card_${stockProduct?.name.replace(/\s+/g, '_')}.pdf`;
 
-        // Use any type to bypass TypeScript errors
-        const html2pdf = window.html2pdf as any;
+        // Use unknown type and then cast to appropriate type
+        // This avoids complex type definition issues with the html2pdf library
+        const html2pdf = window.html2pdf as unknown as () => {
+          set: (options: Record<string, unknown>) => any;
+          from: (element: HTMLElement) => any;
+          save: () => Promise<void>;
+        };
         const pdfInstance = html2pdf();
 
         // Configure and generate PDF with better print settings

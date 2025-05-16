@@ -1,19 +1,23 @@
 import { Metadata } from 'next';
 
-type LayoutProps = {
-  children: React.ReactNode;
-  params: {
-    id: string;
-  };
-};
+interface PageParams {
+  id: string;
+}
 
-export default function StockProductLayout({ children }: LayoutProps) {
+export interface StockProductLayoutProps {
+  children: React.ReactNode;
+  params: PageParams;
+}
+
+export default async function StockProductLayout({
+  children,
+}: StockProductLayoutProps) {
   return children;
 }
 
 // This is a server component that can handle the metadata
 export async function generateMetadata(
-  { params }: { params: { id: string } }
+  { params }: { params: PageParams }
 ): Promise<Metadata> {
   return {
     title: `Stock Product: ${params.id}`,

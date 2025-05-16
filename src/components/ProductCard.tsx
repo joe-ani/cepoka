@@ -1,10 +1,10 @@
 "use client"
 import React, { useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
-import Image from "next/image";
 import { Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import LoadingScreen from "@/src/app/Components/LoadingScreen";
+import BlurImage from "@/src/app/Components/BlurImage";
 
 // Match the Appwrite data structure
 interface Product {
@@ -99,15 +99,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Product Image */}
         <div className="w-full h-full relative">
           {product.imageUrls && product.imageUrls.length > 0 ? (
-            <Image
+            <BlurImage
               className="object-cover"
               fill
               alt={product.name || "Product image"}
               src={product.imageUrls[0]}
-              priority={true}
-              loader={({ src }) => src}
+              priority={false}
               unoptimized={true}
               sizes="(max-width: 640px) 150px, 200px"
+              objectFit="cover"
+              placeholder="blur"
+              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFFOTBGRiIgc3RvcC1vcGFjaXR5PSIwLjIiIC8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjRkY2OUI0IiBzdG9wLW9wYWNpdHk9IjAuMiIgLz48L2xpbmVhckdyYWRpZW50PjxmaWx0ZXIgaWQ9ImJsdXIiIHg9Ii01MCUiIHk9Ii01MCUiIHdpZHRoPSIyMDAlIiBoZWlnaHQ9IjIwMCUiPjxmZUdhdXNzaWFuQmx1ciBpbj0iU291cmNlR3JhcGhpYyIgc3RkRGV2aWF0aW9uPSIxMCIgLz48L2ZpbHRlcj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2Y1ZjVmNSIgLz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyYWRpZW50KSIgLz48L3N2Zz4="
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-200">

@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import LoadingScreen from "@/src/app/Components/LoadingScreen";
 import SpinningLoader from "@/src/app/Components/SpinningLoader";
+import BlurImage from "@/src/app/Components/BlurImage";
 import { format, parseISO } from "date-fns";
 import { databases, appwriteConfig } from "@/src/lib/appwrite";
+import { Models, Query } from "appwrite";
 
 // Define stock product categories
 const STOCK_CATEGORIES = [
@@ -49,11 +51,11 @@ interface StockProduct {
   name: string;
   $createdAt: string;
   lastUpdated?: string;
-  stockMovements?: any; // Can be an array or a string (JSON)
+  stockMovements?: Array<string | Record<string, unknown>>; // Can be an array of strings or objects
   category?: string; // Added category field
 }
 
-const StockManagerPage = () => {
+const StockManagerPage: React.FC = () => {
   const router = useRouter();
   const [products, setProducts] = useState<StockProduct[]>([]);
   const [search, setSearch] = useState("");
@@ -75,13 +77,44 @@ const StockManagerPage = () => {
         setLoading(true);
 
         try {
+          // Fetch all products with pagination
+          // First request with limit=100
           const response = await databases.listDocuments(
             appwriteConfig.databaseId,
-            appwriteConfig.stockProductsCollectionId
+            appwriteConfig.stockProductsCollectionId,
+            [
+              Query.limit(100), // Get 100 documents per request (maximum)
+              Query.offset(0)   // Start from the first document
+            ]
           );
 
+          // Initialize our products array with the first batch
+          let allDocuments = [...response.documents];
+
+          // If there are more documents than the limit, fetch them with pagination
+          if (response.total > 100) {
+            // Calculate how many more requests we need
+            const totalRequests = Math.ceil(response.total / 100);
+
+            // Make additional requests to get all documents
+            for (let i = 1; i < totalRequests; i++) {
+              const offset = i * 100;
+              const additionalResponse = await databases.listDocuments(
+                appwriteConfig.databaseId,
+                appwriteConfig.stockProductsCollectionId,
+                [
+                  Query.limit(100),
+                  Query.offset(offset)
+                ]
+              );
+
+              // Add these documents to our array
+              allDocuments = [...allDocuments, ...additionalResponse.documents];
+            }
+          }
+
           // Process the documents to ensure proper formatting
-          const stockProducts = response.documents.map((doc: any) => {
+          const stockProducts = allDocuments.map((doc: Models.Document) => {
             // Ensure stockMovements is an array
             if (!doc.stockMovements) {
               doc.stockMovements = [];
@@ -90,7 +123,7 @@ const StockManagerPage = () => {
             // Parse each stock movement from string to object if needed
             // This is only for display purposes in the list view
             if (doc.stockMovements && Array.isArray(doc.stockMovements)) {
-              doc.stockMovements = doc.stockMovements.map((movement: any) => {
+              doc.stockMovements = doc.stockMovements.map((movement: string | Record<string, unknown>) => {
                 if (typeof movement === 'string') {
                   try {
                     return JSON.parse(movement);
@@ -103,7 +136,7 @@ const StockManagerPage = () => {
               }).filter(Boolean); // Remove any null values
             }
 
-            return doc as StockProduct;
+            return doc as unknown as StockProduct;
           });
 
           setProducts(stockProducts);
@@ -201,7 +234,7 @@ const StockManagerPage = () => {
   const formatDate = (dateString: string) => {
     try {
       return format(parseISO(dateString), "MMM dd, yyyy");
-    } catch (error) {
+    } catch (_) {
       return dateString;
     }
   };
@@ -221,15 +254,35 @@ const StockManagerPage = () => {
       const totalProducts = products.length;
       setBulkDeleteProgress({ current: 0, total: totalProducts });
 
-      // Delete products one by one
-      for (let i = 0; i < totalProducts; i++) {
-        const product = products[i];
-        setBulkDeleteProgress({ current: i + 1, total: totalProducts });
+      // Process in batches of 10 for better UI feedback
+      const batchSize = 10;
+      const batches = Math.ceil(totalProducts / batchSize);
 
-        await databases.deleteDocument(
-          appwriteConfig.databaseId,
-          appwriteConfig.stockProductsCollectionId,
-          product.$id
+      for (let batchIndex = 0; batchIndex < batches; batchIndex++) {
+        const startIndex = batchIndex * batchSize;
+        const endIndex = Math.min(startIndex + batchSize, totalProducts);
+        const batch = products.slice(startIndex, endIndex);
+
+        // Process batch in parallel for faster deletion
+        await Promise.all(
+          batch.map(async (product, index) => {
+            const currentIndex = startIndex + index;
+            setBulkDeleteProgress({
+              current: currentIndex + 1,
+              total: totalProducts
+            });
+
+            try {
+              await databases.deleteDocument(
+                appwriteConfig.databaseId,
+                appwriteConfig.stockProductsCollectionId,
+                product.$id
+              );
+            } catch (err) {
+              console.error(`Error deleting product ${product.name}:`, err);
+              // Continue with other deletions even if one fails
+            }
+          })
         );
       }
 
@@ -257,15 +310,35 @@ const StockManagerPage = () => {
       const totalSelected = selectedProducts.length;
       setBulkDeleteProgress({ current: 0, total: totalSelected });
 
-      // Delete selected products one by one
-      for (let i = 0; i < totalSelected; i++) {
-        const productId = selectedProducts[i];
-        setBulkDeleteProgress({ current: i + 1, total: totalSelected });
+      // Process in batches of 10 for better UI feedback
+      const batchSize = 10;
+      const batches = Math.ceil(totalSelected / batchSize);
 
-        await databases.deleteDocument(
-          appwriteConfig.databaseId,
-          appwriteConfig.stockProductsCollectionId,
-          productId
+      for (let batchIndex = 0; batchIndex < batches; batchIndex++) {
+        const startIndex = batchIndex * batchSize;
+        const endIndex = Math.min(startIndex + batchSize, totalSelected);
+        const batch = selectedProducts.slice(startIndex, endIndex);
+
+        // Process batch in parallel for faster deletion
+        await Promise.all(
+          batch.map(async (productId, index) => {
+            const currentIndex = startIndex + index;
+            setBulkDeleteProgress({
+              current: currentIndex + 1,
+              total: totalSelected
+            });
+
+            try {
+              await databases.deleteDocument(
+                appwriteConfig.databaseId,
+                appwriteConfig.stockProductsCollectionId,
+                productId
+              );
+            } catch (err) {
+              console.error(`Error deleting product ID ${productId}:`, err);
+              // Continue with other deletions even if one fails
+            }
+          })
         );
       }
 
@@ -313,7 +386,7 @@ const StockManagerPage = () => {
     <div className="p-4 max-w-7xl mt-28 sm:mt-32 md:mt-40 mx-auto pt-8 sm:pt-10">
       {/* Back button with animation - improved for mobile */}
       <div className="mb-4 sm:mb-6">
-        <a
+        <Link
           href="/admin"
           className="inline-flex items-center px-4 py-3 rounded-lg text-gray-700 hover:text-black hover:bg-gray-100 active:bg-gray-200 transition-all duration-200 touch-manipulation"
           style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -333,7 +406,7 @@ const StockManagerPage = () => {
             />
           </svg>
           Back to Admin
-        </a>
+        </Link>
       </div>
 
       <div className="mb-4 sm:mb-6">
@@ -341,7 +414,18 @@ const StockManagerPage = () => {
           <span className="text-gray-900 mr-2 inline-block">📦</span>
           Stock Manager
         </h1>
-        <p className="text-gray-700 mt-1 text-sm sm:text-base md:text-lg">Create and manage your inventory stock cards</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-1">
+          <p className="text-gray-700 text-sm sm:text-base md:text-lg">Create and manage your inventory stock cards</p>
+          <div className="mt-2 sm:mt-0 bg-gray-100 px-3 py-1 rounded-full text-gray-700 font-medium text-sm flex items-center">
+            <span className="mr-1">📊</span>
+            <span>{filtered.length} product{filtered.length !== 1 ? 's' : ''}</span>
+            {filtered.length !== products.length && (
+              <span className="ml-1 text-gray-500">
+                (filtered from {products.length})
+              </span>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Category Filters */}
@@ -491,78 +575,48 @@ const StockManagerPage = () => {
         </div>
       </div>
 
-      {/* Stock products grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-        {filtered.length > 0 ? (
-          filtered.map((product) => {
-            // Find the category for this product
-            const productCategory = STOCK_CATEGORIES.find(cat => cat.id === product.category);
+      {/* Stock products grid with scrollbar */}
+      <div className="max-h-[800px] overflow-y-auto pr-2 pb-4 custom-scrollbar">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+          {filtered.length > 0 ? (
+            filtered.map((product) => {
+              // Find the category for this product
+              const productCategory = STOCK_CATEGORIES.find(cat => cat.id === product.category);
 
-            return (
-              <motion.div
-                key={product.$id}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                whileTap={{ scale: 0.98 }}
-                className={`bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border ${isMultiSelectMode && selectedProducts.includes(product.$id)
-                  ? 'border-blue-500 ring-2 ring-blue-200'
-                  : 'border-gray-200'
-                  }`}
-                onClick={(e) => {
-                  if (isMultiSelectMode) {
-                    e.preventDefault();
-                    toggleProductSelection(product.$id);
-                  }
-                }}
-              >
-                {isMultiSelectMode ? (
-                  <div className="block p-4 sm:p-5 active:bg-gray-50 cursor-pointer">
-                    <div className="flex justify-between items-start mb-3">
-                      <h2 className="text-lg sm:text-xl font-bold text-gray-900 bg-gradient-to-r from-blue-600 to-pink-500 bg-clip-text text-transparent pr-2">{product.name}</h2>
+              return (
+                <motion.div
+                  key={product.$id}
+                  whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border ${isMultiSelectMode && selectedProducts.includes(product.$id)
+                    ? 'border-blue-500 ring-2 ring-blue-200'
+                    : 'border-gray-200'
+                    }`}
+                  onClick={(e) => {
+                    if (isMultiSelectMode) {
+                      e.preventDefault();
+                      toggleProductSelection(product.$id);
+                    }
+                  }}
+                >
+                  {isMultiSelectMode ? (
+                    <div className="block p-4 sm:p-5 active:bg-gray-50 cursor-pointer">
+                      <div className="flex justify-between items-start mb-3">
+                        <h2 className="text-lg sm:text-xl font-bold text-gray-900 bg-gradient-to-r from-blue-600 to-pink-500 bg-clip-text text-transparent pr-2">{product.name}</h2>
 
-                      <div
-                        className={`w-5 h-5 rounded border flex items-center justify-center ${selectedProducts.includes(product.$id)
-                          ? 'bg-blue-500 border-blue-500'
-                          : 'border-gray-300'
-                          }`}
-                      >
-                        {selectedProducts.includes(product.$id) && (
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                        )}
+                        <div
+                          className={`w-5 h-5 rounded border flex items-center justify-center ${selectedProducts.includes(product.$id)
+                            ? 'bg-blue-500 border-blue-500'
+                            : 'border-gray-300'
+                            }`}
+                        >
+                          {selectedProducts.includes(product.$id) && (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </div>
                       </div>
-                    </div>
-
-                    {/* Category badge */}
-                    {productCategory ? (
-                      <span className={`bg-gradient-to-r ${productCategory.color} text-white text-xs font-medium px-2.5 py-1 rounded-full flex items-center self-start sm:self-auto w-fit`}>
-                        <span className="mr-1">{productCategory.icon}</span>
-                        {productCategory.name.split(' ')[0]}
-                      </span>
-                    ) : (
-                      <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full self-start sm:self-auto">Stock Card</span>
-                    )}
-
-                    <div className="space-y-1 text-xs sm:text-sm text-gray-800 mt-3">
-                      <p className="font-medium flex justify-between">
-                        <span>Created:</span>
-                        <span className="font-bold text-gray-900 ml-2">{formatDate(product.$createdAt)}</span>
-                      </p>
-                      {product.lastUpdated && (
-                        <p className="font-medium flex justify-between">
-                          <span>Last Updated:</span>
-                          <span className="font-bold text-gray-900 ml-2">{formatDate(product.lastUpdated)}</span>
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <Link
-                    href={`/admin/stock-manager/${product.$id}`}
-                    className="block p-4 sm:p-5 active:bg-gray-50"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-0 mb-3">
-                      <h2 className="text-lg sm:text-xl font-bold text-gray-900 bg-gradient-to-r from-blue-600 to-pink-500 bg-clip-text text-transparent pr-2">{product.name}</h2>
 
                       {/* Category badge */}
                       {productCategory ? (
@@ -573,123 +627,153 @@ const StockManagerPage = () => {
                       ) : (
                         <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full self-start sm:self-auto">Stock Card</span>
                       )}
-                    </div>
 
-                    <div className="space-y-1 text-xs sm:text-sm text-gray-800">
-                      <p className="font-medium flex justify-between">
-                        <span>Created:</span>
-                        <span className="font-bold text-gray-900 ml-2">{formatDate(product.$createdAt)}</span>
-                      </p>
-                      {product.lastUpdated && (
+                      <div className="space-y-1 text-xs sm:text-sm text-gray-800 mt-3">
                         <p className="font-medium flex justify-between">
-                          <span>Last Updated:</span>
-                          <span className="font-bold text-gray-900 ml-2">{formatDate(product.lastUpdated)}</span>
+                          <span>Created:</span>
+                          <span className="font-bold text-gray-900 ml-2">{formatDate(product.$createdAt)}</span>
                         </p>
-                      )}
-                    </div>
-
-                    {/* View button */}
-                    <div className="mt-3 pt-3 border-t border-gray-100">
-                      <div className="text-blue-600 text-xs font-medium flex items-center">
-                        <span>View Details</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                        </svg>
+                        {product.lastUpdated && (
+                          <p className="font-medium flex justify-between">
+                            <span>Last Updated:</span>
+                            <span className="font-bold text-gray-900 ml-2">{formatDate(product.lastUpdated)}</span>
+                          </p>
+                        )}
                       </div>
                     </div>
-                  </Link>
+                  ) : (
+                    <Link
+                      href={`/admin/stock-manager/${product.$id}`}
+                      className="block p-4 sm:p-5 active:bg-gray-50"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-0 mb-3">
+                        <h2 className="text-lg sm:text-xl font-bold text-gray-900 bg-gradient-to-r from-blue-600 to-pink-500 bg-clip-text text-transparent pr-2">{product.name}</h2>
+
+                        {/* Category badge */}
+                        {productCategory ? (
+                          <span className={`bg-gradient-to-r ${productCategory.color} text-white text-xs font-medium px-2.5 py-1 rounded-full flex items-center self-start sm:self-auto w-fit`}>
+                            <span className="mr-1">{productCategory.icon}</span>
+                            {productCategory.name.split(' ')[0]}
+                          </span>
+                        ) : (
+                          <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full self-start sm:self-auto">Stock Card</span>
+                        )}
+                      </div>
+
+                      <div className="space-y-1 text-xs sm:text-sm text-gray-800">
+                        <p className="font-medium flex justify-between">
+                          <span>Created:</span>
+                          <span className="font-bold text-gray-900 ml-2">{formatDate(product.$createdAt)}</span>
+                        </p>
+                        {product.lastUpdated && (
+                          <p className="font-medium flex justify-between">
+                            <span>Last Updated:</span>
+                            <span className="font-bold text-gray-900 ml-2">{formatDate(product.lastUpdated)}</span>
+                          </p>
+                        )}
+                      </div>
+
+                      {/* View button */}
+                      <div className="mt-3 pt-3 border-t border-gray-100">
+                        <div className="text-blue-600 text-xs font-medium flex items-center">
+                          <span>View Details</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </div>
+                    </Link>
+                  )}
+                </motion.div>
+              );
+            })
+          ) : (
+            <div className="col-span-full bg-white rounded-lg p-6 sm:p-8 text-center border border-gray-200">
+              <div className="flex flex-col items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-gray-800 mb-2 font-medium">No stock products found.</p>
+                <p className="text-gray-700 text-sm">
+                  {search || dateFilter || selectedCategory ? "Try adjusting your search filters." : "Create your first stock product to get started."}
+                </p>
+                {(search || dateFilter || selectedCategory) && (
+                  <button
+                    onClick={() => {
+                      setSearch('');
+                      setDateFilter('');
+                      setSelectedCategory(null);
+                      filterProducts('', '', null);
+                    }}
+                    className="mt-4 text-blue-600 text-sm font-medium hover:text-blue-800 transition-colors"
+                  >
+                    Clear all filters
+                  </button>
                 )}
-              </motion.div>
-            );
-          })
-        ) : (
-          <div className="col-span-full bg-white rounded-lg p-6 sm:p-8 text-center border border-gray-200">
-            <div className="flex flex-col items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="text-gray-800 mb-2 font-medium">No stock products found.</p>
-              <p className="text-gray-700 text-sm">
-                {search || dateFilter || selectedCategory ? "Try adjusting your search filters." : "Create your first stock product to get started."}
-              </p>
-              {(search || dateFilter || selectedCategory) && (
-                <button
-                  onClick={() => {
-                    setSearch('');
-                    setDateFilter('');
-                    setSelectedCategory(null);
-                    filterProducts('', '', null);
-                  }}
-                  className="mt-4 text-blue-600 text-sm font-medium hover:text-blue-800 transition-colors"
-                >
-                  Clear all filters
-                </button>
-              )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      {/* Bulk Delete Stock Products Confirmation Modal */}
-      {
-        showBulkDeleteModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-xl w-full max-w-md">
-              {isBulkDeleting ? (
-                <div className="flex flex-col items-center py-4">
-                  <SpinningLoader size="large" />
-                  <p className="mt-4 text-gray-800 font-medium">
-                    Deleting stock products... ({bulkDeleteProgress.current} of {bulkDeleteProgress.total})
-                  </p>
-                  <div className="w-full mt-4 bg-gray-200 rounded-full h-2.5">
-                    <div
-                      className="bg-gradient-to-r from-blue-500 to-pink-500 h-2.5 rounded-full"
-                      style={{ width: `${(bulkDeleteProgress.current / bulkDeleteProgress.total) * 100}%` }}
-                    ></div>
-                  </div>
+      {/* Bulk Delete Modal */}
+      {showBulkDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-xl w-full max-w-md">
+            {isBulkDeleting ? (
+              <div className="flex flex-col items-center py-4">
+                <SpinningLoader size="large" />
+                <p className="mt-4 text-gray-800 font-medium">
+                  Deleting stock products... ({bulkDeleteProgress.current} of {bulkDeleteProgress.total})
+                </p>
+                <div className="w-full mt-4 bg-gray-200 rounded-full h-2.5">
+                  <div
+                    className="bg-gradient-to-r from-blue-500 to-pink-500 h-2.5 rounded-full"
+                    style={{ width: `${(bulkDeleteProgress.current / bulkDeleteProgress.total) * 100}%` }}
+                  ></div>
                 </div>
-              ) : (
-                <>
-                  <h2 className="text-lg font-bold text-gray-900 mb-4">
+              </div>
+            ) : (
+              <>
+                <h2 className="text-lg font-bold text-gray-900 mb-4">
+                  {isMultiSelectMode && selectedProducts.length > 0
+                    ? 'Delete Selected Stock Products'
+                    : 'Delete All Stock Products'
+                  }
+                </h2>
+                <p className="text-gray-600 mb-2">
+                  {isMultiSelectMode && selectedProducts.length > 0
+                    ? 'Are you sure you want to delete the selected stock products?'
+                    : 'Are you sure you want to delete all stock products?'
+                  }
+                </p>
+                <p className="text-red-600 text-sm mb-6">
+                  This will delete <span className="font-bold">
                     {isMultiSelectMode && selectedProducts.length > 0
-                      ? 'Delete Selected Stock Products'
-                      : 'Delete All Stock Products'
-                    }
-                  </h2>
-                  <p className="text-gray-600 mb-2">
-                    {isMultiSelectMode && selectedProducts.length > 0
-                      ? 'Are you sure you want to delete the selected stock products?'
-                      : 'Are you sure you want to delete all stock products?'
-                    }
-                  </p>
-                  <p className="text-red-600 text-sm mb-6">
-                    This will delete <span className="font-bold">
-                      {isMultiSelectMode && selectedProducts.length > 0
-                        ? `${selectedProducts.length} selected`
-                        : products.length
-                      } stock product{(isMultiSelectMode && selectedProducts.length > 0 ? selectedProducts.length : products.length) !== 1 ? 's' : ''}
-                    </span> and cannot be undone.
-                  </p>
-                  <div className="flex justify-end gap-4">
-                    <button
-                      className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-all duration-200"
-                      onClick={() => setShowBulkDeleteModal(false)}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-all duration-200"
-                      onClick={isMultiSelectMode && selectedProducts.length > 0 ? deleteSelectedStockProducts : bulkDeleteStockProducts}
-                    >
-                      {isMultiSelectMode && selectedProducts.length > 0 ? 'Delete Selected' : 'Delete All'}
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
+                      ? `${selectedProducts.length} selected`
+                      : products.length
+                    } stock product{(isMultiSelectMode && selectedProducts.length > 0 ? selectedProducts.length : products.length) !== 1 ? 's' : ''}
+                  </span> and cannot be undone.
+                </p>
+                <div className="flex justify-end gap-4">
+                  <button
+                    className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-all duration-200"
+                    onClick={() => setShowBulkDeleteModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-all duration-200"
+                    onClick={isMultiSelectMode && selectedProducts.length > 0 ? deleteSelectedStockProducts : bulkDeleteStockProducts}
+                  >
+                    {isMultiSelectMode && selectedProducts.length > 0 ? 'Delete Selected' : 'Delete All'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
-        )
-      }
+        </div>
+      )}
     </div>
   );
 };

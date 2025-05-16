@@ -19,6 +19,7 @@ interface StockMovement {
   totalStock: number;
   balance: number;
   sign?: string;
+  id?: string; // Unique identifier for each movement
 }
 
 // Interface for stock product data
@@ -49,6 +50,8 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showAddMovementForm, setShowAddMovementForm] = useState(false);
+  const [editingMovementId, setEditingMovementId] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [newMovement, setNewMovement] = useState<StockMovementFormData>({
     date: new Date().toISOString().split('T')[0],
     stockedIn: 0,
@@ -56,6 +59,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
     remarks: '',
     sign: '',
   });
+  const [editedMovement, setEditedMovement] = useState<StockMovement | null>(null);
   const stockCardRef = useRef<HTMLDivElement>(null);
 
   // Fetch stock product data
@@ -79,16 +83,19 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
           }
 
           // Parse each stock movement from string to object
-          const parsedStockMovements = stockProductData.stockMovements.map((movement: any) => {
+          const parsedStockMovements = stockProductData.stockMovements.map((movement: any, index: number) => {
             if (typeof movement === 'string') {
               try {
-                return JSON.parse(movement);
+                const parsedMovement = JSON.parse(movement);
+                // Add a unique ID to each movement for editing purposes
+                return { ...parsedMovement, id: `movement-${index}` };
               } catch (error) {
                 console.error('Error parsing stock movement:', error);
                 return null;
               }
             }
-            return movement;
+            // Add ID to existing object movements too
+            return { ...movement, id: `movement-${index}` };
           }).filter(Boolean); // Remove any null values
 
           // Create a properly formatted StockProduct object
@@ -155,13 +162,108 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
     fetchStockProduct();
   }, [params.id, router]);
 
-  // Handle form input changes
+  // Handle form input changes for new movement
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setNewMovement(prev => ({
       ...prev,
       [name]: name === 'stockedIn' || name === 'stockedOut' ? Number(value) : value
     }));
+  };
+
+  // Handle form input changes for edited movement
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (!editedMovement) return;
+
+    const { name, value } = e.target;
+    setEditedMovement(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        [name]: name === 'stockedIn' || name === 'stockedOut' ? Number(value) : value
+      };
+    });
+  };
+
+  // Start editing a movement
+  const startEditingMovement = (movement: StockMovement) => {
+    setEditingMovementId(movement.id || null);
+    setEditedMovement({ ...movement });
+    setShowAddMovementForm(false); // Close add form if open
+  };
+
+  // Cancel editing
+  const cancelEditing = () => {
+    setEditingMovementId(null);
+    setEditedMovement(null);
+  };
+
+  // Save edited movement
+  const saveEditedMovement = async () => {
+    if (!stockProduct || !editedMovement || !editingMovementId) return;
+
+    try {
+      setIsUpdating(true);
+
+      // Find the index of the movement being edited
+      const movementIndex = stockProduct.stockMovements.findIndex(m => m.id === editingMovementId);
+      if (movementIndex === -1) {
+        throw new Error('Movement not found');
+      }
+
+      // Create updated movements array
+      const updatedMovements = [...stockProduct.stockMovements];
+      updatedMovements[movementIndex] = editedMovement;
+
+      // Recalculate totals and balances for all movements after the edited one
+      for (let i = movementIndex; i < updatedMovements.length; i++) {
+        if (i === 0) {
+          // First movement
+          updatedMovements[i].totalStock = updatedMovements[i].stockedIn;
+          updatedMovements[i].balance = updatedMovements[i].totalStock - updatedMovements[i].stockedOut;
+        } else {
+          // Subsequent movements
+          const prevMovement = updatedMovements[i - 1];
+          updatedMovements[i].totalStock = prevMovement.balance + updatedMovements[i].stockedIn;
+          updatedMovements[i].balance = updatedMovements[i].totalStock - updatedMovements[i].stockedOut;
+        }
+      }
+
+      // Convert movements to strings for Appwrite
+      const updatedMovementStrings = updatedMovements.map(movement => {
+        // Create a copy without the id field which is only used for UI
+        const { id, ...movementWithoutId } = movement;
+        return JSON.stringify(movementWithoutId);
+      });
+
+      // Update in Appwrite
+      await databases.updateDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.stockProductsCollectionId,
+        params.id,
+        {
+          stockMovements: updatedMovementStrings,
+          lastUpdated: new Date().toISOString()
+        }
+      );
+
+      // Update local state
+      const updatedStockProduct = {
+        ...stockProduct,
+        stockMovements: updatedMovements,
+        lastUpdated: new Date().toISOString()
+      };
+
+      setStockProduct(updatedStockProduct);
+      setEditingMovementId(null);
+      setEditedMovement(null);
+      toast.success('Stock movement updated successfully');
+    } catch (error) {
+      console.error('Error updating stock movement:', error);
+      toast.error('Failed to update stock movement');
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   // Handle adding new stock movement
@@ -312,18 +414,28 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
         const html2pdf = window.html2pdf as any;
         const pdfInstance = html2pdf();
 
-        // Configure and generate PDF
+        // Configure and generate PDF with better print settings
         pdfInstance.set({
           margin: [10, 10, 10, 10],
           filename: filename,
-          image: { type: 'jpeg', quality: 0.95 },
+          image: { type: 'jpeg', quality: 0.98 },
           html2canvas: {
-            scale: 2,
+            scale: 2, // Balance between quality and size
             useCORS: true,
             logging: false,
-            letterRendering: true
+            letterRendering: true,
+            backgroundColor: '#ffffff',
+            windowWidth: 1200, // Fixed width for consistent rendering
+            windowHeight: 1600 // Ensure enough height for all content
           },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+          jsPDF: {
+            unit: 'mm',
+            format: 'a4',
+            orientation: 'landscape', // Change to landscape for wider table
+            compress: true,
+            precision: 3,
+            hotfixes: ["px_scaling"] // Fix for scaling issues
+          }
         });
 
         await pdfInstance.from(element).save();
@@ -354,7 +466,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
         <div className="bg-white p-6 rounded-lg shadow-sm border text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Stock Product Not Found</h2>
           <p className="text-gray-700 mb-4">The stock product you're looking for doesn't exist or has been deleted.</p>
-          <a
+          <Link
             href="/admin/stock-manager"
             className="inline-flex items-center text-blue-600 hover:text-blue-800 px-4 py-2 rounded-lg active:bg-blue-50 transition-all duration-200 touch-manipulation"
             style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -374,7 +486,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
               />
             </svg>
             Back to Stock Manager
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -386,7 +498,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
 
       {/* Back button with animation - improved for mobile */}
       <div className="mb-6">
-        <a
+        <Link
           href="/admin/stock-manager"
           className="inline-flex items-center px-4 py-3 rounded-lg text-gray-700 hover:text-black hover:bg-gray-100 active:bg-gray-200 transition-all duration-200 touch-manipulation"
           style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -406,13 +518,13 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
             />
           </svg>
           Back to Stock Manager
-        </a>
+        </Link>
       </div>
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-pink-500 bg-clip-text text-transparent flex items-center">
+          <h1 className="text-4xl font-bold text-gray-900 flex items-center">
             <span className="text-gray-900 mr-2 inline-block">📋</span>
             {stockProduct.name}
           </h1>
@@ -451,19 +563,79 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
                 <img
                   src="/logo.png"
                   alt="Cepoka Logo"
-                  className="h-20 w-20 mr-5 object-contain drop-shadow-md"
+                  className="h-16 w-16 mr-5 object-contain drop-shadow-md"
+                  style={{ objectFit: "contain" }}
                 />
                 <div>
-                  <h2 className="text-3xl font-bold uppercase bg-gradient-to-r from-blue-600 to-pink-500 bg-clip-text text-transparent drop-shadow-sm">CEPOKA BEAUTY HUB</h2>
+                  <h2 className="text-3xl font-bold uppercase text-gray-900 drop-shadow-sm">CEPOKA BEAUTY HUB</h2>
                   <h3 className="text-xl font-semibold text-gray-900">STOCK CARD</h3>
                 </div>
               </div>
             </div>
-            <div className="border-t border-b border-gray-300 py-3 my-4">
-              <p className="text-gray-900 font-bold text-center text-2xl">
-                Product: <span className="text-gray-900 font-extrabold bg-gradient-to-r from-blue-600 to-pink-500 bg-clip-text text-transparent">{stockProduct.name}</span>
-              </p>
+            <div className="border-t border-b border-gray-300 py-3 my-4 relative overflow-hidden">
+              <div className="absolute inset-0 flex items-center justify-center opacity-10 blur-md print-watermark">
+                <img
+                  src="/logo.png"
+                  alt="Cepoka Logo"
+                  className="w-48 h-auto object-contain"
+                  style={{ aspectRatio: "1/1" }}
+                />
+              </div>
+              <div className="flex justify-between items-center px-4 relative z-10">
+                <div className="text-gray-900 font-bold text-xl md:text-2xl">
+                  Product:
+                </div>
+                <div className="text-gray-900 font-extrabold text-xl md:text-2xl">
+                  {stockProduct.name}
+                </div>
+              </div>
             </div>
+
+            {/* Add print-specific styles */}
+            <style jsx global>{`
+              @media print {
+                .print-watermark {
+                  position: absolute !important;
+                  top: 50% !important;
+                  left: 50% !important;
+                  transform: translate(-50%, -50%) !important;
+                  opacity: 0.1 !important;
+                  z-index: 1 !important;
+                }
+
+                table {
+                  width: 100% !important;
+                  page-break-inside: auto !important;
+                  font-size: 10pt !important;
+                }
+
+                table th, table td {
+                  color: #111827 !important; /* text-gray-900 */
+                  print-color-adjust: exact !important;
+                  -webkit-print-color-adjust: exact !important;
+                  padding: 4px !important;
+                  font-size: 10pt !important;
+                }
+
+                h2, h3 {
+                  color: #111827 !important;
+                  print-color-adjust: exact !important;
+                  -webkit-print-color-adjust: exact !important;
+                }
+
+                img {
+                  max-width: 100% !important;
+                  height: auto !important;
+                  object-fit: contain !important;
+                }
+
+                /* Ensure all content is visible */
+                @page {
+                  size: landscape;
+                  margin: 0.5cm;
+                }
+              }
+            `}</style>
           </div>
 
           <div className="overflow-x-auto">
@@ -478,26 +650,120 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
                   <th className="border border-gray-300 px-4 py-2 text-gray-900 font-semibold">Balance</th>
                   <th className="border border-gray-300 px-4 py-2 text-gray-900 font-semibold">Remarks</th>
                   <th className="border border-gray-300 px-4 py-2 text-gray-900 font-semibold">Sign</th>
+                  <th className="border border-gray-300 px-4 py-2 text-gray-900 font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {stockProduct.stockMovements.map((movement, index) => (
-                  <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="border border-gray-300 px-4 py-2 text-gray-800 font-medium">{format(parseISO(movement.date), "MMM dd, yyyy")}</td>
-                    <td className="border border-gray-300 px-4 py-2 text-center text-gray-800">
-                      {movement.stockedIn > 0 ? movement.stockedIn : movement.stockedOut}
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2 text-center text-gray-800">
-                      {movement.stockedIn > 0 ? movement.stockedIn : '-'}
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2 text-center text-gray-800 font-medium">{movement.totalStock}</td>
-                    <td className="border border-gray-300 px-4 py-2 text-center text-gray-800">
-                      {movement.stockedOut > 0 ? movement.stockedOut : '-'}
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2 text-center text-gray-800 font-medium">{movement.balance}</td>
-                    <td className="border border-gray-300 px-4 py-2 text-gray-800">{movement.remarks}</td>
-                    <td className="border border-gray-300 px-4 py-2 text-gray-800">{movement.sign || '-'}</td>
-                  </tr>
+                  editingMovementId === movement.id ? (
+                    // Edit form row
+                    <tr key={`edit-${movement.id}`} className="bg-blue-50">
+                      <td className="border border-gray-300 px-2 py-1">
+                        <input
+                          type="date"
+                          name="date"
+                          value={editedMovement?.date.split('T')[0] || ''}
+                          onChange={handleEditInputChange}
+                          className="w-full px-2 py-1 text-sm border border-gray-400 rounded bg-gray-50 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1 text-center">
+                        {/* Calculated field, not editable */}
+                        {editedMovement?.stockedIn && editedMovement.stockedIn > 0
+                          ? editedMovement.stockedIn
+                          : editedMovement?.stockedOut || 0}
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1">
+                        <input
+                          type="number"
+                          name="stockedIn"
+                          min="0"
+                          value={editedMovement?.stockedIn || 0}
+                          onChange={handleEditInputChange}
+                          className="w-full px-2 py-1 text-sm border border-gray-400 rounded bg-gray-50 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1 text-center text-gray-500">
+                        {/* Will be recalculated */}
+                        Auto
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1">
+                        <input
+                          type="number"
+                          name="stockedOut"
+                          min="0"
+                          value={editedMovement?.stockedOut || 0}
+                          onChange={handleEditInputChange}
+                          className="w-full px-2 py-1 text-sm border border-gray-400 rounded bg-gray-50 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1 text-center text-gray-500">
+                        {/* Will be recalculated */}
+                        Auto
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1">
+                        <input
+                          type="text"
+                          name="remarks"
+                          value={editedMovement?.remarks || ''}
+                          onChange={handleEditInputChange}
+                          className="w-full px-2 py-1 text-sm border border-gray-400 rounded bg-gray-50 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1">
+                        <input
+                          type="text"
+                          name="sign"
+                          value={editedMovement?.sign || ''}
+                          onChange={handleEditInputChange}
+                          className="w-full px-2 py-1 text-sm border border-gray-400 rounded bg-gray-50 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1">
+                        <div className="flex space-x-1">
+                          <button
+                            onClick={saveEditedMovement}
+                            disabled={isUpdating}
+                            className="bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600"
+                          >
+                            {isUpdating ? 'Saving...' : 'Save'}
+                          </button>
+                          <button
+                            onClick={cancelEditing}
+                            className="bg-gray-300 text-gray-700 px-2 py-1 rounded text-xs hover:bg-gray-400"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    // Normal display row
+                    <tr key={movement.id || index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      <td className="border border-gray-300 px-4 py-2 text-gray-900 font-medium">{format(parseISO(movement.date), "MMM dd, yyyy")}</td>
+                      <td className="border border-gray-300 px-4 py-2 text-center text-gray-900">
+                        {movement.stockedIn > 0 ? movement.stockedIn : movement.stockedOut}
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2 text-center text-gray-900">
+                        {movement.stockedIn > 0 ? movement.stockedIn : '-'}
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2 text-center text-gray-900 font-medium">{movement.totalStock}</td>
+                      <td className="border border-gray-300 px-4 py-2 text-center text-gray-900">
+                        {movement.stockedOut > 0 ? movement.stockedOut : '-'}
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2 text-center text-gray-900 font-medium">{movement.balance}</td>
+                      <td className="border border-gray-300 px-4 py-2 text-gray-900">{movement.remarks}</td>
+                      <td className="border border-gray-300 px-4 py-2 text-gray-900">{movement.sign || '-'}</td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        <button
+                          onClick={() => startEditingMovement(movement)}
+                          className="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600"
+                        >
+                          Edit
+                        </button>
+                      </td>
+                    </tr>
+                  )
                 ))}
               </tbody>
             </table>
@@ -511,7 +777,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => setShowAddMovementForm(!showAddMovementForm)}
-          className="bg-gradient-to-r from-[#1E90FF] to-[#FF69B4] text-white px-4 py-2 rounded-lg font-medium hover:shadow-md transition-all"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 hover:shadow-md transition-all"
         >
           {showAddMovementForm ? 'Cancel' : 'Add Stock Movement'}
         </motion.button>
@@ -535,7 +801,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
                   name="date"
                   value={newMovement.date}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-gray-400 rounded-lg bg-gray-50 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
               </div>
@@ -552,7 +818,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
                   min="0"
                   value={newMovement.stockedIn}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-gray-400 rounded-lg bg-gray-50 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
@@ -568,7 +834,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
                   min="0"
                   value={newMovement.stockedOut}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-gray-400 rounded-lg bg-gray-50 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
@@ -583,7 +849,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
                   name="sign"
                   value={newMovement.sign}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-gray-400 rounded-lg bg-gray-50 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Your name"
                 />
               </div>
@@ -600,7 +866,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
                 rows={2}
                 value={newMovement.remarks}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-2 border border-gray-400 rounded-lg bg-gray-50 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Any additional notes about this movement"
               />
             </div>
@@ -612,7 +878,7 @@ const StockProductDetailPage = ({ params }: { params: { id: string } }) => {
                 disabled={isSubmitting}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className={`bg-gradient-to-r from-[#1E90FF] to-[#FF69B4] text-white px-6 py-2 rounded-lg font-medium hover:shadow-md transition-all ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+                className={`bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 hover:shadow-md transition-all ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
                   }`}
               >
                 {isSubmitting ? (

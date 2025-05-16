@@ -595,7 +595,7 @@ const AdminPage = () => {
 
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 sm:mb-12">
                     <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 text-center sm:text-left tracking-tight">
-                        Product Management
+                        Product Manager
                     </h1>
                     {/* Mobile-optimized navigation buttons */}
                     <div className="flex flex-col sm:flex-row justify-center sm:justify-end gap-3 mt-4 sm:mt-0">

@@ -160,19 +160,40 @@ const ProductUploaderPage = () => {
       let successCount = 0;
       let failCount = 0;
 
-      // Create products
-      for (const product of mockProducts) {
-        const success = await createProduct(product);
+      // Process in batches of 10 for better performance and UI feedback
+      const batchSize = 10;
+      const batches = Math.ceil(totalProducts / batchSize);
 
-        if (success) {
-          successCount++;
-        } else {
-          failCount++;
-        }
+      for (let batchIndex = 0; batchIndex < batches; batchIndex++) {
+        const startIndex = batchIndex * batchSize;
+        const endIndex = Math.min(startIndex + batchSize, totalProducts);
+        const batch = mockProducts.slice(startIndex, endIndex);
+
+        // Process batch in parallel for faster creation
+        const results = await Promise.all(
+          batch.map(async (product) => {
+            try {
+              const success = await createProduct(product);
+              return { success, product };
+            } catch (err) {
+              console.error(`Error in batch processing for ${product.name}:`, err);
+              return { success: false, product };
+            }
+          })
+        );
+
+        // Update counts and progress
+        results.forEach(({ success }) => {
+          if (success) {
+            successCount++;
+          } else {
+            failCount++;
+          }
+        });
 
         setProgress(prev => ({
           ...prev,
-          current: prev.current + 1
+          current: Math.min(startIndex + batchSize, totalProducts)
         }));
       }
 

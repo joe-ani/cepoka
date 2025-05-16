@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import Link from 'next/link';
 import SpinningLoader from '@/src/app/Components/SpinningLoader';
 import { databases, appwriteConfig } from '@/src/lib/appwrite';
 import { ID } from 'appwrite';
@@ -122,10 +121,8 @@ STOCK_CATEGORIES.forEach(category => {
 });
 
 const MockDataPage = () => {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [addedCount, setAddedCount] = useState(0);
-  const [totalCount, setTotalCount] = useState(mockStockProducts.length);
 
   const addMockData = async () => {
     try {
@@ -165,12 +162,13 @@ const MockDataPage = () => {
           // Add a small delay to avoid rate limiting
           await new Promise(resolve => setTimeout(resolve, 200));
 
-        } catch (error: any) {
+        } catch (error) {
           console.error(`Error adding mock product ${product.name}:`, error);
 
           // Only show toast for first few errors to avoid flooding
           if (successCount < 5) {
-            toast.error(`Failed to add ${product.name}: ${error.message || 'Unknown error'}`);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            toast.error(`Failed to add ${product.name}: ${errorMessage}`);
           }
 
           // Try again with a longer delay
@@ -209,9 +207,10 @@ const MockDataPage = () => {
       }
 
       toast.success(`Added ${successCount} mock stock products successfully!`);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error adding mock data:', error);
-      toast.error(`Failed to add mock data: ${error.message || 'Unknown error'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      toast.error(`Failed to add mock data: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
@@ -221,7 +220,7 @@ const MockDataPage = () => {
     <div className="p-4 max-w-7xl mt-28 sm:mt-32 md:mt-40 mx-auto pt-8 sm:pt-10">
       {/* Back button with animation - improved for mobile */}
       <div className="mb-6">
-        <a
+        <Link
           href="/admin/stock-manager"
           className="inline-flex items-center px-4 py-3 rounded-lg text-gray-700 hover:text-black hover:bg-gray-100 active:bg-gray-200 transition-all duration-200 touch-manipulation"
           style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -241,7 +240,7 @@ const MockDataPage = () => {
             />
           </svg>
           Back to Stock Manager
-        </a>
+        </Link>
       </div>
 
       <div className="mb-6">
@@ -300,7 +299,7 @@ const MockDataPage = () => {
               <div className="flex items-center">
                 <SpinningLoader size="small" className="mr-2" />
                 <span>
-                  Adding Products ({addedCount}/{totalCount})...
+                  Adding Products ({addedCount}/{mockStockProducts.length})...
                 </span>
               </div>
             ) : (

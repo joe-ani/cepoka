@@ -15,7 +15,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  
+
 }
 
 @media (prefers-color-scheme: dark) {
@@ -64,14 +64,14 @@ body {
   content: "";
   display: block;
   position: absolute;
-  top: -75px;     /* Positioned at edge */
-  right: -75px;   /* Positioned at edge */
-  background: radial-gradient(
-    circle,
-    rgba(0, 115, 255, 0.8) 0%,
-    rgba(0, 115, 255, 0.4) 30%,
-    rgba(0, 115, 255, 0) 70%
-  );
+  top: -75px;
+  /* Positioned at edge */
+  right: -75px;
+  /* Positioned at edge */
+  background: radial-gradient(circle,
+      rgba(0, 115, 255, 0.8) 0%,
+      rgba(0, 115, 255, 0.4) 30%,
+      rgba(0, 115, 255, 0) 70%);
   width: 200px;
   height: 200px;
 
@@ -79,6 +79,7 @@ body {
     width: 300px;
     height: 300px;
   }
+
   height: 300px;
   border-radius: 50%;
   filter: blur(50px);
@@ -96,14 +97,14 @@ body {
   content: "";
   display: block;
   position: absolute;
-  bottom: -75px;  /* Positioned at edge */
-  left: -75px;    /* Positioned at edge */
-  background: radial-gradient(
-    circle,
-    rgba(234, 136, 254, 0.8) 0%,
-    rgba(234, 136, 254, 0.4) 30%,
-    rgba(234, 136, 254, 0) 70%
-  );
+  bottom: -75px;
+  /* Positioned at edge */
+  left: -75px;
+  /* Positioned at edge */
+  background: radial-gradient(circle,
+      rgba(234, 136, 254, 0.8) 0%,
+      rgba(234, 136, 254, 0.4) 30%,
+      rgba(234, 136, 254, 0) 70%);
   width: 200px;
   height: 200px;
 
@@ -111,6 +112,7 @@ body {
     width: 300px;
     height: 300px;
   }
+
   border-radius: 50%;
   filter: blur(50px);
   animation: breatheEffect 6s ease-in-out infinite;
@@ -125,11 +127,13 @@ body {
     opacity: 0.8;
     filter: blur(50px);
   }
+
   50% {
     transform: scale(1.3);
     opacity: 0.6;
     filter: blur(60px);
   }
+
   100% {
     transform: scale(1);
     opacity: 0.8;
@@ -147,7 +151,27 @@ body {
   background: linear-gradient(to bottom, #dddddd, #b2b2b2);
 }
 
+/* Custom scrollbar styles */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
 
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
 
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #1E90FF, #FF69B4);
+  border-radius: 10px;
+}
 
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #0077e6, #ff4aa5);
+}
 
+/* For Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #1E90FF #f1f1f1;
+}

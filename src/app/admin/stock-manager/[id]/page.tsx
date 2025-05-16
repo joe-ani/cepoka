@@ -43,18 +43,6 @@ interface StockMovementFormData {
 
 // We'll use a type assertion in the function instead of declaring the global interface
 
-// This function demonstrates the proper way to use React.use() for future Next.js versions
-// It's not used in the current component but shows awareness of the future API
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> | { id: string } }) {
-  // Unwrap params using React.use() for future compatibility
-  const unwrappedParams = params instanceof Promise ? await params : params;
-  const id = unwrappedParams.id;
-
-  return {
-    title: `Stock Product: ${id}`,
-  };
-}
-
 // Define the component as a proper Next.js page component
 export default function Page({ params }: { params: { id: string } }) {
   // Access the ID directly from params

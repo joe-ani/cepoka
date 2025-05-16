@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -37,8 +37,8 @@ const EnhancedMediaCarousel = ({
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Function to go to next slide
-  const goToNextSlide = () => {
+  // Function to go to next slide - wrapped in useCallback to prevent recreation on every render
+  const goToNextSlide = useCallback(() => {
     if (isTransitioning) return;
 
     setIsTransitioning(true);
@@ -46,10 +46,10 @@ const EnhancedMediaCarousel = ({
       setCurrentIndex((prevIndex) => (prevIndex + 1) % items.length);
       setIsTransitioning(false);
     }, 500); // Half a second for the fade out effect
-  };
+  }, [isTransitioning, items.length]);
 
-  // Function to go to previous slide
-  const goToPrevSlide = () => {
+  // Function to go to previous slide - wrapped in useCallback to prevent recreation on every render
+  const goToPrevSlide = useCallback(() => {
     if (isTransitioning) return;
 
     setIsTransitioning(true);
@@ -57,7 +57,7 @@ const EnhancedMediaCarousel = ({
       setCurrentIndex((prevIndex) => (prevIndex - 1 + items.length) % items.length);
       setIsTransitioning(false);
     }, 500);
-  };
+  }, [isTransitioning, items.length]);
 
   // Function to go to a specific slide
   const goToSlide = (index: number) => {
@@ -81,7 +81,7 @@ const EnhancedMediaCarousel = ({
         clearInterval(timerRef.current);
       }
     };
-  }, [items.length, interval, autoPlay, isPaused, isTransitioning, goToNextSlide]);
+  }, [items.length, interval, autoPlay, isPaused, goToNextSlide]);
 
   // Handle video playback
   useEffect(() => {

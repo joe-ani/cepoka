@@ -16,34 +16,34 @@ const Footer = () => {
         setIsMounted(true);
     }, []);
 
-    // Direct function instead of useCallback to avoid stale closures
-    const handleAdminAccess = () => {
-        if (!isMounted || typeof window === 'undefined') return;
-
-        try {
-            // Get the current value directly from state
-            const currentKey = adminKey;
-            console.log("Checking admin key:", currentKey);
-
-            // Hardcoded comparison with the exact string
-            if (currentKey === "fugo101") {
-                console.log("Admin key is valid, setting localStorage and redirecting");
-                // Store the exact string
-                localStorage.setItem('adminKey', "fugo101");
-                // Redirect to admin page
-                window.location.href = '/admin';
-            } else {
-                console.log("Invalid admin key:", currentKey);
-                alert('Invalid admin key');
-                setAdminKey('');
-            }
-        } catch (error) {
-            console.error('Error accessing admin:', error);
-            alert('An error occurred');
-        }
-    };
-
     useEffect(() => {
+        // Define handleAdminAccess inside the useEffect to avoid dependency issues
+        const handleAdminAccess = () => {
+            if (!isMounted || typeof window === 'undefined') return;
+
+            try {
+                // Get the current value directly from state
+                const currentKey = adminKey;
+                console.log("Checking admin key:", currentKey);
+
+                // Hardcoded comparison with the exact string
+                if (currentKey === "fugo101") {
+                    console.log("Admin key is valid, setting localStorage and redirecting");
+                    // Store the exact string
+                    localStorage.setItem('adminKey', "fugo101");
+                    // Redirect to admin page
+                    window.location.href = '/admin';
+                } else {
+                    console.log("Invalid admin key:", currentKey);
+                    alert('Invalid admin key');
+                    setAdminKey('');
+                }
+            } catch (error) {
+                console.error('Error accessing admin:', error);
+                alert('An error occurred');
+            }
+        };
+
         const handleKeyPress = (event: KeyboardEvent) => {
             if (event.key === 'Enter') {
                 handleAdminAccess();
@@ -54,7 +54,7 @@ const Footer = () => {
             window.addEventListener('keydown', handleKeyPress);
             return () => window.removeEventListener('keydown', handleKeyPress);
         }
-    }, [showAdminPrompt, isMounted, handleAdminAccess]);
+    }, [showAdminPrompt, isMounted, adminKey]);
 
     const handleGetDirections = () => {
         if (!isMounted || typeof window === 'undefined') return;

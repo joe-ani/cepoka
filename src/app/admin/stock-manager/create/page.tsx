@@ -16,31 +16,31 @@ import { ID } from 'appwrite';
 const STOCK_CATEGORIES = [
     {
         id: "spa-salon-furniture",
-        name: "SPA AND SALON FURNITURES",
+        name: "Spa and Salon Furnitures",
         icon: "🪑",
         color: "from-blue-500 to-blue-700",
     },
     {
         id: "beauty-equipment",
-        name: "BEAUTY EQUIPMENT",
+        name: "Beauty Equipment",
         icon: "⚙️",
         color: "from-pink-500 to-pink-700",
     },
     {
         id: "facial-waxing",
-        name: "FACIALS AND WAXING",
+        name: "Facials and Waxing",
         icon: "🧖‍♀️",
         color: "from-purple-500 to-purple-700",
     },
     {
         id: "skincare-accessories",
-        name: "SKINCARE PRODUCTS & ACCESSORIES",
+        name: "Skincare Products & Accessories",
         icon: "🧴",
         color: "from-green-500 to-green-700",
     },
     {
         id: "pedicure-manicure",
-        name: "PEDICURE AND MANICURE",
+        name: "Pedicure and Manicure",
         icon: "💅",
         color: "from-yellow-500 to-yellow-700",
     },

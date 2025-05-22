@@ -3,8 +3,9 @@ import React, { useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import LoadingScreen from "@/src/app/Components/LoadingScreen";
-import BlurImage from "@/src/app/Components/BlurImage";
+import SpinningLoader from "@/src/app/Components/SpinningLoader"; // Import the SpinningLoader component
 
 // Match the Appwrite data structure
 interface Product {
@@ -74,17 +75,23 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <>
-      {/* Loading Screen */}
+      {/* Loading Screen with animation */}
       {isLoading && (
-        <LoadingScreen
-          message={`Loading ${product.name}...`}
-        />
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"
+        >
+          <div className="bg-white rounded-lg p-6 shadow-xl">
+            <SpinningLoader size="large" text={`Loading ${product.name}...`} />
+          </div>
+        </motion.div>
       )}
 
       <motion.div
         ref={ref}
         onClick={handleProductClick}
-        className="latest-product-card w-[150px] h-[200px] sm:w-[200px] sm:h-[250px] flex flex-col items-center
+        className="latest-product-card w-[160px] h-[220px] sm:w-[220px] sm:h-[280px] flex flex-col items-center
         relative rounded-[15px] sm:rounded-[25px] cursor-pointer transition-colors duration-200 overflow-hidden"
         initial="hidden"
         animate={inView ? "visible" : "hidden"}
@@ -99,17 +106,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Product Image */}
         <div className="w-full h-full relative">
           {product.imageUrls && product.imageUrls.length > 0 ? (
-            <BlurImage
+            <Image
               className="object-cover"
               fill
               alt={product.name || "Product image"}
               src={product.imageUrls[0]}
-              priority={false}
               unoptimized={true}
-              sizes="(max-width: 640px) 150px, 200px"
-              objectFit="cover"
-              placeholder="blur"
-              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFFOTBGRiIgc3RvcC1vcGFjaXR5PSIwLjIiIC8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjRkY2OUI0IiBzdG9wLW9wYWNpdHk9IjAuMiIgLz48L2xpbmVhckdyYWRpZW50PjxmaWx0ZXIgaWQ9ImJsdXIiIHg9Ii01MCUiIHk9Ii01MCUiIHdpZHRoPSIyMDAlIiBoZWlnaHQ9IjIwMCUiPjxmZUdhdXNzaWFuQmx1ciBpbj0iU291cmNlR3JhcGhpYyIgc3RkRGV2aWF0aW9uPSIxMCIgLz48L2ZpbHRlcj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2Y1ZjVmNSIgLz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyYWRpZW50KSIgLz48L3N2Zz4="
+              sizes="(max-width: 640px) 160px, 220px"
+              style={{ objectFit: 'cover' }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-200">
@@ -141,12 +145,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="price-card w-[90%] h-[70px] sm:h-[80px] rounded-[10px] sm:rounded-[15px]
       absolute bottom-3 bg-gradient-to-r from-black/80 to-black/40 backdrop-blur-[2px]
       flex flex-col justify-center gap-1 sm:gap-2">
-          <div className="px-2 sm:px-3 text-white font-semibold text-xs sm:text-sm truncate">
+          <div className="px-3 sm:px-4 text-white font-semibold text-xs sm:text-sm truncate">
             {product.name}
           </div>
           <div className="w-full h-[1px] bg-[#dddd]"></div>
-          <div className="flex items-center justify-between px-2 sm:px-3">
-            <p className="text-white font-medium text-xs">₦{product.price}</p>
+          <div className="flex items-center justify-between px-3 sm:px-4">
+            <p className="text-white font-medium text-xs sm:text-sm">₦{product.price}</p>
           </div>
         </div>
       </motion.div>

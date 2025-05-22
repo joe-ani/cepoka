@@ -106,9 +106,15 @@ const CategoriesModal: React.FC<CategoriesModalProps> = ({ isOpen, onClose }) =>
             {/* Categories Grid */}
             <div className="p-3 sm:p-4 md:p-6 overflow-y-auto max-h-[40vh] sm:max-h-[50vh]">
               {loading ? (
-                <div className="flex justify-center items-center py-10">
-                  <SpinningLoader size="small" text="Loading categories..." />
-                </div>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex justify-center items-center py-10"
+                >
+                  <div className="bg-white/80 backdrop-blur-sm p-4 rounded-lg">
+                    <SpinningLoader size="medium" text="Loading categories..." />
+                  </div>
+                </motion.div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
                   {categories.map((category) => (

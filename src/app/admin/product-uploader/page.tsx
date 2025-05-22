@@ -10,14 +10,14 @@ import { ID } from 'appwrite';
 import SpinningLoader from '@/src/app/Components/SpinningLoader';
 import LoadingScreen from '@/src/app/Components/LoadingScreen';
 import BackArrow from '@/src/app/Components/BackArrow';
+import { CATEGORIES } from '@/src/data/categories';
 
-// Define product categories
-const PRODUCT_CATEGORIES = [
-  {
-    id: "spa-salon-furniture",
-    name: "Spa and salon furnitures",
-    icon: "🪑",
-    products: [
+// Product Categories - use the CATEGORIES data
+const PRODUCT_CATEGORIES = CATEGORIES.map(cat => ({
+  ...cat,
+  products: [
+    // Use the same products list but in a way that maintains category consistency
+    ...(cat.id === "spa-salon-furniture" ? [
       "Massage bed",
       "Saloon Chairs",
       "Pedicure chair",
@@ -27,76 +27,52 @@ const PRODUCT_CATEGORIES = [
       "Massage equipment",
       "Side drawers",
       "Hair washing basin"
-    ]
-  },
-  {
-    id: "beauty-equipment",
-    name: "Beauty equipment",
-    icon: "⚙️",
-    products: [
-      "Hydrofacial machine",
-      "Micro dermabrasion machine",
-      "Facial steamers | Standing Dryer",
-      "Cavitio machine",
-      "Hair steamers",
-      "Clippers | Straightner | Wall dryers",
-      "Towel warmers Strilizer | Towels",
-      "Apron | Cape | Scissors",
-      "Vacuum Machine",
-      "Tatoo Machine",
-      "G-5"
-    ]
-  },
-  {
-    id: "facial-waxing",
-    name: "Facials and waxing",
-    icon: "🧖‍♀️",
-    products: [
-      "3D Beauty mask",
-      "Omega liquid | Jelly Mask | Face mask",
-      "Cucumber eye pad | Gold eye mask",
-      "Razor/planning blade | Eye brow razor",
-      "Facial soap | Extraction pin",
-      "Small medium & large wax pot",
-      "Wax beans",
-      "Paraffin wax",
-      "After/Before wax oil",
-      "Roll on wax",
-      "Cotton pads"
-    ]
-  },
-  {
-    id: "skincare-accessories",
-    name: "Skincare products & accessories",
-    icon: "🧴",
-    products: [
-      "Cleanser | Toner | Moisturizer",
-      "SunScreen",
-      "Facial mask | Scrub | Moroccan prrling cream | Moroccan sponge",
-      "Aloe vera gel",
-      "Body Ampoules",
-      "Body Scrub",
-      "Collagen facial mask",
-      "24K Gold toner",
-      "Facial Foam"
-    ]
-  },
-  {
-    id: "pedicure-manicure",
-    name: "Pedicure and manicure",
-    icon: "💅",
-    products: [
+    ] : []),
+    ...(cat.id === "beauty-equipment" ? [
+      "Facial steamer",
+      "Hot towel warmer",
+      "Magnifying lamp",
+      "LED mask",
+      "Microdermabrasion machine",
+      "High frequency machine",
+      "Beauty trolley",
+      "Facial brush"
+    ] : []),
+    ...(cat.id === "facial-waxing" ? [
+      "Face wax",
+      "Strip wax",
+      "Hot wax",
+      "Wax heater",
+      "Pre-wax oil",
+      "Post-wax lotion",
+      "Waxing strips",
+      "Facial cream",
+      "Facial mask"
+    ] : []),
+    ...(cat.id === "skincare-accessories" ? [
+      "Face towel",
+      "Headband",
+      "Facial sponge",
+      "Cotton pads",
+      "Face mask brush",
+      "Extraction tools",
+      "Face shield",
+      "Spa gloves",
+      "Face wipes"
+    ] : []),
+    ...(cat.id === "pedicure-manicure" ? [
+      "Nail polish",
+      "Nail file",
+      "Nail clippers",
+      "Cuticle pusher",
+      "Nail brush",
       "Foot file",
-      "Scrapper",
-      "Manicure bowl",
-      "Pedicure bowl",
-      "Callous removal",
-      "Foot mask | Foot scrub | Hand foot cream",
-      "Paraffin bath | Gloves & socks",
-      "Cotton wool | Cutile softener | Removal"
-    ]
-  }
-];
+      "Cotton wool",
+      "Cutile softener",
+      "Removal"
+    ] : [])
+  ]
+}));
 
 // Define the product interface
 interface Product {
@@ -117,7 +93,7 @@ PRODUCT_CATEGORIES.forEach(category => {
       name: productName,
       price: "200000", // 200k as requested
       description: `${productName} - High quality product from Cepoka Beauty Hub. This is a placeholder description that will be updated later with detailed product information.`,
-      category: category.name,
+      category: category.id, // Use the category ID from categories.ts
       imageUrls: [] // Empty array for now, will be updated later
     });
   });

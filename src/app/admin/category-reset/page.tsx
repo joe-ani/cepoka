@@ -14,31 +14,31 @@ import { fetchCategories, deleteCategory, addCategory } from '@/src/services/cat
 const DESIRED_CATEGORIES = [
   {
     id: "spa-salon-furniture",
-    name: "SPA AND SALON FURNITURES",
+    name: "Spa and Salon Furnitures",
     icon: "🪑",
     imageSrc: "/icons/spa-bed.png",
   },
   {
     id: "beauty-equipment",
-    name: "BEAUTY EQUIPMENT",
+    name: "Beauty Equipment",
     icon: "⚙️",
     imageSrc: "/icons/hairdryer.png",
   },
   {
     id: "facial-waxing",
-    name: "FACIALS AND WAXING",
+    name: "Facials and Waxing",
     icon: "🧖‍♀️",
     imageSrc: "/icons/hot-stone.png",
   },
   {
     id: "skincare-accessories",
-    name: "SKINCARE PRODUCTS & ACCESSORIES",
+    name: "Skincare Products & Accessories",
     icon: "🧴",
     imageSrc: "/icons/slim.png",
   },
   {
     id: "pedicure-manicure",
-    name: "PEDICURE AND MANICURE",
+    name: "Pedicure and Manicure",
     icon: "💅",
     imageSrc: "/icons/nails.png",
   },

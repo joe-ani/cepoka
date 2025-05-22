@@ -17,6 +17,7 @@ interface ProductType {
     price: string;
     description: string;
     imageUrls: string[];
+    category?: string; // Make category optional but include it
 }
 
 interface Props {
@@ -86,14 +87,19 @@ export default function ProductPageClient({ params }: Props) {
         setCurrentImageIndex((prev) =>
             prev === 0 ? product.imageUrls.length - 1 : prev - 1
         );
-    };
-
-    // Add error boundary
+    };    // Add error boundary
     if (!product?.imageUrls?.length) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <SpinningLoader size="large" text="Loading product..." />
-            </div>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="min-h-screen flex items-center justify-center bg-white"
+            >
+                <div className="bg-gray-50 p-8 rounded-xl shadow-lg">
+                    <SpinningLoader size="large" text="Loading product details..." />
+                    <p className="text-gray-500 text-sm mt-4 text-center">Please wait while we fetch the product information</p>
+                </div>
+            </motion.div>
         );
     }
 
@@ -187,7 +193,7 @@ export default function ProductPageClient({ params }: Props) {
                                         onClick={() => setCurrentImageIndex(index)}
                                         className={`relative cursor-pointer rounded-lg overflow-hidden flex-shrink-0
                                             ${currentImageIndex === index
-                                                ? 'ring-2 ring-yellow-500 ring-offset-2'
+                                                ? 'ring-2 ring-[#1E90FF] ring-offset-2'
                                                 : 'opacity-70 hover:opacity-100'
                                             }`}
                                         whileHover={{ scale: 1.05 }}

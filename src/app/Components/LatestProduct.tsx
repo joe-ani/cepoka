@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import SpinningLoader from "./SpinningLoader";
-import BlurImage from "./BlurImage";
+import Image from "next/image";
 import { motion, Variants } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import Link from "next/link";
@@ -159,99 +159,108 @@ const LatestProduct: React.FC = () => {
         </div>
       )}
 
-      <motion.div
-        ref={containerRef}
-        className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full px-4 md:px-8 mx-auto"
-        variants={containerVariants}
-        initial="hidden"
-        animate={containerInView ? "visible" : "hidden"}
-      >
-        {products.map((product) => (
-          <Link
-            href={`/product/${product.name.toLowerCase().replace(/\s+/g, '-')}`}
-            key={product.$id}
-            onClick={() => {
-              // Show loading screen
-              setLoadingProduct(true);
-              // Prevent scrolling
-              document.body.style.overflow = 'hidden';
+      {loading ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="w-full flex justify-center items-center py-16"
+        >
+          <div className="relative">
+            <SpinningLoader size="large" text="Loading latest products..." />
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div
+          ref={containerRef}
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full px-4 md:px-8 mx-auto"
+          variants={containerVariants}
+          initial="hidden"
+          animate={containerInView ? "visible" : "hidden"}
+        >
+          {products.map((product) => (
+            <Link
+              href={`/product/${product.name.toLowerCase().replace(/\s+/g, '-')}`}
+              key={product.$id}
+              onClick={() => {
+                // Show loading screen
+                setLoadingProduct(true);
+                // Prevent scrolling
+                document.body.style.overflow = 'hidden';
 
-              localStorage.setItem("selectedProduct", JSON.stringify({
-                name: product.name,
-                price: product.price,
-                description: product.description,
-                imageUrls: product.imageUrls
-              }));
-            }}
-          >
-            <motion.div
-              className="latest-product-card w-[150px] sm:w-[180px] h-[200px] sm:h-[250px] flex flex-col items-center mx-auto
-              relative rounded-[15px] sm:rounded-[25px] cursor-pointer transition-colors duration-200 overflow-hidden"
-              variants={cardVariants}
-              whileHover={{ y: -5 }}
-              whileTap={{ scale: 0.98 }}
-              style={{
-                backfaceVisibility: "hidden",
-                WebkitFontSmoothing: "subpixel-antialiased"
+                localStorage.setItem("selectedProduct", JSON.stringify({
+                  name: product.name,
+                  price: product.price,
+                  description: product.description,
+                  imageUrls: product.imageUrls
+                }));
               }}
             >
-              {/* Product Image */}
-              <div className="w-full h-full relative">
-                {product.imageUrls && product.imageUrls.length > 0 ? (
-                  <BlurImage
-                    className="object-cover"
-                    fill
-                    alt={product.name || "Product image"}
-                    src={product.imageUrls[0]}
-                    priority={false}
-                    unoptimized={true}
-                    sizes="(max-width: 640px) 150px, 200px"
-                    objectFit="cover"
-                    placeholder="blur"
-                    blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFFOTBGRiIgc3RvcC1vcGFjaXR5PSIwLjIiIC8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjRkY2OUI0IiBzdG9wLW9wYWNpdHk9IjAuMiIgLz48L2xpbmVhckdyYWRpZW50PjxmaWx0ZXIgaWQ9ImJsdXIiIHg9Ii01MCUiIHk9Ii01MCUiIHdpZHRoPSIyMDAlIiBoZWlnaHQ9IjIwMCUiPjxmZUdhdXNzaWFuQmx1ciBpbj0iU291cmNlR3JhcGhpYyIgc3RkRGV2aWF0aW9uPSIxMCIgLz48L2ZpbHRlcj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2Y1ZjVmNSIgLz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyYWRpZW50KSIgLz48L3N2Zz4="
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                    <p className="text-gray-400">No Image</p>
-                  </div>
-                )}
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-              </div>
-
-              {/* Heart icon */}
-              <div
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  toggleLike(product.$id);
+              <motion.div
+                className="latest-product-card w-[160px] sm:w-[220px] h-[220px] sm:h-[280px] flex flex-col items-center mx-auto
+                relative rounded-[15px] sm:rounded-[25px] cursor-pointer transition-colors duration-200 overflow-hidden"
+                variants={cardVariants}
+                whileHover={{ y: -5 }}
+                whileTap={{ scale: 0.98 }}
+                style={{
+                  backfaceVisibility: "hidden",
+                  WebkitFontSmoothing: "subpixel-antialiased"
                 }}
-                className="absolute right-2 sm:right-4 top-2 sm:top-4 z-10 p-1 sm:p-2 cursor-pointer hover:scale-110 transition-transform"
               >
-                <Heart
-                  className="stroke-none"
-                  fill={likedProducts[product.$id] ? "#ff3b5c" : "#ffffff50"}
-                  size={24}
-                  strokeWidth={1}
-                />
-              </div>
+                {/* Product Image */}
+                <div className="w-full h-full relative">
+                  {product.imageUrls && product.imageUrls.length > 0 ? (
+                    <Image
+                      className="object-cover"
+                      fill
+                      alt={product.name || "Product image"}
+                      src={product.imageUrls[0]}
+                      unoptimized={true}
+                      sizes="(max-width: 640px) 160px, 220px"
+                      style={{ objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                      <p className="text-gray-400">No Image</p>
+                    </div>
+                  )}
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                </div>
 
-              {/* Price Card */}
-              <div className="price-card w-[90%] h-[70px] sm:h-[80px] rounded-[10px] sm:rounded-[15px]
-                absolute bottom-3 bg-gradient-to-r from-black/80 to-black/40 backdrop-blur-[2px]
-                flex flex-col justify-center gap-1 sm:gap-2">
-                <div className="px-2 sm:px-3 text-white font-semibold text-xs sm:text-sm truncate">
-                  {product.name}
+                {/* Heart icon */}
+                <div
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleLike(product.$id);
+                  }}
+                  className="absolute right-2 sm:right-4 top-2 sm:top-4 z-10 p-1 sm:p-2 cursor-pointer hover:scale-110 transition-transform"
+                >
+                  <Heart
+                    className="stroke-none"
+                    fill={likedProducts[product.$id] ? "#ff3b5c" : "#ffffff50"}
+                    size={24}
+                    strokeWidth={1}
+                  />
                 </div>
-                <div className="w-full h-[1px] bg-[#dddd]"></div>
-                <div className="flex items-center justify-between px-2 sm:px-3">
-                  <p className="text-white font-medium text-xs">₦{product.price}</p>
+
+                {/* Price Card */}
+                <div className="price-card w-[90%] h-[70px] sm:h-[80px] rounded-[10px] sm:rounded-[15px]
+                  absolute bottom-3 bg-gradient-to-r from-black/80 to-black/40 backdrop-blur-[2px]
+                  flex flex-col justify-center gap-1 sm:gap-2">
+                  <div className="px-3 sm:px-4 text-white font-semibold text-xs sm:text-sm truncate">
+                    {product.name}
+                  </div>
+                  <div className="w-full h-[1px] bg-[#dddd]"></div>
+                  <div className="flex items-center justify-between px-3 sm:px-4">
+                    <p className="text-white font-medium text-xs sm:text-sm">₦{product.price}</p>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          </Link>
-        ))}
-      </motion.div>
+              </motion.div>
+            </Link>
+          ))}
+        </motion.div>
+      )}
 
       {/* Shop button */}
       <motion.div

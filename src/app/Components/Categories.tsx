@@ -1,12 +1,11 @@
 "use client"
 import Image from "next/image";
-import { motion } from "framer-motion"; // For animations
-import { useInView } from "react-intersection-observer"; // For tracking element visibility
+import { motion } from "framer-motion";
+import { useInView } from "react-intersection-observer";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import { fetchCategories } from '@/src/services/categoryService';
-import { Category } from '@/src/services/categoryService';
-import SpinningLoader from "./SpinningLoader";
+import { CATEGORIES } from '@/src/data/categories';
+import { useState, useEffect } from 'react';
+import SpinningLoader from './SpinningLoader';
 
 // Props interface for individual category items
 interface CategoryItemProps {
@@ -19,30 +18,27 @@ interface CategoryItemProps {
 
 // Main Categories component - Renders a grid of category items
 const Categories = () => {
-    const [categories, setCategories] = useState<Category[]>([]);
+    // Use CATEGORIES directly
+    const categories = CATEGORIES;
     const [loading, setLoading] = useState(true);
 
+    // Set loading to false after mounting since we're using static categories
     useEffect(() => {
-        const loadCategories = async () => {
-            try {
-                setLoading(true);
-                const fetchedCategories = await fetchCategories();
-                setCategories(fetchedCategories);
-            } catch (error) {
-                console.error('Error loading categories:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadCategories();
+        setLoading(false);
     }, []);
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center py-20">
-                <SpinningLoader size="medium" text="Loading categories..." />
-            </div>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex justify-center items-center py-20"
+            >
+                <div className="bg-gray-50 p-6 rounded-xl shadow-md">
+                    <SpinningLoader size="medium" text="Loading categories..." />
+                    <p className="text-gray-500 text-sm mt-3 text-center">Preparing categories for you</p>
+                </div>
+            </motion.div>
         );
     }
 
@@ -56,10 +52,10 @@ const Categories = () => {
                         {/* Left: Spa and Salon Furniture */}
                         <div className="flex justify-center">
                             <CategoryItem
-                                key={categories.find(c => c.id === "spa-salon-furniture")?.id || categories[0].id}
-                                imageSrc={categories.find(c => c.id === "spa-salon-furniture")?.imageSrc || categories[0].imageSrc}
-                                label={categories.find(c => c.id === "spa-salon-furniture")?.name || categories[0].name}
-                                categoryId={categories.find(c => c.id === "spa-salon-furniture")?.id || categories[0].id}
+                                key={categories.find((c) => c.id === "spa-salon-furniture")?.id || categories[0].id}
+                                imageSrc={categories.find((c) => c.id === "spa-salon-furniture")?.imageSrc || categories[0].imageSrc}
+                                label={categories.find((c) => c.id === "spa-salon-furniture")?.name || categories[0].name}
+                                categoryId={categories.find((c) => c.id === "spa-salon-furniture")?.id || categories[0].id}
                                 index={0}
                                 isCenter={false}
                             />
@@ -68,10 +64,10 @@ const Categories = () => {
                         {/* Right: Skincare Products */}
                         <div className="flex justify-center">
                             <CategoryItem
-                                key={categories.find(c => c.id === "skincare-accessories")?.id || categories[3].id}
-                                imageSrc={categories.find(c => c.id === "skincare-accessories")?.imageSrc || categories[3].imageSrc}
-                                label={categories.find(c => c.id === "skincare-accessories")?.name || categories[3].name}
-                                categoryId={categories.find(c => c.id === "skincare-accessories")?.id || categories[3].id}
+                                key={categories.find((c) => c.id === "skincare-accessories")?.id || categories[3].id}
+                                imageSrc={categories.find((c) => c.id === "skincare-accessories")?.imageSrc || categories[3].imageSrc}
+                                label={categories.find((c) => c.id === "skincare-accessories")?.name || categories[3].name}
+                                categoryId={categories.find((c) => c.id === "skincare-accessories")?.id || categories[3].id}
                                 index={1}
                                 isCenter={false}
                             />
@@ -81,10 +77,10 @@ const Categories = () => {
                     {/* Middle - Beauty Equipment */}
                     <div className="my-8 md:my-10">
                         <CategoryItem
-                            key={categories.find(c => c.id === "beauty-equipment")?.id || categories[1].id}
-                            imageSrc={categories.find(c => c.id === "beauty-equipment")?.imageSrc || categories[1].imageSrc}
-                            label={categories.find(c => c.id === "beauty-equipment")?.name || categories[1].name}
-                            categoryId={categories.find(c => c.id === "beauty-equipment")?.id || categories[1].id}
+                            key={categories.find((c) => c.id === "beauty-equipment")?.id || categories[1].id}
+                            imageSrc={categories.find((c) => c.id === "beauty-equipment")?.imageSrc || categories[1].imageSrc}
+                            label={categories.find((c) => c.id === "beauty-equipment")?.name || categories[1].name}
+                            categoryId={categories.find((c) => c.id === "beauty-equipment")?.id || categories[1].id}
                             index={2}
                             isCenter={true}
                         />
@@ -95,10 +91,10 @@ const Categories = () => {
                         {/* Left: Facial and Waxing */}
                         <div className="flex justify-center">
                             <CategoryItem
-                                key={categories.find(c => c.id === "facial-waxing")?.id || categories[2].id}
-                                imageSrc={categories.find(c => c.id === "facial-waxing")?.imageSrc || categories[2].imageSrc}
-                                label={categories.find(c => c.id === "facial-waxing")?.name || categories[2].name}
-                                categoryId={categories.find(c => c.id === "facial-waxing")?.id || categories[2].id}
+                                key={categories.find((c) => c.id === "facial-waxing")?.id || categories[2].id}
+                                imageSrc={categories.find((c) => c.id === "facial-waxing")?.imageSrc || categories[2].imageSrc}
+                                label={categories.find((c) => c.id === "facial-waxing")?.name || categories[2].name}
+                                categoryId={categories.find((c) => c.id === "facial-waxing")?.id || categories[2].id}
                                 index={3}
                                 isCenter={false}
                             />
@@ -107,10 +103,10 @@ const Categories = () => {
                         {/* Right: Pedicure and Manicure */}
                         <div className="flex justify-center">
                             <CategoryItem
-                                key={categories.find(c => c.id === "pedicure-manicure")?.id || categories[4].id}
-                                imageSrc={categories.find(c => c.id === "pedicure-manicure")?.imageSrc || categories[4].imageSrc}
-                                label={categories.find(c => c.id === "pedicure-manicure")?.name || categories[4].name}
-                                categoryId={categories.find(c => c.id === "pedicure-manicure")?.id || categories[4].id}
+                                key={categories.find((c) => c.id === "pedicure-manicure")?.id || categories[4].id}
+                                imageSrc={categories.find((c) => c.id === "pedicure-manicure")?.imageSrc || categories[4].imageSrc}
+                                label={categories.find((c) => c.id === "pedicure-manicure")?.name || categories[4].name}
+                                categoryId={categories.find((c) => c.id === "pedicure-manicure")?.id || categories[4].id}
                                 index={4}
                                 isCenter={false}
                             />
@@ -140,24 +136,21 @@ const Categories = () => {
 const CategoryItem: React.FC<CategoryItemProps> = ({ imageSrc, label, categoryId, index, isCenter = false }) => {
     const router = useRouter();
 
-    // Set up intersection observer to trigger animations when item becomes visible
     const { ref, inView } = useInView({
-        triggerOnce: true,    // Animation plays only once
-        threshold: 0.1,       // Trigger when 10% of item is visible
-        rootMargin: "50px",   // Start animation slightly before item enters viewport
+        triggerOnce: true,
+        threshold: 0.1,
+        rootMargin: "50px",
     });
 
-    // Navigation handler for category clicks
     const handleCategoryClick = () => {
         router.push(`/shop?category=${categoryId}`);
     };
 
-    // Check if viewing on mobile device
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
     // Animation variants for mobile view - alternating left/right slide-in
     const mobileVariants = index % 2 === 0 ? {
-        hidden: { opacity: 0, x: -50 },  // Even items slide in from left
+        hidden: { opacity: 0, x: -50 },
         visible: {
             opacity: 1,
             x: 0,
@@ -167,7 +160,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({ imageSrc, label, categoryId
             },
         },
     } : {
-        hidden: { opacity: 0, x: 50 },   // Odd items slide in from right
+        hidden: { opacity: 0, x: 50 },
         visible: {
             opacity: 1,
             x: 0,
@@ -223,7 +216,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({ imageSrc, label, categoryId
         container: '',
         imageContainer: '',
         image: 'p-7 transition-transform duration-300 scale-100 group-hover:scale-105',
-        label: 'text-center text-sm sm:text-base-sm mt-2'
+        label: 'text-center text-sm sm:text-base mt-2'
     };
 
     return (

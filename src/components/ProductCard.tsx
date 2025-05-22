@@ -4,8 +4,7 @@ import { motion, useInView } from "framer-motion";
 import { Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import LoadingScreen from "@/src/app/Components/LoadingScreen";
-import SpinningLoader from "@/src/app/Components/SpinningLoader"; // Import the SpinningLoader component
+import SpinningLoader from "@/src/app/Components/SpinningLoader";
 
 // Match the Appwrite data structure
 interface Product {

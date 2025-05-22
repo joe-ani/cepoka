@@ -105,7 +105,7 @@ export default function ShopContent() {
 
   // Filter products
   const filteredProducts = useMemo(() => {
-    let filtered = products.filter(product => {
+    const filtered = products.filter(product => {
       // Match by category ID (using the predefined category IDs from CATEGORIES)
       const matchesCategory = !activeCategory ||
         product.category === activeCategory ||

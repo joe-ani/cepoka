@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { useSwipeable } from 'react-swipeable';
 import Link from 'next/link';
@@ -15,8 +15,7 @@ import Image from 'next/image';
 import LoadingScreen from '../Components/LoadingScreen';
 import SpinningLoader from '../Components/SpinningLoader';
 import { CATEGORIES } from '@/src/data/categories'
-import { fetchCategories, addCategory, deleteCategory, Category } from '@/src/services/categoryService';
-import { initializeCategories } from '@/src/utils/uploadInitialCategories';
+// Category services are not used in this component
 
 
 // Schema for product form validation using Zod
@@ -57,8 +56,7 @@ interface ProductFormData {
 }
 
 const AdminPage = () => {
-    // Router for navigation
-    const router = useRouter();
+    // Router for navigation is not used in this component
 
     // State management
     const [isAuthorized, setIsAuthorized] = useState(false);        // Authorization status
@@ -81,10 +79,10 @@ const AdminPage = () => {
     const [bulkDeleteProgress, setBulkDeleteProgress] = useState({ current: 0, total: 0 }); // Bulk delete progress
     const [selectedProducts, setSelectedProducts] = useState<string[]>([]); // Selected products for multi-delete
     const [isMultiSelectMode, setIsMultiSelectMode] = useState(false); // Multi-select mode toggle
-    const [loading, setLoading] = useState(false); // Loading state for products fetch
+    // Loading state is handled by isLoading
 
     // State variables for category management
-    const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
+    // Using predefined categories, so these states are not needed
     const [newCategory, setNewCategory] = useState('');
     const [showIconSelector, setShowIconSelector] = useState(false);
     const [selectedIcon, setSelectedIcon] = useState('');
@@ -122,7 +120,7 @@ const AdminPage = () => {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                setLoading(true);
+                setIsLoading(true);
                 const response = await databases.listDocuments(
                     appwriteConfig.databaseId,
                     appwriteConfig.productsCollectionId,
@@ -133,7 +131,7 @@ const AdminPage = () => {
                 console.error('Error fetching products:', error);
                 toast.error('Failed to fetch products');
             } finally {
-                setLoading(false);
+                setIsLoading(false);
             }
         };
 
@@ -353,11 +351,10 @@ const AdminPage = () => {
         }
     };
 
-    const swipeHandlers = useSwipeable({
-        onSwipedLeft: handleNextImage,
-        onSwipedRight: handlePrevImage,
-        trackMouse: true
-    }); const handleCategorySelect = (categoryId: string) => {
+    // Swipe handlers for image navigation
+    // Not used in the current implementation
+
+    const handleCategorySelect = (categoryId: string) => {
         // Only allow selection from predefined CATEGORIES
         const validCategory = CATEGORIES.find(cat => cat.id === categoryId);
         if (validCategory) {
@@ -370,7 +367,7 @@ const AdminPage = () => {
         }
     };// No longer needed as we're using fixed categories
     const handleAddCategory = () => { };    // No longer needed as we're using fixed categories
-    const handleDeleteCategory = () => { };
+    // Category deletion is not implemented as we're using fixed categories
     const confirmCategoryDelete = () => { };
 
     // Bulk delete all products

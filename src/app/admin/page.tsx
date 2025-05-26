@@ -9,7 +9,6 @@ import { z } from 'zod';
 import toast from 'react-hot-toast';
 // import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
-import { useSwipeable } from 'react-swipeable';
 import Link from 'next/link';
 import Image from 'next/image';
 import LoadingScreen from '../Components/LoadingScreen';
@@ -89,6 +88,7 @@ const AdminPage = () => {
     const [showCustomIconInput, setShowCustomIconInput] = useState(false);
     const [customIcon, setCustomIcon] = useState('');
     const [showCategoryDeleteModal, setShowCategoryDeleteModal] = useState<string | null>(null);
+    const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
 
     // Available icons for category selection
     const AVAILABLE_ICONS = ['🛋️', '💆‍♀️', '🧴', '💅', '💇‍♀️', '🪑', '🛁', '🧖‍♀️', '🧼', '💈'];

@@ -133,7 +133,7 @@ const HomeCategories = () => {
 };
 
 // Individual category item component with animations
-const CategoryItem: React.FC<CategoryItemProps> = ({ imageSrc, label, categoryId, index, isCenter, position }) => {
+const CategoryItem: React.FC<CategoryItemProps> = ({ imageSrc, label, categoryId, isCenter, position }) => {
     const router = useRouter();
 
     // Navigation handler for category clicks

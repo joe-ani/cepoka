@@ -78,17 +78,7 @@ const AdminPage = () => {
     const [bulkDeleteProgress, setBulkDeleteProgress] = useState({ current: 0, total: 0 }); // Bulk delete progress
     const [selectedProducts, setSelectedProducts] = useState<string[]>([]); // Selected products for multi-delete
     const [isMultiSelectMode, setIsMultiSelectMode] = useState(false); // Multi-select mode toggle
-    // Loading state is handled by isLoading
-
-    // State variables for category management
-    // Using predefined categories, so these states are not needed
-    const [newCategory, setNewCategory] = useState('');
-    const [showIconSelector, setShowIconSelector] = useState(false);
-    const [selectedIcon, setSelectedIcon] = useState('');
-    const [showCustomIconInput, setShowCustomIconInput] = useState(false);
-    const [customIcon, setCustomIcon] = useState('');    const [showCategoryDeleteModal, setShowCategoryDeleteModal] = useState<string | null>(null);
-    // Available icons for category selection
-    const AVAILABLE_ICONS = ['🛋️', '💆‍♀️', '🧴', '💅', '💇‍♀️', '🪑', '🛁', '🧖‍♀️', '🧼', '💈'];
+    const [showCategoryDeleteModal, setShowCategoryDeleteModal] = useState<string | null>(null); // Category delete confirmation modal
 
     // Ref for form scrolling
     const formRef = useRef<HTMLDivElement>(null);
@@ -605,123 +595,26 @@ const AdminPage = () => {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-3">                                        {CATEGORIES.map((category) => (
-                                        <motion.div
-                                            key={category.id}
-                                            whileHover={{ scale: 1.03 }}
-                                            whileTap={{ scale: 0.97 }}
-                                            className={`relative cursor-pointer p-2 sm:p-3 rounded-lg text-center transition-colors duration-200
-                                                    ${selectedCategory === category.id
-                                                    ? 'bg-black text-white'
-                                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-                                                }
-                                                `}
-                                            onClick={() => handleCategorySelect(category.id)}
-                                        >
-                                            <div className="text-lg sm:text-2xl mb-1">{category.icon}</div>
-                                            <div className="text-[10px] sm:text-sm font-medium">
-                                                {category.name}
-                                            </div>
-                                        </motion.div>
-                                    ))}
-                                    </div>
-                                )}
-                                {showNewCategoryInput && (
-                                    <div className="mt-4 space-y-4">
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="text"
-                                                value={newCategory}
-                                                onChange={(e) => setNewCategory(e.target.value)}
-                                                className="flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-all duration-200 text-gray-900 font-normal placeholder-gray-500"
-                                                placeholder="Enter new category name"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowIconSelector(!showIconSelector)}
-                                                className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all duration-200"
-                                            >
-                                                <span className="text-2xl">{selectedIcon}</span>
-                                            </button>
-                                            <button
-                                                onClick={handleAddCategory}
-                                                className="bg-[#333333] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium hover:bg-gray-800 transition-all duration-200"
-                                            >
-                                                Add
-                                            </button>
-                                        </div>
-
-                                        {showIconSelector && (
+                                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-3">
+                                        {CATEGORIES.map((category) => (
                                             <motion.div
-                                                initial={{ opacity: 0, y: -10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: -10 }}
-                                                className="p-3 border border-gray-200 rounded-lg bg-white shadow-lg"
+                                                key={category.id}
+                                                whileHover={{ scale: 1.03 }}
+                                                whileTap={{ scale: 0.97 }}
+                                                className={`relative cursor-pointer p-2 sm:p-3 rounded-lg text-center transition-colors duration-200
+                                                    ${selectedCategory === category.id
+                                                        ? 'bg-black text-white'
+                                                        : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+                                                    }
+                                                `}
+                                                onClick={() => handleCategorySelect(category.id)}
                                             >
-                                                <div className="space-y-4">
-                                                    <div className="grid grid-cols-6 gap-2">
-                                                        {AVAILABLE_ICONS.map((icon) => (
-                                                            <button
-                                                                key={icon}
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    setSelectedIcon(icon);
-                                                                    setShowIconSelector(false);
-                                                                    setShowCustomIconInput(false);
-                                                                }}
-                                                                className={`p-2 text-xl hover:bg-gray-100 rounded-lg transition-all duration-200 ${selectedIcon === icon ? 'bg-gray-100' : ''
-                                                                    }`}
-                                                            >
-                                                                {icon}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-
-                                                    <div className="border-t border-gray-200 pt-3">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => setShowCustomIconInput(!showCustomIconInput)}
-                                                            className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1"
-                                                        >
-                                                            {showCustomIconInput ? 'Hide custom icon input' : 'Use custom emoji or icon'}
-                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showCustomIconInput ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"} />
-                                                            </svg>
-                                                        </button>
-
-                                                        {showCustomIconInput && (
-                                                            <div className="mt-2">
-                                                                <div className="flex gap-2">
-                                                                    <input
-                                                                        type="text"
-                                                                        value={customIcon}
-                                                                        onChange={(e) => setCustomIcon(e.target.value)}
-                                                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                                                        placeholder="Paste emoji or icon here"
-                                                                    />
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => {
-                                                                            if (customIcon.trim()) {
-                                                                                setSelectedIcon(customIcon);
-                                                                                setShowIconSelector(false);
-                                                                                setShowCustomIconInput(false);
-                                                                            }
-                                                                        }}
-                                                                        className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200"
-                                                                    >
-                                                                        Use
-                                                                    </button>
-                                                                </div>
-                                                                <p className="text-xs text-gray-500 mt-1">
-                                                                    You can copy and paste any emoji or icon character
-                                                                </p>
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                                <div className="text-lg sm:text-2xl mb-1">{category.icon}</div>
+                                                <div className="text-[10px] sm:text-sm font-medium">
+                                                    {category.name}
                                                 </div>
                                             </motion.div>
-                                        )}
+                                        ))}
                                     </div>
                                 )}
                             </div>

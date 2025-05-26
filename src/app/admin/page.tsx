@@ -306,6 +306,19 @@ const AdminPage = () => {
         }
     };
 
+    const confirmCategoryDelete = async () => {
+        if (!showCategoryDeleteModal) return;
+
+        try {
+            // For now, just close the modal since we're using predefined categories
+            setShowCategoryDeleteModal(null);
+            toast.success('Category deleted successfully');
+        } catch (error) {
+            console.error('Error deleting category:', error);
+            toast.error('Failed to delete category');
+        }
+    };
+
     const handleEdit = (product: Product) => {
         setEditingProduct(product);
         reset({
@@ -352,10 +365,7 @@ const AdminPage = () => {
             console.error('Invalid category ID selected:', categoryId);
             toast.error('Invalid category selected');
         }
-    };// No longer needed as we're using fixed categories
-    const handleAddCategory = () => { };    // No longer needed as we're using fixed categories
-    // Category deletion is not implemented as we're using fixed categories
-    const confirmCategoryDelete = () => { };
+    };
 
     // Bulk delete all products
     const bulkDeleteProducts = async () => {

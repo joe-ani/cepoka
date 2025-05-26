@@ -86,10 +86,7 @@ const AdminPage = () => {
     const [showIconSelector, setShowIconSelector] = useState(false);
     const [selectedIcon, setSelectedIcon] = useState('');
     const [showCustomIconInput, setShowCustomIconInput] = useState(false);
-    const [customIcon, setCustomIcon] = useState('');
-    const [showCategoryDeleteModal, setShowCategoryDeleteModal] = useState<string | null>(null);
-    const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
-
+    const [customIcon, setCustomIcon] = useState('');    const [showCategoryDeleteModal, setShowCategoryDeleteModal] = useState<string | null>(null);
     // Available icons for category selection
     const AVAILABLE_ICONS = ['🛋️', '💆‍♀️', '🧴', '💅', '💇‍♀️', '🪑', '🛁', '🧖‍♀️', '🧼', '💈'];
 

@@ -54,7 +54,7 @@ export default function MobileButtonFix() {
     // Function to add touch-friendly attributes to interactive elements
     const enhanceInteractiveElements = () => {
       // Target all buttons, links, and elements with onClick handlers
-      const interactiveElements = document.querySelectorAll('button, a, [role="button"], .cursor-pointer');
+      const interactiveElements = document.querySelectorAll<HTMLElement>('button, a, [role="button"], .cursor-pointer');
 
       interactiveElements.forEach(element => {
         // Add touch-action manipulation to make elements more responsive on touch devices

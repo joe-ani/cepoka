@@ -1,7 +1,7 @@
 {
-  "name": "Cepoka Beauty Hub",
-  "short_name": "Cepoka",
-  "description": "Your one-stop shop for beauty equipment and supplies",
+  "name": "Cepoka Beauty Hub - Premium Spa, Salon & Beauty Equipment",
+  "short_name": "Cepoka Beauty Hub",
+  "description": "Premium spa equipment, salon furniture, beauty equipment, facial machines, pedicure chairs, and skincare products for beauty professionals. Where innovation meets beauty.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -22,10 +22,17 @@
   ],
   "shortcuts": [
     {
-      "name": "Shop",
+      "name": "Shop Beauty Equipment",
       "short_name": "Shop",
-      "description": "Browse our products",
+      "description": "Browse our premium spa and beauty equipment",
       "url": "/shop",
+      "icons": [{ "src": "/favicon.ico", "sizes": "32x32" }]
+    },
+    {
+      "name": "Contact Us",
+      "short_name": "Contact",
+      "description": "Get in touch with Cepoka Beauty Hub",
+      "url": "/contact",
       "icons": [{ "src": "/favicon.ico", "sizes": "32x32" }]
     }
   ],

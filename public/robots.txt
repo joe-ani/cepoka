@@ -1,0 +1,28 @@
+# Robots.txt for Cepoka Beauty Hub
+# https://cepoka.vercel.app
+
+User-agent: *
+Allow: /
+
+# Allow all important pages
+Allow: /shop
+Allow: /contact
+Allow: /product/*
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /Todos/
+
+# Allow search engines to access images and assets
+Allow: /icons/
+Allow: /images/
+Allow: /favicon.ico
+Allow: /manifest.json
+
+# Sitemap location
+Sitemap: https://cepoka.vercel.app/sitemap.xml
+
+# Crawl delay (optional - helps prevent overloading)
+Crawl-delay: 1

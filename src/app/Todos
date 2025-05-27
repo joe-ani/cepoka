@@ -20,13 +20,13 @@ ideas 💡
 
 
 Current Problems to fix
-1. Stock product page not all colums are editable just he first col is editable i cant click on the ones uneditable.
-2. the best seller section should be shown in Naira and with real products.
-3. add all social media handle and phone numbers.
-4. get all the picture for all the avaible products and upload them.
-5. fix the mobile nav drop down.
-6. add the correct map locations.
-7. update the about to match cepoka ceo with relevena images.
-8. update the admin password to @cepoka101.
-9. the opening hours should have the correct times.
-10. the shop page back button oddly navigates back to the admin page.
+1. Stock product page not all colums are editable just the first col is editable i cant click on the ones uneditable. - Stock manager page.
+2. the best seller section should be shown in Naira and with real products. - Best Seller component.
+3. add all social media handle and phone numbers. - Contact form component. 
+4. get all the picture for all the avaible products and upload them. - admin page.
+5. fix the mobile nav drop down. - nav compenent.
+6. add the correct map locations. - contact page and opening hours component. 
+7. update the about to match cepoka ceo with relevena images. - about fugo component.
+8. update the admin password to @cepoka101. - footer component.
+9. the opening hours should have the correct times. - opening hours component.
+10. the shop page back button oddly navigates back to the admin page. - shop page.

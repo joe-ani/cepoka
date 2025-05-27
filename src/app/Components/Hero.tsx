@@ -609,7 +609,7 @@ const Hero = () => {
                     </motion.div>
                     <div className="w-[60%] h-[1.5px] bg-gradient-to-r from-[#9a9a9a] to-transparent rounded-full mx-0"></div>
                     <p className="pt-8 text-[14px] md:text-[20px] w-[80%] mx-0 font-normal text-[#333333]">
-                        we offer all types of high quality salon, spa, and beauty equipments.
+                        We offer all types of high-quality salon equipment, spa furniture, beauty equipment, facial machines, pedicure chairs, and professional beauty supplies for your business.
                     </p>
                     <div ref={actionsRef} className="quickact flex space-x-5 md:flex-row space-y-3 md:space-y-0 md:space-x-3 py-10 items-start md:items-center">
                         <Link href={"/shop"} onClick={() => setActiveLink("Shop")}>

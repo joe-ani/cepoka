@@ -608,7 +608,7 @@ const Hero = () => {
                         </div>
                     </motion.div>
                     <div className="w-[60%] h-[1.5px] bg-gradient-to-r from-[#9a9a9a] to-transparent rounded-full mx-0"></div>
-                    <p className="pt-8 text-[14px] md:text-[20px] w-[80%] mx-0 font-normal text-[#333333]">
+                    <p className="pt-4 pb-2 text-[14px] md:text-[20px] w-[80%] mx-0 font-normal text-[#333333]">
                         We offer high-quality salon, spa, and beauty equipment for professionals.
                     </p>
                     <div ref={actionsRef} className="quickact flex space-x-5 md:flex-row space-y-3 md:space-y-0 md:space-x-3 py-10 items-start md:items-center">

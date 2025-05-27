@@ -91,12 +91,12 @@ const OpeningHours = () => {
         </div>
 
         {[
-          { day: "Monday", time: "08:00-13:00" },
-          { day: "Tuesday", time: "08:00-13:00" },
-          { day: "Wednesday", time: "08:00-13:00" },
-          { day: "Thursday", time: "08:00-13:00" },
-          { day: "Friday", time: "08:00-13:00" },
-          { day: "Saturday", time: "08:00-13:00" },
+          { day: "Monday", time: "8AM - 6PM" },
+          { day: "Tuesday", time: "8AM - 6PM" },
+          { day: "Wednesday", time: "8AM - 6PM" },
+          { day: "Thursday", time: "8AM - 6PM" },
+          { day: "Friday", time: "8AM - 6PM" },
+          { day: "Saturday", time: "8AM - 6PM" },
           { day: "Sunday", time: "Closed", isRed: true }
         ].map((item) => (
           <div key={item.day} className="flex flex-row md:flex-col items-center space-y-2 md:space-y-4 space-x-4 md:space-x-0">

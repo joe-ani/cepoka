@@ -50,7 +50,7 @@ export default function ContactLayout({
         "addressLocality": "Lagos",
         "addressCountry": "NG"
       },
-      "openingHours": "Mo-Sa 08:00-13:00",
+      "openingHours": "Mo-Sa 08:00-18:00",
       "url": "https://cepokabeautyhub.com",
       "contactPoint": {
         "@type": "ContactPoint",

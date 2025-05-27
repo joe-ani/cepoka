@@ -23,10 +23,10 @@ const bestSellers: BestSellerProduct[] = [
     },
     {
         id: 2,
-        name: "Premium Straight Hair 24\"",
-        description: "Our premium straight hair bundle offers silky smooth texture and long-lasting durability.",
+        name: "Professional Facial Machine",
+        description: "Advanced facial treatment machine with multiple settings for professional skincare treatments.",
         image: "/images/chair2.png",
-        price: "$399"
+        price: "$899"
     },
     {
         id: 3,

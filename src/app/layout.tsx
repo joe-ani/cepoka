@@ -111,7 +111,7 @@ export default function RootLayout({
       "addressCountry": "NG"
     },
     "openingHours": [
-      "Mo-Sa 08:00-13:00"
+      "Mo-Sa 08:00-18:00"
     ],
     "priceRange": "$$",
     "image": "https://cepokabeautyhub.com/icons/sitelogo.png",

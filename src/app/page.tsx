@@ -5,7 +5,7 @@ import LatestProduct from "./Components/LatestProduct";
 import OpeningHours from "./Components/OpeningHours";
 import HomeCategories from "./Components/HomeCategories";
 import Review from "./Components/Review";
-import AboutFugo from "./Components/AboutFugo";
+import AboutCepoka from "./Components/AboutFugo";
 import ContactForm from "./Components/ContactForm";
 import Footer from "./Components/Footer";
 import WhatsAppButton from "./Components/WhatsAppButton";
@@ -60,7 +60,7 @@ const HomePage = () => {
         {/* section 1 */}
         <div id="section1" className="flex flex-col px-0 md:px-40 pt-16 md:pt-28 pb-0 md:pb-4 text-[#333333]">
           <h2 className="text-xs md:text-sm font-[500] px-5 md:px-0">HERE&apos;S</h2>
-          <h1 className="text-2xl md:text-4xl font-[600] py-2 px-5 md:px-0">Premium Beauty Equipment & Spa Solutions.</h1>
+          <h1 className="text-2xl md:text-4xl font-[600] py-2 px-5 md:px-0">What we offer.</h1>
           {/* card component*/}
           <div className="py-8 md:py-20">
             <Offer />
@@ -78,7 +78,7 @@ const HomePage = () => {
         {/* section 2 */}
         <div className="flex flex-col font-[600] px-0 md:px-0 py-0 md:py-2 text-[#333333]">
           <h2 className="text-xs md:text-sm font-medium px-5 md:px-40">check out</h2>
-          <h1 className="text-2xl md:text-4xl py-2 px-5 md:px-40">Best Selling Beauty Equipment.</h1>
+          <h1 className="text-2xl md:text-4xl py-2 px-5 md:px-40">Our Best Seller.</h1>
           {/* card component*/}
           <div className=" py-8 md:py-20 flex justify-center">
             <BestSellers />
@@ -87,7 +87,7 @@ const HomePage = () => {
         {/* section 3 */}
         <div className="flex flex-col px-0 md:px-40 py-0 md:py-2 text-[#333333]">
           <h2 className="text-xs md:text-sm font-medium px-5 md:px-0">CHECK OUT</h2>
-          <h1 className="text-2xl md:text-4xl font-[600] py-2 px-5 md:px-0">Latest Beauty & Spa Equipment.</h1>
+          <h1 className="text-2xl md:text-4xl font-[600] py-2 px-5 md:px-0">Our Latest Product.</h1>
           {/* card component*/}
           <div className="py-8 md:py-20">
             <LatestProduct />
@@ -96,7 +96,7 @@ const HomePage = () => {
         {/* section 4 */}
         <div className="flex flex-col font-[600] px-0 md:px-40 py-0 md:py-2 text-[#333333]">
           <h2 className="text-xs md:text-sm font-medium px-5 md:px-0">Shop</h2>
-          <h1 className="text-2xl md:text-4xl py-2 px-5 md:px-0">Shop Beauty Equipment by Categories.</h1>
+          <h1 className="text-2xl md:text-4xl py-2 px-5 md:px-0">By Categories.</h1>
           {/* card component*/}
           <div className="py-8 md:py-20 flex justify-center">
             <HomeCategories />
@@ -116,11 +116,11 @@ const HomePage = () => {
         </div>
         {/* section 6 */}
         <div id="section6" className="flex flex-col font-[600] px-0 md:px-40 py-0 md:py-2 text-[#333333]">
-          <h2 className="text-xs md:text-sm px-5 md:px-0">About d&apos;fugo hair</h2>
+          <h2 className="text-xs md:text-sm px-5 md:px-0">About Cepoka</h2>
           <h1 className="text-2xl md:text-4xl py-2 px-5 md:px-0">Founder and CEO.</h1>
           {/* card component*/}
           <div className="py-8 md:py-20 flex justify-center">
-            <AboutFugo />
+            <AboutCepoka />
           </div>
         </div>
         {/* section 7 */}

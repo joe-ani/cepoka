@@ -3,7 +3,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 
-const AboutFugo = () => {
+const AboutCepoka = () => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -104,21 +104,21 @@ const AboutFugo = () => {
                     transition={{ duration: 0.6, delay: 0.3 }}
                     viewport={{ once: true }}
                 >
-                    <h1 className="text-2xl sm:text-4xl font-medium tracking-wide">Ugochickwu.</h1>
+                    <h1 className="text-2xl sm:text-4xl font-medium tracking-wide">Cepoka Beauty Hub.</h1>
                     <div className="relative">
                         <div
                             className={`relative overflow-hidden transition-all duration-500 ease-in-out
                                 ${!isExpanded ? 'max-h-[85px]' : 'max-h-[500px]'} sm:max-h-none`}
                         >
                             <p className="text-sm sm:text-base font-normal leading-[1.8] sm:leading-[2] max-w-[95%] sm:max-w-full">
-                                Founded in 2005 by Ali Ugochicku (aka Fugo), D&apos;Fugo Hair has established itself as a premier
-                                destination for luxury wigs in Nigeria and beyond.
-                                With over two decades of expertise, we&apos;ve built our reputation on providing premium quality
-                                wigs and exceptional service to our clients worldwide.
+                                Founded with a vision to revolutionize the beauty industry, Cepoka Beauty Hub has established itself as a premier
+                                destination for professional spa and beauty equipment in Nigeria and beyond.
+                                With years of expertise, we&apos;ve built our reputation on providing premium quality
+                                beauty equipment and exceptional service to our clients worldwide.
 
-                                From our base in Nigeria, we&apos;ve grown into an international brand, bringing sophisticated,
-                                high-end hair solutions to discerning customers across the globe. Our commitment to excellence
-                                and attention to detail has made us a trusted name in the luxury wig industry.
+                                From our base in Lagos, Nigeria, we&apos;ve grown into a trusted brand, bringing sophisticated,
+                                high-end beauty solutions to discerning professionals across the globe. Our commitment to excellence
+                                and attention to detail has made us a trusted name in the beauty equipment industry.
                             </p>
                         </div>
                         {!isExpanded && (
@@ -140,4 +140,4 @@ const AboutFugo = () => {
 };
 
 
-export default AboutFugo;
+export default AboutCepoka;

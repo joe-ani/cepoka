@@ -1,7 +1,6 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import BackArrow from "../Components/BackArrow";
 import SpinningLoader from "../Components/SpinningLoader";
 import { useState, useMemo, useEffect } from "react";
 import { ProductCard } from "@/src/components/ProductCard";

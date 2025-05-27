@@ -4,10 +4,6 @@ import Image from "next/image"
 import BackArrow from "../Components/BackArrow"
 import { useState, useEffect } from "react"
 import ClientMap from '../Components/ClientMap'
-import { Metadata } from "next"
-
-// Note: Since this is a client component, we'll need to move metadata to a parent server component
-// For now, we'll add it via Head component or move this to a server component wrapper
 
 export default function ContactPage() {
   // Router is not used in this component

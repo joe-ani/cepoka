@@ -16,10 +16,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Contact Cepoka Beauty Hub - Premium Beauty Equipment Supplier",
     description: "Get in touch with Cepoka Beauty Hub for premium spa equipment, salon furniture, and beauty equipment. Located in Lagos, Nigeria.",
-    url: "https://cepoka.vercel.app/contact",
+    url: "https://cepokabeautyhub.com/contact",
     images: [
       {
-        url: "/icons/sitelogo.png",
+        url: "https://cepokabeautyhub.com/icons/sitelogo.png",
         width: 512,
         height: 512,
         alt: "Contact Cepoka Beauty Hub",
@@ -51,7 +51,7 @@ export default function ContactLayout({
         "addressCountry": "NG"
       },
       "openingHours": "Mo-Sa 08:00-13:00",
-      "url": "https://cepoka.vercel.app",
+      "url": "https://cepokabeautyhub.com",
       "contactPoint": {
         "@type": "ContactPoint",
         "telephone": "+2348038683235",

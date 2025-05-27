@@ -36,10 +36,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Cepoka Beauty Hub - Where Innovation Meets Beauty",
     description: "Premium spa equipment, salon furniture, beauty equipment, and professional beauty solutions. Quality products for beauty professionals.",
-    url: "https://cepoka.vercel.app",
+    url: "https://cepokabeautyhub.com",
     images: [
       {
-        url: "/icons/sitelogo.png",
+        url: "https://cepokabeautyhub.com/icons/sitelogo.png",
         width: 512,
         height: 512,
         alt: "Cepoka Beauty Hub - Where Innovation Meets Beauty",

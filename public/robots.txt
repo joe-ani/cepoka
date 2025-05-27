@@ -1,5 +1,5 @@
 # Robots.txt for Cepoka Beauty Hub
-# https://cepoka.vercel.app
+# https://cepokabeautyhub.com
 
 User-agent: *
 Allow: /
@@ -22,7 +22,7 @@ Allow: /favicon.ico
 Allow: /manifest.json
 
 # Sitemap location
-Sitemap: https://cepoka.vercel.app/sitemap.xml
+Sitemap: https://cepokabeautyhub.com/sitemap.xml
 
 # Crawl delay (optional - helps prevent overloading)
 Crawl-delay: 1

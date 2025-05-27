@@ -56,13 +56,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://cepoka.vercel.app",
+    url: "https://cepokabeautyhub.com",
     siteName: "Cepoka Beauty Hub",
     title: "Cepoka Beauty Hub - Premium Spa, Salon & Beauty Equipment",
     description: "Your trusted source for premium spa equipment, salon furniture, beauty equipment, and professional beauty solutions. Quality products for beauty professionals.",
     images: [
       {
-        url: "/icons/sitelogo.png",
+        url: "https://cepokabeautyhub.com/icons/sitelogo.png",
         width: 512,
         height: 512,
         alt: "Cepoka Beauty Hub Logo",
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Cepoka Beauty Hub - Premium Spa, Salon & Beauty Equipment",
     description: "Your trusted source for premium spa equipment, salon furniture, beauty equipment, and professional beauty solutions.",
-    images: ["/icons/sitelogo.png"],
+    images: ["https://cepokabeautyhub.com/icons/sitelogo.png"],
     creator: "@cepokabeauty",
   },
   robots: {
@@ -102,7 +102,7 @@ export default function RootLayout({
     "@type": "LocalBusiness",
     "name": "Cepoka Beauty Hub",
     "description": "Premium spa equipment, salon furniture, beauty equipment, facial machines, pedicure chairs, and skincare products for beauty professionals.",
-    "url": "https://cepoka.vercel.app",
+    "url": "https://cepokabeautyhub.com",
     "telephone": "+2348038683235",
     "address": {
       "@type": "PostalAddress",
@@ -114,8 +114,8 @@ export default function RootLayout({
       "Mo-Sa 08:00-13:00"
     ],
     "priceRange": "$$",
-    "image": "https://cepoka.vercel.app/icons/sitelogo.png",
-    "logo": "https://cepoka.vercel.app/icons/sitelogo.png",
+    "image": "https://cepokabeautyhub.com/icons/sitelogo.png",
+    "logo": "https://cepokabeautyhub.com/icons/sitelogo.png",
     "sameAs": [
       "https://www.instagram.com/cepokabeauty",
       "https://wa.me/2348038683235"

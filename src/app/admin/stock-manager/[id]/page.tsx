@@ -188,6 +188,7 @@ export default function StockProductPage() {
     if (!editedMovement) return;
 
     const { name, value } = e.target;
+
     setEditedMovement(prev => {
       if (!prev) return prev;
       return {
@@ -682,14 +683,20 @@ export default function StockProductPage() {
                 {stockProduct.stockMovements.map((movement, index) => (
                   editingMovementId === movement.id ? (
                     // Edit form row
-                    <tr key={`edit-${movement.id}`} className="bg-blue-50">
+                    <tr
+                      key={`edit-${movement.id}`}
+                      className="bg-blue-50"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <td className="border border-gray-300 px-2 py-1">
                         <input
                           type="date"
                           name="date"
                           value={editedMovement?.date.split('T')[0] || ''}
                           onChange={handleEditInputChange}
-                          className="w-full px-2 py-1 text-sm border border-gray-400 rounded bg-gray-50 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
+                          onClick={(e) => e.stopPropagation()}
+                          onFocus={(e) => e.target.select()}
+                          className="w-full px-2 py-1 text-sm border border-gray-400 rounded bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none cursor-pointer"
                         />
                       </td>
                       <td className="border border-gray-300 px-2 py-1 text-center">
@@ -705,7 +712,9 @@ export default function StockProductPage() {
                           min="0"
                           value={editedMovement?.stockedIn || 0}
                           onChange={handleEditInputChange}
-                          className="w-full px-2 py-1 text-sm border border-gray-400 rounded bg-gray-50 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
+                          onClick={(e) => e.stopPropagation()}
+                          onFocus={(e) => e.target.select()}
+                          className="w-full px-2 py-1 text-sm border border-gray-400 rounded bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none cursor-pointer"
                         />
                       </td>
                       <td className="border border-gray-300 px-2 py-1 text-center text-gray-500">
@@ -719,7 +728,9 @@ export default function StockProductPage() {
                           min="0"
                           value={editedMovement?.stockedOut || 0}
                           onChange={handleEditInputChange}
-                          className="w-full px-2 py-1 text-sm border border-gray-400 rounded bg-gray-50 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
+                          onClick={(e) => e.stopPropagation()}
+                          onFocus={(e) => e.target.select()}
+                          className="w-full px-2 py-1 text-sm border border-gray-400 rounded bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none cursor-pointer"
                         />
                       </td>
                       <td className="border border-gray-300 px-2 py-1 text-center text-gray-500">
@@ -732,7 +743,9 @@ export default function StockProductPage() {
                           name="remarks"
                           value={editedMovement?.remarks || ''}
                           onChange={handleEditInputChange}
-                          className="w-full px-2 py-1 text-sm border border-gray-400 rounded bg-gray-50 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
+                          onClick={(e) => e.stopPropagation()}
+                          onFocus={(e) => e.target.select()}
+                          className="w-full px-2 py-1 text-sm border border-gray-400 rounded bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none cursor-text"
                         />
                       </td>
                       <td className="border border-gray-300 px-2 py-1">
@@ -741,7 +754,9 @@ export default function StockProductPage() {
                           name="sign"
                           value={editedMovement?.sign || ''}
                           onChange={handleEditInputChange}
-                          className="w-full px-2 py-1 text-sm border border-gray-400 rounded bg-gray-50 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
+                          onClick={(e) => e.stopPropagation()}
+                          onFocus={(e) => e.target.select()}
+                          className="w-full px-2 py-1 text-sm border border-gray-400 rounded bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none cursor-text"
                         />
                       </td>
                       <td className="border border-gray-300 px-2 py-1">

@@ -77,21 +77,51 @@ export default function ShopContent() {
     }
   }, [searchParams, isMounted]);
 
-  // Fetch products from Appwrite
+  // Fetch products from Appwrite - fetch ALL products with pagination
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
+
+        // First request with limit=100 (Appwrite's maximum)
         const response = await databases.listDocuments(
           appwriteConfig.databaseId,
           appwriteConfig.productsCollectionId,
           [
+            Query.limit(100), // Get 100 documents per request (maximum)
+            Query.offset(0),  // Start from the first document
             Query.orderDesc('$createdAt') // Default to newest first
           ]
         );
 
-        console.log('✅ Fetched Products:', response.documents);
-        const productsData = response.documents as unknown as Product[];
+        // Initialize our products array with the first batch
+        let allDocuments = [...response.documents];
+
+        // If there are more documents than the limit, fetch them with pagination
+        if (response.total > 100) {
+          // Calculate how many more requests we need
+          const totalRequests = Math.ceil(response.total / 100);
+
+          // Make additional requests to get all documents
+          for (let i = 1; i < totalRequests; i++) {
+            const offset = i * 100;
+            const additionalResponse = await databases.listDocuments(
+              appwriteConfig.databaseId,
+              appwriteConfig.productsCollectionId,
+              [
+                Query.limit(100),
+                Query.offset(offset),
+                Query.orderDesc('$createdAt')
+              ]
+            );
+
+            // Add these documents to our array
+            allDocuments = [...allDocuments, ...additionalResponse.documents];
+          }
+        }
+
+        console.log('✅ Fetched ALL Products:', allDocuments.length, 'total products');
+        const productsData = allDocuments as unknown as Product[];
         setProducts(productsData);
       } catch (error) {
         console.error('❌ Error fetching products:', error);

@@ -88,32 +88,116 @@ const AdminPage = () => {
         resolver: zodResolver(productSchema)
     });
 
-    // Function to fetch products
+    // Function to fetch products - fetch ALL products with pagination
     const fetchProducts = useCallback(async () => {
         try {
+            // First request with limit=100 (Appwrite's maximum)
             const response = await databases.listDocuments(
                 appwriteConfig.databaseId,
                 appwriteConfig.productsCollectionId,
-                [sortOrder === 'asc' ? Query.orderAsc('$createdAt') : Query.orderDesc('$createdAt')]
+                [
+                    Query.limit(100), // Get 100 documents per request (maximum)
+                    Query.offset(0),  // Start from the first document
+                    sortOrder === 'asc' ? Query.orderAsc('$createdAt') : Query.orderDesc('$createdAt')
+                ]
             );
-            setProducts(response.documents as unknown as Product[]);
+
+            // Initialize our products array with the first batch
+            let allDocuments = [...response.documents];
+
+            // If there are more documents than the limit, fetch them with pagination
+            if (response.total > 100) {
+                // Calculate how many more requests we need
+                const totalRequests = Math.ceil(response.total / 100);
+
+                // Make additional requests to get all documents
+                for (let i = 1; i < totalRequests; i++) {
+                    const offset = i * 100;
+                    const additionalResponse = await databases.listDocuments(
+                        appwriteConfig.databaseId,
+                        appwriteConfig.productsCollectionId,
+                        [
+                            Query.limit(100),
+                            Query.offset(offset),
+                            sortOrder === 'asc' ? Query.orderAsc('$createdAt') : Query.orderDesc('$createdAt')
+                        ]
+                    );
+
+                    // Add these documents to our array
+                    allDocuments = [...allDocuments, ...additionalResponse.documents];
+                }
+            }
+
+            setProducts(allDocuments as unknown as Product[]);
         } catch (error) {
             console.error('Error fetching products:', error);
             toast.error('Failed to fetch products');
         }
     }, [sortOrder]);
 
+    // Clear form function - used for both Done and Cancel
+    const clearForm = () => {
+        setEditingProduct(null);
+        setSelectedCategory(null);
+        setSelectedFiles([]);
+        reset({
+            name: '',
+            price: '',
+            description: '',
+            category: ''
+        });
+        toast.success('Form cleared');
+    };
+
+    // Cancel edit function
+    const cancelEdit = () => {
+        clearForm();
+        toast.success('Edit cancelled');
+    };
+
     // Fetch products from Appwrite database
     useEffect(() => {
-        const fetchProducts = async () => {
+        const fetchProductsInEffect = async () => {
             try {
                 setIsLoading(true);
+                // First request with limit=100 (Appwrite's maximum)
                 const response = await databases.listDocuments(
                     appwriteConfig.databaseId,
                     appwriteConfig.productsCollectionId,
-                    [sortOrder === 'asc' ? Query.orderAsc('$createdAt') : Query.orderDesc('$createdAt')]
+                    [
+                        Query.limit(100), // Get 100 documents per request (maximum)
+                        Query.offset(0),  // Start from the first document
+                        sortOrder === 'asc' ? Query.orderAsc('$createdAt') : Query.orderDesc('$createdAt')
+                    ]
                 );
-                setProducts(response.documents as unknown as Product[]);
+
+                // Initialize our products array with the first batch
+                let allDocuments = [...response.documents];
+
+                // If there are more documents than the limit, fetch them with pagination
+                if (response.total > 100) {
+                    // Calculate how many more requests we need
+                    const totalRequests = Math.ceil(response.total / 100);
+
+                    // Make additional requests to get all documents
+                    for (let i = 1; i < totalRequests; i++) {
+                        const offset = i * 100;
+                        const additionalResponse = await databases.listDocuments(
+                            appwriteConfig.databaseId,
+                            appwriteConfig.productsCollectionId,
+                            [
+                                Query.limit(100),
+                                Query.offset(offset),
+                                sortOrder === 'asc' ? Query.orderAsc('$createdAt') : Query.orderDesc('$createdAt')
+                            ]
+                        );
+
+                        // Add these documents to our array
+                        allDocuments = [...allDocuments, ...additionalResponse.documents];
+                    }
+                }
+
+                setProducts(allDocuments as unknown as Product[]);
             } catch (error) {
                 console.error('Error fetching products:', error);
                 toast.error('Failed to fetch products');
@@ -123,24 +207,12 @@ const AdminPage = () => {
         };
 
         if (isAuthorized) {
-            fetchProducts();
+            fetchProductsInEffect();
         }
     }, [isAuthorized, sortOrder]);    // No need to fetch categories since we're using fixed ones from CATEGORIES
     useEffect(() => {
         setCategoriesLoading(false);
     }, []);
-
-    const clearForm = () => {
-        reset({
-            name: '',
-            price: '',
-            description: '',
-            category: ''
-        });
-        setSelectedFiles([]);
-        setSelectedCategory(null);
-        setEditingProduct(null);
-    };
 
     // Handle form submission for creating/updating products
     const onSubmit = async (data: ProductFormData) => {
@@ -242,11 +314,8 @@ const AdminPage = () => {
                 }
             }
 
-            // Reset form and state after successful submission
-            setSelectedCategory(null);
-            reset();
-            setSelectedFiles([]);
-            setEditingProduct(null);
+            // Clear form and state after successful submission
+            clearForm();
             await fetchProducts();
         } catch (error: unknown) {
             const appwriteError = error as AppwriteError;
@@ -321,11 +390,55 @@ const AdminPage = () => {
 
     const handleEdit = (product: Product) => {
         setEditingProduct(product);
+
+        // Reset form with product data
         reset({
             name: product.name,
             price: product.price,
             description: product.description,
+            category: product.category
         });
+
+        // Pre-select the product's category
+        setSelectedCategory(product.category || null);
+
+        // Load existing images as File objects for editing
+        if (product.imageUrls && product.imageUrls.length > 0) {
+            const loadExistingImages = async () => {
+                try {
+                    const imageFiles: File[] = [];
+
+                    for (let i = 0; i < product.imageUrls.length; i++) {
+                        const imageUrl = product.imageUrls[i];
+                        try {
+                            // Fetch the image and convert to File object
+                            const response = await fetch(imageUrl);
+                            const blob = await response.blob();
+                            const fileName = `existing-image-${i + 1}.${blob.type.split('/')[1] || 'jpg'}`;
+                            const file = new File([blob], fileName, { type: blob.type });
+                            imageFiles.push(file);
+                        } catch (imageError) {
+                            console.warn(`Failed to load image ${i + 1}:`, imageError);
+                        }
+                    }
+
+                    setSelectedFiles(imageFiles);
+                    if (imageFiles.length > 0) {
+                        toast.success(`Loaded ${imageFiles.length} existing image${imageFiles.length > 1 ? 's' : ''} for editing`);
+                    }
+                } catch (error) {
+                    console.error('Error loading existing images:', error);
+                    toast.error('Failed to load existing images');
+                }
+            };
+
+            loadExistingImages();
+        } else {
+            // Clear images if product has none
+            setSelectedFiles([]);
+        }
+
+        // Scroll to form
         formRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
@@ -779,16 +892,21 @@ const AdminPage = () => {
                                     {isLoading ? 'Saving...' : editingProduct ? 'Update Product' : 'Add Product'}
                                 </button>
 
-                                {editingProduct && (
+                                {editingProduct ? (
                                     <button
                                         type="button"
-                                        onClick={() => {
-                                            setEditingProduct(null);
-                                            reset();
-                                        }}
+                                        onClick={cancelEdit}
                                         className="w-full sm:flex-1 bg-gray-100 text-gray-700 px-4 sm:px-6 py-3 rounded-lg font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200"
                                     >
                                         Cancel Edit
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={clearForm}
+                                        className="w-full sm:flex-1 bg-gray-100 text-gray-700 px-4 sm:px-6 py-3 rounded-lg font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200"
+                                    >
+                                        Clear Form
                                     </button>
                                 )}
                             </div>
@@ -899,268 +1017,271 @@ const AdminPage = () => {
                                 </Link>
                             </div>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                            {products.map((product) => (
-                                <div
-                                    key={product.$id}
-                                    className={`bg-white rounded-lg sm:rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border ${isMultiSelectMode && selectedProducts.includes(product.$id)
-                                        ? 'border-blue-500 ring-2 ring-blue-200'
-                                        : 'border-gray-100'
-                                        }`}
-                                    onClick={() => {
-                                        if (isMultiSelectMode) {
-                                            toggleProductSelection(product.$id);
-                                        }
-                                    }}
-                                >
-                                    {product.imageUrls && product.imageUrls.length > 0 && (
-                                        <div className="relative h-48 sm:h-64 overflow-hidden">
-                                            {product.imageUrls.length > 0 && (
-                                                <Image
-                                                    src={product.imageUrls[0]}
-                                                    alt={`${product.name} 1`}
-                                                    width={100}
-                                                    height={100}
-                                                    className="w-full h-full object-cover cursor-pointer"
-                                                    onClick={() => {
-                                                        setCurrentImageIndex(0);
-                                                        setShowImageModal(product.imageUrls[0]);
-                                                    }}
-                                                />
-                                            )}
-                                            {product.imageUrls.length > 1 && (
-                                                <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded-full text-xs">
-                                                    {product.imageUrls.length} images
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}                                    <div className="p-4 sm:p-6">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">{product.name}</h3>
-                                                <p className="text-sm font-medium text-gray-700">
-                                                    {CATEGORIES.find(cat => cat.id === product.category)?.name || 'No category'}
-                                                </p>
+                        {/* Products grid with scrollbar - similar to stock manager */}
+                        <div className="max-h-[800px] overflow-y-auto pr-2 pb-4 custom-scrollbar">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+                                {products.map((product) => (
+                                    <div
+                                        key={product.$id}
+                                        className={`bg-white rounded-lg sm:rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border ${isMultiSelectMode && selectedProducts.includes(product.$id)
+                                            ? 'border-blue-500 ring-2 ring-blue-200'
+                                            : 'border-gray-100'
+                                            }`}
+                                        onClick={() => {
+                                            if (isMultiSelectMode) {
+                                                toggleProductSelection(product.$id);
+                                            }
+                                        }}
+                                    >
+                                        {product.imageUrls && product.imageUrls.length > 0 && (
+                                            <div className="relative h-48 sm:h-64 overflow-hidden">
+                                                {product.imageUrls.length > 0 && (
+                                                    <Image
+                                                        src={product.imageUrls[0]}
+                                                        alt={`${product.name} 1`}
+                                                        width={100}
+                                                        height={100}
+                                                        className="w-full h-full object-cover cursor-pointer"
+                                                        onClick={() => {
+                                                            setCurrentImageIndex(0);
+                                                            setShowImageModal(product.imageUrls[0]);
+                                                        }}
+                                                    />
+                                                )}
+                                                {product.imageUrls.length > 1 && (
+                                                    <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded-full text-xs">
+                                                        {product.imageUrls.length} images
+                                                    </div>
+                                                )}
                                             </div>
-                                            {isMultiSelectMode && (
-                                                <div
-                                                    className={`w-5 h-5 rounded border flex items-center justify-center ${selectedProducts.includes(product.$id)
-                                                        ? 'bg-blue-500 border-blue-500'
-                                                        : 'border-gray-300'
-                                                        }`}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        toggleProductSelection(product.$id);
-                                                    }}
-                                                >
-                                                    {selectedProducts.includes(product.$id) && (
-                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                        </svg>
-                                                    )}
+                                        )}                                    <div className="p-4 sm:p-6">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">{product.name}</h3>
+                                                    <p className="text-sm font-medium text-gray-700">
+                                                        {CATEGORIES.find(cat => cat.id === product.category)?.name || 'No category'}
+                                                    </p>
                                                 </div>
-                                            )}
-                                        </div>
-                                        <p className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">₦{product.price}</p>
-                                        <p className="text-gray-600 mb-4 sm:mb-6 line-clamp-2">{product.description}</p>
-                                        <div className="flex gap-2 sm:gap-3">
-                                            <button
-                                                onClick={() => handleEdit(product)}
-                                                className="flex-1 bg-[#333333] text-white px-3 sm:px-4 py-2 rounded-lg font-medium hover:bg-gray-800 transition-all duration-200"
-                                            >
-                                                Edit
-                                            </button>
-                                            <button
-                                                onClick={() => setShowDeleteModal(product.$id)}
-                                                className="flex-1 bg-red-50 text-red-600 px-3 sm:px-4 py-2 rounded-lg font-medium hover:bg-red-100 transition-all duration-200"
-                                            >
-                                                Delete
-                                            </button>
+                                                {isMultiSelectMode && (
+                                                    <div
+                                                        className={`w-5 h-5 rounded border flex items-center justify-center ${selectedProducts.includes(product.$id)
+                                                            ? 'bg-blue-500 border-blue-500'
+                                                            : 'border-gray-300'
+                                                            }`}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            toggleProductSelection(product.$id);
+                                                        }}
+                                                    >
+                                                        {selectedProducts.includes(product.$id) && (
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <p className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">₦{product.price}</p>
+                                            <p className="text-gray-600 mb-4 sm:mb-6 line-clamp-2">{product.description}</p>
+                                            <div className="flex gap-2 sm:gap-3">
+                                                <button
+                                                    onClick={() => handleEdit(product)}
+                                                    className="flex-1 bg-[#333333] text-white px-3 sm:px-4 py-2 rounded-lg font-medium hover:bg-gray-800 transition-all duration-200"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => setShowDeleteModal(product.$id)}
+                                                    className="flex-1 bg-red-50 text-red-600 px-3 sm:px-4 py-2 rounded-lg font-medium hover:bg-red-100 transition-all duration-200"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Modals */}
-                <AnimatePresence>
-                    {showImageModal && (
-                        <motion.div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-xl w-full max-w-[90%] sm:max-w-[80%] lg:max-w-[60%] max-h-[calc(100vh-60px)] overflow-auto relative">
-                                <AnimatePresence initial={false} custom={currentImageIndex}>
-                                    <motion.div
-                                        key={showImageModal}
-                                        variants={imageVariants}
-                                        initial="initial"
-                                        animate="animate"
-                                        exit="exit"
-                                        transition={{ duration: 0.5, ease: "easeInOut" }}
-                                        className="w-full h-auto object-contain"
-                                    >                                    {showImageModal && (
-                                        <Image
-                                            src={showImageModal}
-                                            alt="Product"
-                                            width={100}
-                                            height={100}
+                    {/* Modals */}
+                    <AnimatePresence>
+                        {showImageModal && (
+                            <motion.div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                                <div className="bg-white p-4 sm:p-6 rounded-lg shadow-xl w-full max-w-[90%] sm:max-w-[80%] lg:max-w-[60%] max-h-[calc(100vh-60px)] overflow-auto relative">
+                                    <AnimatePresence initial={false} custom={currentImageIndex}>
+                                        <motion.div
+                                            key={showImageModal}
+                                            variants={imageVariants}
+                                            initial="initial"
+                                            animate="animate"
+                                            exit="exit"
+                                            transition={{ duration: 0.5, ease: "easeInOut" }}
                                             className="w-full h-auto object-contain"
-                                        />
-                                    )}
-                                    </motion.div>
-                                </AnimatePresence>
-                                <button
-                                    className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full hover:bg-gray-700 transition-all duration-200"
-                                    onClick={handlePrevImage}
-                                >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                                    </svg>
-                                </button>
-                                <button
-                                    className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full hover:bg-gray-700 transition-all duration-200"
-                                    onClick={handleNextImage}
-                                >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-                <AnimatePresence>
-                    {showDeleteModal && (
-                        <motion.div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                            <motion.div
-                                className="bg-white p-4 sm:p-6 rounded-lg shadow-xl w-full max-w-sm"
-                                initial={{ scale: 0.8 }}
-                                animate={{ scale: 1 }}
-                                exit={{ scale: 0.8 }}
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <h2 className="text-lg font-bold text-gray-900 mb-4">Confirm Delete</h2>
-                                <p className="text-gray-600 mb-6">Are you sure you want to delete this product?</p>
-                                <div className="flex justify-end gap-4">
+                                        >                                    {showImageModal && (
+                                            <Image
+                                                src={showImageModal}
+                                                alt="Product"
+                                                width={100}
+                                                height={100}
+                                                className="w-full h-auto object-contain"
+                                            />
+                                        )}
+                                        </motion.div>
+                                    </AnimatePresence>
                                     <button
-                                        className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-all duration-200"
-                                        onClick={() => setShowDeleteModal(null)}
+                                        className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full hover:bg-gray-700 transition-all duration-200"
+                                        onClick={handlePrevImage}
                                     >
-                                        Cancel
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                                        </svg>
                                     </button>
                                     <button
-                                        className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-all duration-200"
-                                        onClick={confirmDelete}
+                                        className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full hover:bg-gray-700 transition-all duration-200"
+                                        onClick={handleNextImage}
                                     >
-                                        Delete
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                                        </svg>
                                     </button>
                                 </div>
                             </motion.div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                        )}
+                    </AnimatePresence>
 
-                {/* Category Delete Confirmation Modal */}
-                <AnimatePresence>
-                    {showCategoryDeleteModal && (
-                        <motion.div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                            <motion.div
-                                className="bg-white p-4 sm:p-6 rounded-lg shadow-xl w-full max-w-sm"
-                                initial={{ scale: 0.8 }}
-                                animate={{ scale: 1 }}
-                                exit={{ scale: 0.8 }}
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <h2 className="text-lg font-bold text-gray-900 mb-4">Confirm Delete Category</h2>
-                                <p className="text-gray-600 mb-2">Are you sure you want to delete this category?</p>
-                                <p className="text-red-600 text-sm mb-6">This action cannot be undone and may affect products using this category.</p>
-                                <div className="flex justify-end gap-4">
-                                    <button
-                                        className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-all duration-200"
-                                        onClick={() => setShowCategoryDeleteModal(null)}
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-all duration-200"
-                                        onClick={confirmCategoryDelete}
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
-                            </motion.div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-                {/* Bulk Delete Products Confirmation Modal */}
-                <AnimatePresence>
-                    {showBulkDeleteModal && (
-                        <motion.div
-                            className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => !isBulkDeleting && setShowBulkDeleteModal(false)}
-                        >
-                            <motion.div
-                                className="bg-white p-4 sm:p-6 rounded-lg shadow-xl w-full max-w-md"
-                                initial={{ scale: 0.8 }}
-                                animate={{ scale: 1 }}
-                                exit={{ scale: 0.8 }}
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                {isBulkDeleting ? (
-                                    <div className="flex flex-col items-center py-4">
-                                        <SpinningLoader size="large" />
-                                        <p className="mt-4 text-gray-800 font-medium">
-                                            Deleting products... ({bulkDeleteProgress.current} of {bulkDeleteProgress.total})
-                                        </p>
-                                        <div className="w-full mt-4 bg-gray-200 rounded-full h-2.5">
-                                            <div
-                                                className="bg-gradient-to-r from-blue-500 to-pink-500 h-2.5 rounded-full"
-                                                style={{ width: `${(bulkDeleteProgress.current / bulkDeleteProgress.total) * 100}%` }}
-                                            ></div>
-                                        </div>
+                    <AnimatePresence>
+                        {showDeleteModal && (
+                            <motion.div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                                <motion.div
+                                    className="bg-white p-4 sm:p-6 rounded-lg shadow-xl w-full max-w-sm"
+                                    initial={{ scale: 0.8 }}
+                                    animate={{ scale: 1 }}
+                                    exit={{ scale: 0.8 }}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <h2 className="text-lg font-bold text-gray-900 mb-4">Confirm Delete</h2>
+                                    <p className="text-gray-600 mb-6">Are you sure you want to delete this product?</p>
+                                    <div className="flex justify-end gap-4">
+                                        <button
+                                            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-all duration-200"
+                                            onClick={() => setShowDeleteModal(null)}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-all duration-200"
+                                            onClick={confirmDelete}
+                                        >
+                                            Delete
+                                        </button>
                                     </div>
-                                ) : (
-                                    <>
-                                        <h2 className="text-lg font-bold text-gray-900 mb-4">
-                                            {selectedProducts.length > 0 ? 'Delete Selected Products' : 'Delete All Products'}
-                                        </h2>
-                                        <p className="text-gray-600 mb-2">
-                                            {selectedProducts.length > 0
-                                                ? 'Are you sure you want to delete the selected products?'
-                                                : 'Are you sure you want to delete all products?'
-                                            }
-                                        </p>
-                                        <p className="text-red-600 text-sm mb-6">
-                                            This will delete <span className="font-bold">
-                                                {selectedProducts.length > 0 ? selectedProducts.length : products.length}
-                                                product{(selectedProducts.length > 0 ? selectedProducts.length : products.length) !== 1 ? 's' : ''}
-                                            </span> and cannot be undone.
-                                        </p>
-                                        <div className="flex justify-end gap-4">
-                                            <button
-                                                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-all duration-200"
-                                                onClick={() => setShowBulkDeleteModal(false)}
-                                            >
-                                                Cancel
-                                            </button>
-                                            <button
-                                                className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-all duration-200"
-                                                onClick={selectedProducts.length > 0 ? deleteSelectedProducts : bulkDeleteProducts}
-                                            >
-                                                {selectedProducts.length > 0 ? 'Delete Selected' : 'Delete All'}
-                                            </button>
-                                        </div>
-                                    </>
-                                )}
+                                </motion.div>
                             </motion.div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Category Delete Confirmation Modal */}
+                    <AnimatePresence>
+                        {showCategoryDeleteModal && (
+                            <motion.div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                                <motion.div
+                                    className="bg-white p-4 sm:p-6 rounded-lg shadow-xl w-full max-w-sm"
+                                    initial={{ scale: 0.8 }}
+                                    animate={{ scale: 1 }}
+                                    exit={{ scale: 0.8 }}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <h2 className="text-lg font-bold text-gray-900 mb-4">Confirm Delete Category</h2>
+                                    <p className="text-gray-600 mb-2">Are you sure you want to delete this category?</p>
+                                    <p className="text-red-600 text-sm mb-6">This action cannot be undone and may affect products using this category.</p>
+                                    <div className="flex justify-end gap-4">
+                                        <button
+                                            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-all duration-200"
+                                            onClick={() => setShowCategoryDeleteModal(null)}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-all duration-200"
+                                            onClick={confirmCategoryDelete}
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Bulk Delete Products Confirmation Modal */}
+                    <AnimatePresence>
+                        {showBulkDeleteModal && (
+                            <motion.div
+                                className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => !isBulkDeleting && setShowBulkDeleteModal(false)}
+                            >
+                                <motion.div
+                                    className="bg-white p-4 sm:p-6 rounded-lg shadow-xl w-full max-w-md"
+                                    initial={{ scale: 0.8 }}
+                                    animate={{ scale: 1 }}
+                                    exit={{ scale: 0.8 }}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    {isBulkDeleting ? (
+                                        <div className="flex flex-col items-center py-4">
+                                            <SpinningLoader size="large" />
+                                            <p className="mt-4 text-gray-800 font-medium">
+                                                Deleting products... ({bulkDeleteProgress.current} of {bulkDeleteProgress.total})
+                                            </p>
+                                            <div className="w-full mt-4 bg-gray-200 rounded-full h-2.5">
+                                                <div
+                                                    className="bg-gradient-to-r from-blue-500 to-pink-500 h-2.5 rounded-full"
+                                                    style={{ width: `${(bulkDeleteProgress.current / bulkDeleteProgress.total) * 100}%` }}
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <h2 className="text-lg font-bold text-gray-900 mb-4">
+                                                {selectedProducts.length > 0 ? 'Delete Selected Products' : 'Delete All Products'}
+                                            </h2>
+                                            <p className="text-gray-600 mb-2">
+                                                {selectedProducts.length > 0
+                                                    ? 'Are you sure you want to delete the selected products?'
+                                                    : 'Are you sure you want to delete all products?'
+                                                }
+                                            </p>
+                                            <p className="text-red-600 text-sm mb-6">
+                                                This will delete <span className="font-bold">
+                                                    {selectedProducts.length > 0 ? selectedProducts.length : products.length}
+                                                    product{(selectedProducts.length > 0 ? selectedProducts.length : products.length) !== 1 ? 's' : ''}
+                                                </span> and cannot be undone.
+                                            </p>
+                                            <div className="flex justify-end gap-4">
+                                                <button
+                                                    className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-all duration-200"
+                                                    onClick={() => setShowBulkDeleteModal(false)}
+                                                >
+                                                    Cancel
+                                                </button>
+                                                <button
+                                                    className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-all duration-200"
+                                                    onClick={selectedProducts.length > 0 ? deleteSelectedProducts : bulkDeleteProducts}
+                                                >
+                                                    {selectedProducts.length > 0 ? 'Delete Selected' : 'Delete All'}
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </motion.div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
             </div>
         </div>
     );

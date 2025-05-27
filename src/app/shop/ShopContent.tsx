@@ -9,6 +9,7 @@ import { databases, appwriteConfig } from "@/src/lib/appwrite";
 import { useSearchParams } from "next/navigation";
 import { CATEGORIES } from '@/src/data/categories';
 import { Query } from 'appwrite';
+import Link from 'next/link';
 
 interface Product {
   $id: string;
@@ -180,13 +181,27 @@ export default function ShopContent() {
     <div className="text-black p-3 sm:p-10 pt-20 sm:pt-28 flex flex-col justify-center items-center">
       {/* Back Button */}
       <div className="flex w-full justify-start mb-8 mt-8 sm:mt-4 px-2 sm:px-4 md:px-8">
-        <div
-          className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 transition-colors duration-200 rounded-lg px-4 py-2 cursor-pointer"
-          onClick={() => window.history.back()}
+        <Link
+          href="/"
+          className="inline-flex items-center px-4 py-3 rounded-lg text-gray-700 hover:text-black hover:bg-gray-100 active:bg-gray-200 transition-all duration-200 touch-manipulation"
+          style={{ WebkitTapHighlightColor: 'transparent' }}
         >
-          <BackArrow className="text-gray-700" />
-          <span className="text-gray-700 font-medium">Back</span>
-        </div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 mr-2"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            />
+          </svg>
+          Back to Home
+        </Link>
       </div>
 
       {/* Search Bar and Sort Order */}

@@ -27,10 +27,10 @@ const Footer = () => {
                 console.log("Checking admin key:", currentKey);
 
                 // Hardcoded comparison with the exact string
-                if (currentKey === "fugo101") {
+                if (currentKey === "cepoka101") {
                     console.log("Admin key is valid, setting localStorage and redirecting");
                     // Store the exact string
-                    localStorage.setItem('adminKey', "fugo101");
+                    localStorage.setItem('adminKey', "cepoka101");
                     // Redirect to admin page
                     window.location.href = '/admin';
                 } else {
@@ -83,9 +83,9 @@ const Footer = () => {
                     console.log("Received admin key:", key);
 
                     // Direct check without using state
-                    if (key === "fugo101") {
+                    if (key === "cepoka101") {
                         console.log("Valid admin key, redirecting...");
-                        localStorage.setItem('adminKey', "fugo101");
+                        localStorage.setItem('adminKey', "cepoka101");
 
                         // Add the LoadingScreen component to the DOM
                         const loadingScreenContainer = document.createElement('div');

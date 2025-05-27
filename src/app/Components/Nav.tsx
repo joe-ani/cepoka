@@ -359,164 +359,167 @@ const Nav = () => {
               setIsMenuOpen(false);
             }}
           >
-            {/* Mobile Header - positioned exactly like the main nav */}
-            <div className="h-[90px] relative">
-              <div className="absolute -bottom-10 left-0 w-full h-[1px] bg-black/10 z-[160]"></div>
-              <div className="container mx-auto relative">
-                <div className="flex justify-between items-center relative z-[200] pt-6 px-8">
-                  <Link href={"/"} className="relative z-[200] flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-                    <div className="bg-transparent p-1 rounded-full">
-                      <Image src="/logo.png" alt="Logo" width={40} height={50} />
-                    </div>
-                    <div>
-                      <motion.span
-                        className="text-base font-bold bg-clip-text text-transparent inline-block relative"
-                        style={{
-                          backgroundImage: "linear-gradient(90deg, #1E90FF, #FF69B4)",
-                          backgroundSize: "200% 100%",
-                        }}
-                        animate={{
-                          backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
-                        }}
-                        transition={{
-                          duration: 5,
-                          ease: "linear",
-                          repeat: Infinity,
-                        }}
-                      >
-                        CEPOKA BEAUTY HUB
-                        <motion.div
-                          className="absolute -bottom-1 left-0 h-[2px] rounded-full"
+            {/* Mobile Header with extended background */}
+            <div className="bg-[#11111180] backdrop-blur-[12px] pb-8">
+              {/* Header section */}
+              <div className="h-[90px] relative">
+                <div className="absolute -bottom-10 left-0 w-full h-[1px] bg-black/10 z-[160]"></div>
+                <div className="container mx-auto relative">
+                  <div className="flex justify-between items-center relative z-[200] pt-6 px-8">
+                    <Link href={"/"} className="relative z-[200] flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                      <div className="bg-transparent p-1 rounded-full">
+                        <Image src="/logo.png" alt="Logo" width={40} height={50} />
+                      </div>
+                      <div>
+                        <motion.span
+                          className="text-base font-bold bg-clip-text text-transparent inline-block relative"
                           style={{
                             backgroundImage: "linear-gradient(90deg, #1E90FF, #FF69B4)",
                             backgroundSize: "200% 100%",
                           }}
                           animate={{
                             backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
-                            width: ["0%", "100%"],
                           }}
                           transition={{
-                            backgroundPosition: {
-                              duration: 5,
-                              ease: "linear",
-                              repeat: Infinity,
-                            },
-                            width: {
-                              duration: 1,
-                              delay: 0.5,
-                              ease: "easeOut",
-                            },
+                            duration: 5,
+                            ease: "linear",
+                            repeat: Infinity,
                           }}
-                        />
-                      </motion.span>
-                    </div>
-                  </Link>
+                        >
+                          CEPOKA BEAUTY HUB
+                          <motion.div
+                            className="absolute -bottom-1 left-0 h-[2px] rounded-full"
+                            style={{
+                              backgroundImage: "linear-gradient(90deg, #1E90FF, #FF69B4)",
+                              backgroundSize: "200% 100%",
+                            }}
+                            animate={{
+                              backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
+                              width: ["0%", "100%"],
+                            }}
+                            transition={{
+                              backgroundPosition: {
+                                duration: 5,
+                                ease: "linear",
+                                repeat: Infinity,
+                              },
+                              width: {
+                                duration: 1,
+                                delay: 0.5,
+                                ease: "easeOut",
+                              },
+                            }}
+                          />
+                        </motion.span>
+                      </div>
+                    </Link>
 
-                  <motion.button
-                    className="text-white bg-black/30 rounded-full p-2 relative z-[170] cursor-pointer hover:text-gray-300 hover:scale-110 transition-all duration-200"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsMenuOpen(false);
-                    }}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    aria-label="Close menu"
-                  >
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
+                    <motion.button
+                      className="text-white bg-black/30 rounded-full p-2 relative z-[170] cursor-pointer hover:text-gray-300 hover:scale-110 transition-all duration-200"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsMenuOpen(false);
+                      }}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      aria-label="Close menu"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </motion.button>
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </motion.button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Mobile Menu Content */}
-            <div
-              className="pt-16 pb-8 px-8 flex flex-col items-center gap-8"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Updated Mobile Search Form */}
-              <motion.form
-                id="mobile-search-form"
-                variants={menuItemVariants}
-                custom={0}
-                className="relative w-full max-w-[280px]"
-                onSubmit={handleSearch}
+              {/* Mobile Menu Content - now inside the same background container */}
+              <div
+                className="pt-16 pb-8 px-8 flex flex-col items-center gap-8"
                 onClick={(e) => e.stopPropagation()}
               >
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-6 py-3 rounded-full bg-white/10 text-white font-light focus:outline-none focus:ring-2 focus:ring-[#1E90FF] transition-all text-left placeholder-white/60"
-                  placeholder="Search products..."
-                />
-                <button
-                  type="submit"
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2"
+                {/* Updated Mobile Search Form */}
+                <motion.form
+                  id="mobile-search-form"
+                  variants={menuItemVariants}
+                  custom={0}
+                  className="relative w-full max-w-[280px]"
+                  onSubmit={handleSearch}
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  <Search className="w-4 h-4 text-white" />
-                </button>
-              </motion.form>
-
-              {/* Navigation Links */}
-              <div className="flex flex-col items-center gap-8 w-full">
-                {["Home", "Shop", "Contact", "About"].map((link, i) => (
-                  <motion.div
-                    key={link}
-                    variants={menuItemVariants}
-                    custom={i + 1}
-                    className="relative flex flex-col items-center"
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full px-6 py-3 rounded-full bg-white/10 text-white font-light focus:outline-none focus:ring-2 focus:ring-[#1E90FF] transition-all text-left placeholder-white/60"
+                    placeholder="Search products..."
+                  />
+                  <button
+                    type="submit"
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2"
                   >
-                    <motion.button
-                      onClick={() => handleNavClick(link)}
-                      className={`text-center text-lg font-medium py-2 px-4 ${activeLink === link ? "text-[#FF69B4]" : "text-white"}`}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                    <Search className="w-4 h-4 text-white" />
+                  </button>
+                </motion.form>
+
+                {/* Navigation Links */}
+                <div className="flex flex-col items-center gap-8 w-full">
+                  {["Home", "Shop", "Contact", "About"].map((link, i) => (
+                    <motion.div
+                      key={link}
+                      variants={menuItemVariants}
+                      custom={i + 1}
+                      className="relative flex flex-col items-center"
                     >
-                      {link}
-                    </motion.button>
-                    {activeLink === link && (
-                      <div className="absolute -bottom-2 flex space-x-1">
-                        <motion.div
-                          className="bg-[#1E90FF] w-[4px] h-[4px] rounded-full"
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ duration: 0.2 }}
-                        />
-                        <motion.div
-                          className="bg-[#FF69B4] w-[4px] h-[4px] rounded-full"
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ duration: 0.2, delay: 0.1 }}
-                        />
-                        <motion.div
-                          className="bg-[#1E90FF] w-[4px] h-[4px] rounded-full"
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ duration: 0.2, delay: 0.2 }}
-                        />
-                        <motion.div
-                          className="bg-[#FF69B4] w-[4px] h-[4px] rounded-full"
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ duration: 0.2, delay: 0.3 }}
-                        />
-                      </div>
-                    )}
-                  </motion.div>
-                ))}
+                      <motion.button
+                        onClick={() => handleNavClick(link)}
+                        className={`text-center text-lg font-medium py-2 px-4 ${activeLink === link ? "text-[#FF69B4]" : "text-white"}`}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        {link}
+                      </motion.button>
+                      {activeLink === link && (
+                        <div className="absolute -bottom-2 flex space-x-1">
+                          <motion.div
+                            className="bg-[#1E90FF] w-[4px] h-[4px] rounded-full"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 0.2 }}
+                          />
+                          <motion.div
+                            className="bg-[#FF69B4] w-[4px] h-[4px] rounded-full"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 0.2, delay: 0.1 }}
+                          />
+                          <motion.div
+                            className="bg-[#1E90FF] w-[4px] h-[4px] rounded-full"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 0.2, delay: 0.2 }}
+                          />
+                          <motion.div
+                            className="bg-[#FF69B4] w-[4px] h-[4px] rounded-full"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 0.2, delay: 0.3 }}
+                          />
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>

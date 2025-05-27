@@ -7,6 +7,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { useActiveLink } from "../context/ActiveLinkContext";
 import { useRouter } from "next/navigation";
 import { Search, ArrowRight, ChevronDown } from 'lucide-react';
+import LoadingScreen from "./LoadingScreen";
 
 const Hero = () => {
     const { activeLink, setActiveLink } = useActiveLink();
@@ -24,6 +25,7 @@ const Hero = () => {
     const actionsRef = useRef<HTMLDivElement>(null);
     const [isOverlapping, setIsOverlapping] = useState(false);
     const [currentModelIndex, setCurrentModelIndex] = useState(0);
+    const [isLoadingShop, setIsLoadingShop] = useState(false);
 
     // Array of model images
     const modelImages = [
@@ -88,6 +90,15 @@ const Hero = () => {
         setShowSearch(false);
 
         setSearchQuery("");
+    };
+
+    const handleShopClick = () => {
+        setIsLoadingShop(true);
+        setActiveLink("Shop");
+        // Small delay to show loading state
+        setTimeout(() => {
+            router.push('/shop');
+        }, 500);
     };
 
     const checkOverlap = useCallback(() => {
@@ -205,6 +216,11 @@ const Hero = () => {
 
     return (
         <div className="hero bg-[#ffffff] h-screen w-screen flex flex-col justify-center items-center relative">
+            {/* Loading screen for shop navigation */}
+            {isLoadingShop && (
+                <LoadingScreen message="Loading Shop..." isFullScreen={true} />
+            )}
+
             <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white to-transparent z-20"></div>
 
             {menuOpen && (
@@ -608,19 +624,18 @@ const Hero = () => {
                         </div>
                     </motion.div>
                     <div className="w-[60%] h-[1.5px] bg-gradient-to-r from-[#9a9a9a] to-transparent rounded-full mx-0"></div>
-                    <p className="pt-4 pb-2 text-[14px] md:text-[20px] w-[80%] mx-0 font-normal text-[#333333]">
+                    <p className="pt-2 pb-1 text-[14px] md:text-[20px] w-[80%] mx-0 font-normal text-[#333333]">
                         We offer high-quality salon, spa, and beauty equipment for professionals.
                     </p>
                     <div ref={actionsRef} className="quickact flex space-x-5 md:flex-row space-y-3 md:space-y-0 md:space-x-3 py-10 items-start md:items-center">
-                        <Link href={"/shop"} onClick={() => setActiveLink("Shop")}>
-                            <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                className="font-medium bg-gradient-to-tr from-[#1E90FF] to-[#FF69B4] text-white text-[14px] md:text-[20px] rounded-full p-2 px-8 gap-3 flex items-center">
-                                Shop
-                                <ArrowRight size={20} />
-                            </motion.button>
-                        </Link>
+                        <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={handleShopClick}
+                            className="font-medium bg-gradient-to-tr from-[#1E90FF] to-[#FF69B4] text-white text-[14px] md:text-[20px] rounded-full p-2 px-8 gap-3 flex items-center">
+                            Shop
+                            <ArrowRight size={20} />
+                        </motion.button>
                         <motion.div
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}

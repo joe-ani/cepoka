@@ -57,7 +57,7 @@ export default function AdminAccessModal({ isOpen, onClose, onAccess }: AdminAcc
       setIsLoading(true);
 
       // Directly check if the key is correct
-      if (adminKey === 'fugo101') {
+      if (adminKey === 'cepoka101') {
         console.log("Correct admin key entered in modal:", adminKey);
       }
 

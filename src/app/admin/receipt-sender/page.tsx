@@ -102,6 +102,7 @@ const ReceiptSender = () => {
     const [showSizeModal, setShowSizeModal] = useState(false);
     const [receiptSize, setReceiptSize] = useState<'big' | 'mini'>('big');
     const receiptRef = useRef<HTMLDivElement>(null);
+    const [showBlackVersion, setShowBlackVersion] = useState(false); // Toggle between colored and black versions
 
     // Function to fetch the current receipt ID from Appwrite
     const fetchReceiptId = async () => {
@@ -589,6 +590,13 @@ const ReceiptSender = () => {
                 // Use a timeout to ensure the UI updates before PDF generation
                 await new Promise(resolve => setTimeout(resolve, 100));
 
+                // For mini receipts, switch to black version during PDF generation
+                if (receiptSize === 'mini') {
+                    setShowBlackVersion(true);
+                    // Wait for state update to render
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+
                 const element = receiptRef.current;
                 const fileName = `${formData.receiptNumber}_${formData.customerName.replace(/\s+/g, '_')}.pdf`;
 
@@ -657,37 +665,18 @@ const ReceiptSender = () => {
                     // Force a small delay to ensure all styles are applied
                     await new Promise(resolve => setTimeout(resolve, 500));
 
-                    // For mini receipts, temporarily force all text to black for better thermal printing
-                    let originalColors: { element: HTMLElement; originalColor: string }[] = [];
-                    if (receiptSize === 'mini') {
-                        const allElements = element.querySelectorAll('*');
-                        allElements.forEach(el => {
-                            const htmlEl = el as HTMLElement;
-                            const computedStyle = window.getComputedStyle(htmlEl);
-                            if (computedStyle.color && computedStyle.color !== 'rgb(0, 0, 0)') {
-                                originalColors.push({
-                                    element: htmlEl,
-                                    originalColor: htmlEl.style.color || computedStyle.color
-                                });
-                                htmlEl.style.color = '#000000 !important';
-                            }
-                        });
-                    }
-
-                    // Generate PDF directly from the visible element
+                    // Generate PDF directly from the element (hidden black version for mini, regular for big)
                     const pdfResult = await window.html2pdf()
                         .set(opt)
                         .from(element)
                         .output('blob') as Blob;
 
-                    // Restore original colors for mini receipts
-                    if (receiptSize === 'mini') {
-                        originalColors.forEach(({ element, originalColor }) => {
-                            element.style.color = originalColor;
-                        });
-                    }
-
                     console.log("PDF generated successfully");
+
+                    // Restore colored version for mini receipts
+                    if (receiptSize === 'mini') {
+                        setShowBlackVersion(false);
+                    }
 
                     // Create a direct download link
                     const link = document.createElement('a');
@@ -856,7 +845,15 @@ const ReceiptSender = () => {
             console.log("=== GENERATING PDF BLOB ONLY ===");
 
             if (typeof window.html2pdf === 'function' && receiptRef.current) {
+                // For mini receipts, switch to black version during PDF generation
+                if (receiptSize === 'mini') {
+                    setShowBlackVersion(true);
+                    // Wait for state update to render
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+
                 const element = receiptRef.current;
+
                 const fileName = `${formData.receiptNumber}_${formData.customerName.replace(/\s+/g, '_')}.pdf`;
 
                 console.log("Generating PDF blob for:", fileName);
@@ -920,34 +917,15 @@ const ReceiptSender = () => {
                 // Force a small delay to ensure all styles are applied
                 await new Promise(resolve => setTimeout(resolve, 500));
 
-                // For mini receipts, temporarily force all text to black for better thermal printing
-                let originalColors: { element: HTMLElement; originalColor: string }[] = [];
-                if (receiptSize === 'mini') {
-                    const allElements = element.querySelectorAll('*');
-                    allElements.forEach(el => {
-                        const htmlEl = el as HTMLElement;
-                        const computedStyle = window.getComputedStyle(htmlEl);
-                        if (computedStyle.color && computedStyle.color !== 'rgb(0, 0, 0)') {
-                            originalColors.push({
-                                element: htmlEl,
-                                originalColor: htmlEl.style.color || computedStyle.color
-                            });
-                            htmlEl.style.color = '#000000 !important';
-                        }
-                    });
-                }
-
-                // Generate PDF blob
+                // Generate PDF blob from the element (hidden black version for mini, regular for big)
                 const pdfBlob = await window.html2pdf()
                     .set(opt)
                     .from(element)
                     .output('blob') as Blob;
 
-                // Restore original colors for mini receipts
+                // Restore colored version for mini receipts
                 if (receiptSize === 'mini') {
-                    originalColors.forEach(({ element, originalColor }) => {
-                        element.style.color = originalColor;
-                    });
+                    setShowBlackVersion(false);
                 }
 
                 console.log("PDF blob generated successfully");
@@ -1679,7 +1657,7 @@ const ReceiptSender = () => {
                                             }}>
                                                 <strong>Balance:</strong>
                                                 <strong style={{
-                                                    color: formData.balance > 0 ? '#cc0000' : '#008800'
+                                                    color: showBlackVersion ? '#000000' : (formData.balance > 0 ? '#cc0000' : '#008800')
                                                 }}>₦{formData.balance.toLocaleString()}</strong>
                                             </div>
                                         </div>
@@ -1974,6 +1952,8 @@ const ReceiptSender = () => {
                         </div>
                     )}
                 </div>
+
+
 
                 {/* Receipt Size Selection Modal */}
                 {showSizeModal && (

@@ -1445,17 +1445,17 @@ const ReceiptSender = () => {
                                 ref={receiptRef}
                                 className={`bg-white mx-auto ${receiptSize === 'mini' ? 'scale-100' : 'sm:scale-90 md:scale-85'}`}
                                 style={receiptSize === 'mini' ? {
-                                    // Mini Receipt Styles (Envelope #9 compatible)
+                                    // Mini Receipt Styles (Envelope #9 compatible) - Optimized for thermal printing
                                     width: '280px', // Envelope #9 width ≈ 280px (98mm)
                                     maxWidth: '280px',
                                     height: 'auto',
-                                    padding: '12px',
+                                    padding: '16px',
                                     boxSizing: 'border-box',
                                     backgroundColor: 'white',
                                     fontFamily: 'Arial, sans-serif',
-                                    fontSize: '12px', // Slightly larger for envelope size
-                                    fontWeight: '600', // Bold text for thermal printing
-                                    lineHeight: '1.4',
+                                    fontSize: '16px', // Increased from 12px for better thermal printing
+                                    fontWeight: '700', // Extra bold for thermal printing clarity
+                                    lineHeight: '1.5', // Better spacing for readability
                                     border: '1px solid #ddd',
                                     position: 'relative',
                                     margin: '0 auto',
@@ -1489,32 +1489,35 @@ const ReceiptSender = () => {
                                             <Image
                                                 src="/logo.png"
                                                 alt="Cepoka Logo"
-                                                width={40}
-                                                height={40}
+                                                width={50}
+                                                height={50}
                                                 className="mx-auto mb-2"
                                                 style={{
-                                                    maxWidth: '40px',
+                                                    maxWidth: '50px',
                                                     height: 'auto',
                                                     display: 'block',
-                                                    margin: '0 auto 8px auto'
+                                                    margin: '0 auto 10px auto'
                                                 }}
                                                 priority={true}
                                                 unoptimized={true}
                                             />
                                             <h2 style={{
-                                                fontSize: '14px',
-                                                fontWeight: '700',
+                                                fontSize: '18px', // Increased from 14px
+                                                fontWeight: '800', // Extra bold
                                                 color: '#000000',
-                                                marginBottom: '4px',
-                                                textAlign: 'center'
+                                                marginBottom: '6px',
+                                                textAlign: 'center',
+                                                letterSpacing: '0.5px'
                                             }}>
                                                 CEPOKA BEAUTY HUB
                                             </h2>
                                             <div style={{
-                                                fontSize: '9px',
+                                                fontSize: '12px', // Increased from 9px
+                                                fontWeight: '600',
                                                 color: '#000000',
                                                 textAlign: 'center',
-                                                marginBottom: '8px'
+                                                marginBottom: '10px',
+                                                lineHeight: '1.4'
                                             }}>
                                                 <div>Lekki, Lagos</div>
                                                 <div>+234 803 123 4567</div>
@@ -1523,23 +1526,24 @@ const ReceiptSender = () => {
 
                                         {/* Mini Customer Info */}
                                         <div style={{
-                                            marginBottom: '12px',
-                                            fontSize: '10px',
+                                            marginBottom: '14px',
+                                            fontSize: '13px', // Increased from 10px
+                                            fontWeight: '600',
                                             color: '#000000',
-                                            borderTop: '1px dashed #000',
-                                            borderBottom: '1px dashed #000',
-                                            padding: '6px 0'
+                                            borderTop: '2px dashed #000', // Thicker border
+                                            borderBottom: '2px dashed #000',
+                                            padding: '8px 0' // More padding
                                         }}>
-                                            <div style={{ marginBottom: '2px' }}>
+                                            <div style={{ marginBottom: '4px', lineHeight: '1.4' }}>
                                                 <strong>Customer:</strong> {formData.customerName}
                                             </div>
-                                            <div style={{ marginBottom: '2px' }}>
+                                            <div style={{ marginBottom: '4px', lineHeight: '1.4' }}>
                                                 <strong>Receipt #:</strong> {formData.receiptNumber}
                                             </div>
-                                            <div style={{ marginBottom: '2px' }}>
+                                            <div style={{ marginBottom: '4px', lineHeight: '1.4' }}>
                                                 <strong>Tel:</strong> {formData.whatsapp}
                                             </div>
-                                            <div>
+                                            <div style={{ lineHeight: '1.4' }}>
                                                 <strong>Date:</strong> {new Date(formData.date).toLocaleDateString('en-NG', {
                                                     year: 'numeric',
                                                     month: 'short',
@@ -1549,31 +1553,42 @@ const ReceiptSender = () => {
                                         </div>
 
                                         {/* Mini Items Table */}
-                                        <div style={{ marginBottom: '12px' }}>
+                                        <div style={{ marginBottom: '14px' }}>
                                             <div style={{
-                                                fontSize: '11px',
-                                                fontWeight: '700',
+                                                fontSize: '14px', // Increased from 11px
+                                                fontWeight: '800', // Extra bold
                                                 textAlign: 'center',
-                                                marginBottom: '6px',
-                                                color: '#000000'
+                                                marginBottom: '8px',
+                                                color: '#000000',
+                                                letterSpacing: '0.5px'
                                             }}>
                                                 CASH SALES INVOICE
                                             </div>
 
                                             {formData.items.map((item, index) => (
                                                 <div key={index} style={{
-                                                    marginBottom: '4px',
-                                                    fontSize: '9px',
+                                                    marginBottom: '6px', // More spacing
+                                                    fontSize: '12px', // Increased from 9px
+                                                    fontWeight: '600',
                                                     color: '#000000',
-                                                    borderBottom: index < formData.items.length - 1 ? '1px dotted #ccc' : 'none',
-                                                    paddingBottom: '4px'
+                                                    borderBottom: index < formData.items.length - 1 ? '1px dotted #666' : 'none',
+                                                    paddingBottom: '6px'
                                                 }}>
-                                                    <div style={{ fontWeight: '600', marginBottom: '1px' }}>
+                                                    <div style={{
+                                                        fontWeight: '700',
+                                                        marginBottom: '3px',
+                                                        fontSize: '13px' // Slightly larger for product names
+                                                    }}>
                                                         {item.description}
                                                     </div>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                    <div style={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        fontSize: '12px',
+                                                        lineHeight: '1.3'
+                                                    }}>
                                                         <span>{item.quantity} x ₦{item.unitPrice.toLocaleString()}</span>
-                                                        <span style={{ fontWeight: '600' }}>₦{item.total.toLocaleString()}</span>
+                                                        <span style={{ fontWeight: '700' }}>₦{item.total.toLocaleString()}</span>
                                                     </div>
                                                 </div>
                                             ))}
@@ -1581,25 +1596,38 @@ const ReceiptSender = () => {
 
                                         {/* Mini Totals */}
                                         <div style={{
-                                            borderTop: '1px dashed #000',
-                                            paddingTop: '6px',
-                                            fontSize: '10px',
+                                            borderTop: '2px dashed #000', // Thicker border
+                                            paddingTop: '8px',
+                                            fontSize: '13px', // Increased from 10px
+                                            fontWeight: '600',
                                             color: '#000000'
                                         }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                                            <div style={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                marginBottom: '4px',
+                                                lineHeight: '1.4'
+                                            }}>
                                                 <strong>Subtotal:</strong>
                                                 <strong>₦{formData.subtotal.toLocaleString()}</strong>
                                             </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                                            <div style={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                marginBottom: '4px',
+                                                lineHeight: '1.4'
+                                            }}>
                                                 <strong>Amount Paid:</strong>
                                                 <strong>₦{formData.amountPaid.toLocaleString()}</strong>
                                             </div>
                                             <div style={{
                                                 display: 'flex',
                                                 justifyContent: 'space-between',
-                                                borderTop: '1px solid #000',
-                                                paddingTop: '4px',
-                                                marginTop: '4px'
+                                                borderTop: '2px solid #000', // Thicker border
+                                                paddingTop: '6px',
+                                                marginTop: '6px',
+                                                fontSize: '14px', // Larger for balance
+                                                fontWeight: '700'
                                             }}>
                                                 <strong>Balance:</strong>
                                                 <strong style={{
@@ -1610,20 +1638,32 @@ const ReceiptSender = () => {
 
                                         {/* Mini Footer */}
                                         <div style={{
-                                            marginTop: '12px',
-                                            paddingTop: '6px',
-                                            borderTop: '1px dashed #000',
+                                            marginTop: '14px',
+                                            paddingTop: '8px',
+                                            borderTop: '2px dashed #000', // Thicker border
                                             textAlign: 'center',
-                                            fontSize: '8px',
+                                            fontSize: '11px', // Increased from 8px
                                             color: '#000000'
                                         }}>
-                                            <div style={{ marginBottom: '2px', fontWeight: '600' }}>
+                                            <div style={{
+                                                marginBottom: '4px',
+                                                fontWeight: '700',
+                                                fontSize: '12px' // Larger for thank you message
+                                            }}>
                                                 Thank you for your patronage!
                                             </div>
-                                            <div style={{ marginBottom: '4px' }}>
+                                            <div style={{
+                                                marginBottom: '6px',
+                                                fontWeight: '600',
+                                                fontSize: '11px'
+                                            }}>
                                                 Follow us: @cepoka
                                             </div>
-                                            <div style={{ fontSize: '7px', color: '#666666' }}>
+                                            <div style={{
+                                                fontSize: '9px', // Increased from 7px
+                                                color: '#666666',
+                                                fontWeight: '500'
+                                            }}>
                                                 Computer-generated receipt
                                             </div>
                                         </div>

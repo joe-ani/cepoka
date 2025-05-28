@@ -9,6 +9,8 @@ import { useActiveLink } from "../context/ActiveLinkContext";
 import { Heart, ArrowRight } from "lucide-react";
 import { databases, appwriteConfig } from '@/src/lib/appwrite';
 import { Query } from 'appwrite';
+import LoadingScreen from "./LoadingScreen";
+import { useRouter } from "next/navigation";
 
 interface Product {
   $id: string;
@@ -21,9 +23,11 @@ interface Product {
 
 const LatestProduct: React.FC = () => {
   const { setActiveLink } = useActiveLink();
+  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingProduct, setLoadingProduct] = useState(false);
+  const [loadingShop, setLoadingShop] = useState(false);
   const [likedProducts, setLikedProducts] = useState<{ [key: string]: boolean }>({});
 
   const { ref: containerRef, inView: containerInView } = useInView({
@@ -148,8 +152,22 @@ const LatestProduct: React.FC = () => {
     );
   }
 
+  const handleShopClick = () => {
+    setLoadingShop(true);
+    setActiveLink("Shop");
+    // Small delay to show loading state
+    setTimeout(() => {
+      router.push('/shop');
+    }, 500);
+  };
+
   return (
     <div className="latest-product-container flex flex-col items-center space-y-8 relative">
+      {/* Loading screen for shop navigation */}
+      {loadingShop && (
+        <LoadingScreen message="Loading Shop..." isFullScreen={true} />
+      )}
+
       {/* Loading overlay for product clicks */}
       {loadingProduct && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -269,17 +287,16 @@ const LatestProduct: React.FC = () => {
         transition={{ delay: 0.5, duration: 0.5 }}
         className="mt-4 md:mt-8"
       >
-        <Link href={"/shop"} onClick={() => setActiveLink("Shop")}>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="font-medium bg-gradient-to-tr from-[#1E90FF] to-[#FF69B4] text-white
-                text-base sm:text-[20px] rounded-full p-2 px-8 flex items-center gap-2 shadow-lg"
-          >
-            Shop
-            <ArrowRight size={20} />
-          </motion.button>
-        </Link>
+        <motion.button
+          onClick={handleShopClick}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="font-medium bg-gradient-to-tr from-[#1E90FF] to-[#FF69B4] text-white
+              text-base sm:text-[20px] rounded-full p-2 px-8 flex items-center gap-2 shadow-lg"
+        >
+          Shop
+          <ArrowRight size={20} />
+        </motion.button>
       </motion.div>
     </div>
   );

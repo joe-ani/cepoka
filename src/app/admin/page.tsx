@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
-// import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -55,7 +55,7 @@ interface ProductFormData {
 }
 
 const AdminPage = () => {
-    // Router for navigation is not used in this component
+    const router = useRouter();
 
     // State management
     const [isAuthorized, setIsAuthorized] = useState(false);        // Authorization status
@@ -63,8 +63,8 @@ const AdminPage = () => {
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);  // Selected image files
     const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]); // Track existing image URLs
     const [isLoading, setIsLoading] = useState(false);              // Loading state
-    const [isNavigating] = useState(false);        // Navigation loading state
-    const [isStockNavigating] = useState(false);        // Navigation loading state
+    const [isNavigating, setIsNavigating] = useState(false);        // Navigation loading state
+    const [isStockNavigating, setIsStockNavigating] = useState(false);        // Navigation loading state
     const [categoriesLoading, setCategoriesLoading] = useState(true); // Categories loading state
     const [editingProduct, setEditingProduct] = useState<Product | null>(null); // Currently editing product
     const [showImageModal, setShowImageModal] = useState<string | null>(null);  // Image modal visibility
@@ -613,6 +613,23 @@ const AdminPage = () => {
         });
     };
 
+    // Navigation handlers
+    const handleReceiptGeneratorClick = () => {
+        setIsNavigating(true);
+        // Small delay to show loading state
+        setTimeout(() => {
+            router.push('/admin/receipt-sender');
+        }, 500);
+    };
+
+    const handleStockManagerClick = () => {
+        setIsStockNavigating(true);
+        // Small delay to show loading state
+        setTimeout(() => {
+            router.push('/admin/stock-manager');
+        }, 500);
+    };
+
     // Set authorized to true for now - auth check removed temporarily
     useEffect(() => {
         setIsAuthorized(true);
@@ -667,8 +684,8 @@ const AdminPage = () => {
                     <div className="flex flex-col sm:flex-row justify-center sm:justify-end gap-3 mt-4 sm:mt-0">
                         {/* Receipt Generator Button */}
                         <div className="relative w-full sm:w-auto">
-                            <Link
-                                href="/admin/receipt-sender"
+                            <button
+                                onClick={handleReceiptGeneratorClick}
                                 className="w-full text-center px-5 py-3 rounded-lg transition-all duration-200
                                     flex items-center justify-center gap-2
                                     bg-[#333333] hover:bg-gray-800 active:bg-gray-700
@@ -685,13 +702,13 @@ const AdminPage = () => {
                                     </svg>
                                     <span>Receipt Generator</span>
                                 </div>
-                            </Link>
+                            </button>
                         </div>
 
                         {/* Stock Manager Button */}
                         <div className="relative w-full sm:w-auto">
-                            <Link
-                                href="/admin/stock-manager"
+                            <button
+                                onClick={handleStockManagerClick}
                                 className="w-full text-center px-5 py-3 rounded-lg transition-all duration-200
                                     flex items-center justify-center gap-2
                                     bg-[#333333] hover:bg-gray-800 active:bg-gray-700
@@ -708,7 +725,7 @@ const AdminPage = () => {
                                     </svg>
                                     <span>Stock Manager</span>
                                 </div>
-                            </Link>
+                            </button>
                         </div>
                     </div>
                 </div>

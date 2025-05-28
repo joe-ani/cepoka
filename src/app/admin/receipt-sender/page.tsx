@@ -1937,7 +1937,7 @@ const ReceiptSender = () => {
                                                 🧾 Mini Receipt (Envelope #9)
                                             </h4>
                                             <p className="text-sm text-gray-600 mt-1">
-                                                For thermal printers - Envelope #9 size (3.875" x 8.875")
+                                                For thermal printers - Envelope #9 size (3.875&quot; x 8.875&quot;)
                                             </p>
                                         </div>
                                         <div className="text-2xl group-hover:scale-110 transition-transform">

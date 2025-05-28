@@ -600,11 +600,11 @@ const ReceiptSender = () => {
                 try {
                     // Configure PDF options based on receipt size
                     const opt: Html2PdfOptions = receiptSize === 'mini' ? {
-                        margin: [2, 2, 2, 2], // Smaller margins for mini receipt
+                        margin: [3, 3, 3, 3], // Envelope #9 compatible margins
                         filename: fileName,
                         image: { type: 'jpeg', quality: 0.95 },
                         html2canvas: {
-                            scale: 2, // Higher scale for better text clarity on mini receipt
+                            scale: 2.5, // Higher scale for better text clarity on envelope size
                             useCORS: true,
                             logging: true,
                             letterRendering: true,
@@ -615,7 +615,7 @@ const ReceiptSender = () => {
                         },
                         jsPDF: {
                             unit: 'mm',
-                            format: [58, 200], // 58mm width for thermal printer, auto height
+                            format: [98, 225], // Envelope #9 size: 3.875" x 8.875" = 98mm x 225mm
                             orientation: 'portrait',
                             compress: true
                         }
@@ -839,11 +839,11 @@ const ReceiptSender = () => {
 
                 // Set options for the PDF based on receipt size
                 const opt: Html2PdfOptions = receiptSize === 'mini' ? {
-                    margin: [2, 2, 2, 2],
+                    margin: [3, 3, 3, 3], // Envelope #9 compatible margins
                     filename: fileName,
                     image: { type: 'jpeg', quality: 0.95 },
                     html2canvas: {
-                        scale: 2,
+                        scale: 2.5, // Higher scale for better text clarity on envelope size
                         useCORS: true,
                         logging: true,
                         letterRendering: true,
@@ -854,7 +854,7 @@ const ReceiptSender = () => {
                     },
                     jsPDF: {
                         unit: 'mm',
-                        format: [58, 200], // 58mm width for thermal printer
+                        format: [98, 225], // Envelope #9 size: 3.875" x 8.875" = 98mm x 225mm
                         orientation: 'portrait',
                         compress: true
                     }
@@ -1445,17 +1445,17 @@ const ReceiptSender = () => {
                                 ref={receiptRef}
                                 className={`bg-white mx-auto ${receiptSize === 'mini' ? 'scale-100' : 'sm:scale-90 md:scale-85'}`}
                                 style={receiptSize === 'mini' ? {
-                                    // Mini Receipt Styles (58mm thermal printer)
-                                    width: '220px', // 58mm ≈ 220px
-                                    maxWidth: '220px',
+                                    // Mini Receipt Styles (Envelope #9 compatible)
+                                    width: '280px', // Envelope #9 width ≈ 280px (98mm)
+                                    maxWidth: '280px',
                                     height: 'auto',
-                                    padding: '8px',
+                                    padding: '12px',
                                     boxSizing: 'border-box',
                                     backgroundColor: 'white',
                                     fontFamily: 'Arial, sans-serif',
-                                    fontSize: '11px',
+                                    fontSize: '12px', // Slightly larger for envelope size
                                     fontWeight: '600', // Bold text for thermal printing
-                                    lineHeight: '1.3',
+                                    lineHeight: '1.4',
                                     border: '1px solid #ddd',
                                     position: 'relative',
                                     margin: '0 auto',
@@ -1934,10 +1934,10 @@ const ReceiptSender = () => {
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <h4 className="font-semibold text-gray-900 group-hover:text-green-700">
-                                                🧾 Mini Receipt (58mm)
+                                                🧾 Mini Receipt (Envelope #9)
                                             </h4>
                                             <p className="text-sm text-gray-600 mt-1">
-                                                For thermal printers like Bisoffice 58mm
+                                                For thermal printers - Envelope #9 size (3.875" x 8.875")
                                             </p>
                                         </div>
                                         <div className="text-2xl group-hover:scale-110 transition-transform">

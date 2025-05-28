@@ -657,11 +657,35 @@ const ReceiptSender = () => {
                     // Force a small delay to ensure all styles are applied
                     await new Promise(resolve => setTimeout(resolve, 500));
 
+                    // For mini receipts, temporarily force all text to black for better thermal printing
+                    let originalColors: { element: HTMLElement; originalColor: string }[] = [];
+                    if (receiptSize === 'mini') {
+                        const allElements = element.querySelectorAll('*');
+                        allElements.forEach(el => {
+                            const htmlEl = el as HTMLElement;
+                            const computedStyle = window.getComputedStyle(htmlEl);
+                            if (computedStyle.color && computedStyle.color !== 'rgb(0, 0, 0)') {
+                                originalColors.push({
+                                    element: htmlEl,
+                                    originalColor: htmlEl.style.color || computedStyle.color
+                                });
+                                htmlEl.style.color = '#000000 !important';
+                            }
+                        });
+                    }
+
                     // Generate PDF directly from the visible element
                     const pdfResult = await window.html2pdf()
                         .set(opt)
                         .from(element)
                         .output('blob') as Blob;
+
+                    // Restore original colors for mini receipts
+                    if (receiptSize === 'mini') {
+                        originalColors.forEach(({ element, originalColor }) => {
+                            element.style.color = originalColor;
+                        });
+                    }
 
                     console.log("PDF generated successfully");
 
@@ -896,11 +920,35 @@ const ReceiptSender = () => {
                 // Force a small delay to ensure all styles are applied
                 await new Promise(resolve => setTimeout(resolve, 500));
 
+                // For mini receipts, temporarily force all text to black for better thermal printing
+                let originalColors: { element: HTMLElement; originalColor: string }[] = [];
+                if (receiptSize === 'mini') {
+                    const allElements = element.querySelectorAll('*');
+                    allElements.forEach(el => {
+                        const htmlEl = el as HTMLElement;
+                        const computedStyle = window.getComputedStyle(htmlEl);
+                        if (computedStyle.color && computedStyle.color !== 'rgb(0, 0, 0)') {
+                            originalColors.push({
+                                element: htmlEl,
+                                originalColor: htmlEl.style.color || computedStyle.color
+                            });
+                            htmlEl.style.color = '#000000 !important';
+                        }
+                    });
+                }
+
                 // Generate PDF blob
                 const pdfBlob = await window.html2pdf()
                     .set(opt)
                     .from(element)
                     .output('blob') as Blob;
+
+                // Restore original colors for mini receipts
+                if (receiptSize === 'mini') {
+                    originalColors.forEach(({ element, originalColor }) => {
+                        element.style.color = originalColor;
+                    });
+                }
 
                 console.log("PDF blob generated successfully");
                 return pdfBlob;

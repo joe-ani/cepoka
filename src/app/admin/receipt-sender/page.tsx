@@ -33,7 +33,7 @@ interface Html2PdfOptions {
     };
     jsPDF: {
         unit: string;
-        format: string;
+        format: string | number[];
         orientation: 'portrait' | 'landscape';
         putOnlyUsedFonts?: boolean;
         compress?: boolean;
@@ -99,6 +99,8 @@ const ReceiptSender = () => {
     const [isLoadingId, setIsLoadingId] = useState(false);
     const [startingIdNumber, setStartingIdNumber] = useState<number | ''>('');
     const [showIdSettings, setShowIdSettings] = useState(false);
+    const [showSizeModal, setShowSizeModal] = useState(false);
+    const [receiptSize, setReceiptSize] = useState<'big' | 'mini'>('big');
     const receiptRef = useRef<HTMLDivElement>(null);
 
     // Function to fetch the current receipt ID from Appwrite
@@ -556,6 +558,13 @@ const ReceiptSender = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        setShowSizeModal(true);
+    };
+
+    // Handle receipt size selection
+    const handleSizeSelection = (size: 'big' | 'mini') => {
+        setReceiptSize(size);
+        setShowSizeModal(false);
         setShowPreview(true);
     };
 
@@ -589,19 +598,40 @@ const ReceiptSender = () => {
                 // Generate PDF directly from the visible receipt element
                 // This is more reliable than creating a clone
                 try {
-                    const opt: Html2PdfOptions = {
-                        margin: [5, 5, 5, 5], // Reduced margins to maximize content space
+                    // Configure PDF options based on receipt size
+                    const opt: Html2PdfOptions = receiptSize === 'mini' ? {
+                        margin: [2, 2, 2, 2], // Smaller margins for mini receipt
                         filename: fileName,
                         image: { type: 'jpeg', quality: 0.95 },
                         html2canvas: {
-                            scale: 1.5, // Reduced scale for better full-page rendering
+                            scale: 2, // Higher scale for better text clarity on mini receipt
                             useCORS: true,
-                            logging: true, // Enable logging for debugging
+                            logging: true,
                             letterRendering: true,
-                            allowTaint: true, // Allow cross-origin images
-                            foreignObjectRendering: false, // Disable foreignObject rendering which can cause issues
+                            allowTaint: true,
+                            foreignObjectRendering: false,
                             scrollY: 0,
-                            windowHeight: window.innerHeight * 2 // Increase capture height
+                            windowHeight: window.innerHeight * 2
+                        },
+                        jsPDF: {
+                            unit: 'mm',
+                            format: [58, 200], // 58mm width for thermal printer, auto height
+                            orientation: 'portrait',
+                            compress: true
+                        }
+                    } : {
+                        margin: [5, 5, 5, 5], // Standard margins for big receipt
+                        filename: fileName,
+                        image: { type: 'jpeg', quality: 0.95 },
+                        html2canvas: {
+                            scale: 1.5,
+                            useCORS: true,
+                            logging: true,
+                            letterRendering: true,
+                            allowTaint: true,
+                            foreignObjectRendering: false,
+                            scrollY: 0,
+                            windowHeight: window.innerHeight * 2
                         },
                         jsPDF: {
                             unit: 'mm',
@@ -807,8 +837,28 @@ const ReceiptSender = () => {
 
                 console.log("Generating PDF blob for:", fileName);
 
-                // Set options for the PDF
-                const opt: Html2PdfOptions = {
+                // Set options for the PDF based on receipt size
+                const opt: Html2PdfOptions = receiptSize === 'mini' ? {
+                    margin: [2, 2, 2, 2],
+                    filename: fileName,
+                    image: { type: 'jpeg', quality: 0.95 },
+                    html2canvas: {
+                        scale: 2,
+                        useCORS: true,
+                        logging: true,
+                        letterRendering: true,
+                        allowTaint: true,
+                        foreignObjectRendering: false,
+                        scrollY: 0,
+                        windowHeight: window.innerHeight * 2
+                    },
+                    jsPDF: {
+                        unit: 'mm',
+                        format: [58, 200], // 58mm width for thermal printer
+                        orientation: 'portrait',
+                        compress: true
+                    }
+                } : {
                     margin: [5, 5, 5, 5],
                     filename: fileName,
                     image: { type: 'jpeg', quality: 0.95 },
@@ -1393,16 +1443,34 @@ const ReceiptSender = () => {
                             }}>
                             <div
                                 ref={receiptRef}
-                                className="bg-white mx-auto sm:scale-90 md:scale-85"
-                                style={{
-                                    width: '100%',
-                                    maxWidth: '210mm',
+                                className={`bg-white mx-auto ${receiptSize === 'mini' ? 'scale-100' : 'sm:scale-90 md:scale-85'}`}
+                                style={receiptSize === 'mini' ? {
+                                    // Mini Receipt Styles (58mm thermal printer)
+                                    width: '220px', // 58mm ≈ 220px
+                                    maxWidth: '220px',
                                     height: 'auto',
-                                    padding: '5mm', // Smaller padding on mobile
+                                    padding: '8px',
                                     boxSizing: 'border-box',
                                     backgroundColor: 'white',
                                     fontFamily: 'Arial, sans-serif',
-                                    fontSize: '10pt', // Smaller font on mobile
+                                    fontSize: '11px',
+                                    fontWeight: '600', // Bold text for thermal printing
+                                    lineHeight: '1.3',
+                                    border: '1px solid #ddd',
+                                    position: 'relative',
+                                    margin: '0 auto',
+                                    color: '#000000',
+                                    pageBreakInside: 'avoid'
+                                } : {
+                                    // Big Receipt Styles (A4)
+                                    width: '100%',
+                                    maxWidth: '210mm',
+                                    height: 'auto',
+                                    padding: '5mm',
+                                    boxSizing: 'border-box',
+                                    backgroundColor: 'white',
+                                    fontFamily: 'Arial, sans-serif',
+                                    fontSize: '10pt',
                                     lineHeight: '1.4',
                                     letterSpacing: '0.2px',
                                     border: '1px solid #eee',
@@ -1413,232 +1481,384 @@ const ReceiptSender = () => {
                                     pageBreakInside: 'avoid'
                                 }}
                             >
-                                <div className="text-center mb-8">
-                                    <div className="mb-3" style={{ height: '80px', position: 'relative' }}>
-                                        <Image
-                                            src="/logo.png"
-                                            alt="Cepoka Logo"
-                                            width={80}
-                                            height={80}
-                                            className="mx-auto"
-                                            style={{
-                                                maxWidth: '80px',
-                                                height: 'auto',
-                                                display: 'block',
-                                                margin: '0 auto'
-                                            }}
-                                            priority={true} // Prioritize image loading
-                                            unoptimized={true} // Use unoptimized image for better PDF compatibility
-                                        />
-                                    </div>
-                                    <div className="relative pb-3 mb-6">
-                                        <h2 style={{
-                                            fontSize: '24pt',
-                                            fontWeight: '700',
+                                {receiptSize === 'mini' ? (
+                                    // MINI RECEIPT LAYOUT (58mm thermal printer)
+                                    <>
+                                        {/* Mini Header */}
+                                        <div className="text-center mb-4">
+                                            <Image
+                                                src="/logo.png"
+                                                alt="Cepoka Logo"
+                                                width={40}
+                                                height={40}
+                                                className="mx-auto mb-2"
+                                                style={{
+                                                    maxWidth: '40px',
+                                                    height: 'auto',
+                                                    display: 'block',
+                                                    margin: '0 auto 8px auto'
+                                                }}
+                                                priority={true}
+                                                unoptimized={true}
+                                            />
+                                            <h2 style={{
+                                                fontSize: '14px',
+                                                fontWeight: '700',
+                                                color: '#000000',
+                                                marginBottom: '4px',
+                                                textAlign: 'center'
+                                            }}>
+                                                CEPOKA BEAUTY HUB
+                                            </h2>
+                                            <div style={{
+                                                fontSize: '9px',
+                                                color: '#000000',
+                                                textAlign: 'center',
+                                                marginBottom: '8px'
+                                            }}>
+                                                <div>Lekki, Lagos</div>
+                                                <div>+234 803 123 4567</div>
+                                            </div>
+                                        </div>
+
+                                        {/* Mini Customer Info */}
+                                        <div style={{
+                                            marginBottom: '12px',
+                                            fontSize: '10px',
                                             color: '#000000',
-                                            marginBottom: '8px'
+                                            borderTop: '1px dashed #000',
+                                            borderBottom: '1px dashed #000',
+                                            padding: '6px 0'
                                         }}>
-                                            CEPOKA BEAUTY HUB
-                                        </h2>
-                                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-48 h-[2px]"
-                                            style={{
-                                                background: '#000000',
-                                                height: '2px'
-                                            }}
-                                        />
-                                    </div>
-
-                                    {/* Address section with HEAD OFFICE and BRANCHES */}
-                                    <div className="flex flex-col items-center" style={{
-                                        marginTop: '12px',
-                                        marginBottom: '16px',
-                                        fontSize: '9pt',
-                                        color: '#000000'
-                                    }}>
-                                        {/* HEAD OFFICE/SHOWROOM */}
-                                        <div className="mb-3 text-center">
-                                            <p style={{
-                                                fontWeight: '700',
-                                                marginBottom: '4px',
-                                                fontSize: '10pt'
-                                            }}>HEAD OFFICE/SHOWROOM</p>
-                                            <div className="flex flex-wrap justify-center">
-                                                <span style={{ padding: '0 8px' }}>Lekki, Lagos</span>
-                                                <span style={{ padding: '0 8px' }}>+234 803 123 4567</span>
-                                                <span style={{ padding: '0 8px' }}>info@cepoka.com</span>
+                                            <div style={{ marginBottom: '2px' }}>
+                                                <strong>Customer:</strong> {formData.customerName}
+                                            </div>
+                                            <div style={{ marginBottom: '2px' }}>
+                                                <strong>Receipt #:</strong> {formData.receiptNumber}
+                                            </div>
+                                            <div style={{ marginBottom: '2px' }}>
+                                                <strong>Tel:</strong> {formData.whatsapp}
+                                            </div>
+                                            <div>
+                                                <strong>Date:</strong> {new Date(formData.date).toLocaleDateString('en-NG', {
+                                                    year: 'numeric',
+                                                    month: 'short',
+                                                    day: 'numeric'
+                                                })}
                                             </div>
                                         </div>
 
-                                        {/* BRANCHES */}
-                                        <div className="text-center">
-                                            <p style={{
+                                        {/* Mini Items Table */}
+                                        <div style={{ marginBottom: '12px' }}>
+                                            <div style={{
+                                                fontSize: '11px',
                                                 fontWeight: '700',
-                                                marginBottom: '4px',
-                                                fontSize: '10pt'
-                                            }}>BRANCHES</p>
-                                            <div className="flex flex-wrap justify-center">
-                                                <span style={{ padding: '0 8px' }}>Ikeja, Lagos</span>
-                                                <span style={{ padding: '0 8px' }}>Abuja</span>
+                                                textAlign: 'center',
+                                                marginBottom: '6px',
+                                                color: '#000000'
+                                            }}>
+                                                CASH SALES INVOICE
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <div className="mb-6" style={{ padding: '12px', backgroundColor: '#f8f8f8', borderRadius: '8px' }}>
-                                    <div className="flex flex-col xs:flex-row justify-between mb-2" style={{ color: '#000000' }}>
-                                        <p className="mb-1 xs:mb-0" style={{ color: '#000000' }}>
-                                            <strong style={{ fontWeight: '600' }}>Customer:</strong> {formData.customerName}
-                                        </p>
-                                        <p className="mb-1 xs:mb-0" style={{ color: '#000000' }}>
-                                            <strong style={{ fontWeight: '600' }}>Receipt #:</strong> {formData.receiptNumber}
-                                        </p>
-                                    </div>
-                                    <div className="flex flex-col xs:flex-row xs:justify-between" style={{ color: '#000000' }}>
-                                        <p className="mb-1 xs:mb-0" style={{ color: '#000000' }}>
-                                            <strong style={{ fontWeight: '600' }}>Tel:</strong> {formData.whatsapp}
-                                        </p>
-                                        <p style={{ color: '#000000' }}>
-                                            <strong style={{ fontWeight: '600' }}>Date:</strong> {new Date(formData.date).toLocaleDateString('en-NG', {
-                                                year: 'numeric',
-                                                month: 'long',
-                                                day: 'numeric'
-                                            })}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* CASH SALES INVOICE Header */}
-                                <div className="text-center mb-3">
-                                    <h3 style={{
-                                        fontWeight: '700',
-                                        fontSize: '14pt',
-                                        color: '#000000',
-                                        marginBottom: '8px'
-                                    }}>CASH SALES INVOICE</h3>
-                                </div>
-
-                                <div className="overflow-x-auto -mx-2 px-2">
-                                    <table style={{
-                                        width: '100%',
-                                        borderCollapse: 'collapse',
-                                        marginBottom: '16px',
-                                        color: '#000000',
-                                        fontSize: '9pt',
-                                        minWidth: '300px'
-                                    }}>
-                                        <thead>
-                                            <tr style={{ borderBottom: '2px solid #000000', borderTop: '2px solid #000000' }}>
-                                                <th style={{
-                                                    padding: '8px 6px',
-                                                    textAlign: 'left',
-                                                    fontWeight: '700',
-                                                    color: '#000000'
-                                                }}>Description</th>
-                                                <th style={{
-                                                    padding: '8px 4px',
-                                                    textAlign: 'right',
-                                                    fontWeight: '700',
-                                                    color: '#000000'
-                                                }}>Qty</th>
-                                                <th style={{
-                                                    padding: '8px 4px',
-                                                    textAlign: 'right',
-                                                    fontWeight: '700',
-                                                    color: '#000000'
-                                                }}>Price</th>
-                                                <th style={{
-                                                    padding: '8px 4px',
-                                                    textAlign: 'right',
-                                                    fontWeight: '700',
-                                                    color: '#000000'
-                                                }}>Total</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
                                             {formData.items.map((item, index) => (
-                                                <tr key={index} style={{ borderBottom: '1px solid #e5e5e5' }}>
-                                                    <td style={{ padding: '8px 6px', color: '#000000' }}>{item.description}</td>
-                                                    <td style={{ padding: '8px 4px', textAlign: 'right', color: '#000000' }}>{item.quantity}</td>
-                                                    <td style={{ padding: '8px 4px', textAlign: 'right', color: '#000000' }}>₦{item.unitPrice.toLocaleString()}</td>
-                                                    <td style={{ padding: '8px 4px', textAlign: 'right', color: '#000000' }}>₦{item.total.toLocaleString()}</td>
-                                                </tr>
+                                                <div key={index} style={{
+                                                    marginBottom: '4px',
+                                                    fontSize: '9px',
+                                                    color: '#000000',
+                                                    borderBottom: index < formData.items.length - 1 ? '1px dotted #ccc' : 'none',
+                                                    paddingBottom: '4px'
+                                                }}>
+                                                    <div style={{ fontWeight: '600', marginBottom: '1px' }}>
+                                                        {item.description}
+                                                    </div>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                        <span>{item.quantity} x ₦{item.unitPrice.toLocaleString()}</span>
+                                                        <span style={{ fontWeight: '600' }}>₦{item.total.toLocaleString()}</span>
+                                                    </div>
+                                                </div>
                                             ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <div style={{
-                                    borderTop: '2px solid #000000',
-                                    paddingTop: '12px',
-                                    color: '#000000'
-                                }}>
-                                    <div className="flex flex-col space-y-2" style={{ color: '#000000' }}>
-                                        <div className="flex justify-between items-center" style={{ color: '#000000' }}>
-                                            <strong style={{
-                                                fontWeight: '700',
-                                                fontSize: '12pt',
-                                                color: '#000000'
-                                            }}>Subtotal:</strong>
-                                            <span style={{
-                                                fontWeight: '700',
-                                                fontSize: '12pt',
-                                                color: '#000000'
-                                            }}>₦{formData.subtotal.toLocaleString()}</span>
                                         </div>
 
-                                        <div className="flex justify-between items-center" style={{ color: '#000000' }}>
-                                            <strong style={{
-                                                fontWeight: '700',
-                                                fontSize: '12pt',
-                                                color: '#000000'
-                                            }}>Amount Paid:</strong>
-                                            <span style={{
-                                                fontWeight: '700',
-                                                fontSize: '12pt',
-                                                color: '#000000'
-                                            }}>₦{formData.amountPaid.toLocaleString()}</span>
+                                        {/* Mini Totals */}
+                                        <div style={{
+                                            borderTop: '1px dashed #000',
+                                            paddingTop: '6px',
+                                            fontSize: '10px',
+                                            color: '#000000'
+                                        }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                                                <strong>Subtotal:</strong>
+                                                <strong>₦{formData.subtotal.toLocaleString()}</strong>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                                                <strong>Amount Paid:</strong>
+                                                <strong>₦{formData.amountPaid.toLocaleString()}</strong>
+                                            </div>
+                                            <div style={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                borderTop: '1px solid #000',
+                                                paddingTop: '4px',
+                                                marginTop: '4px'
+                                            }}>
+                                                <strong>Balance:</strong>
+                                                <strong style={{
+                                                    color: formData.balance > 0 ? '#cc0000' : '#008800'
+                                                }}>₦{formData.balance.toLocaleString()}</strong>
+                                            </div>
                                         </div>
 
-                                        <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-200" style={{ color: '#000000' }}>
-                                            <strong style={{
-                                                fontWeight: '700',
-                                                fontSize: '12pt',
-                                                color: '#000000'
-                                            }}>Balance:</strong>
-                                            <span style={{
-                                                fontWeight: '700',
-                                                fontSize: '12pt',
-                                                color: formData.balance > 0 ? '#cc0000' : '#008800'
-                                            }}>₦{formData.balance.toLocaleString()}</span>
+                                        {/* Mini Footer */}
+                                        <div style={{
+                                            marginTop: '12px',
+                                            paddingTop: '6px',
+                                            borderTop: '1px dashed #000',
+                                            textAlign: 'center',
+                                            fontSize: '8px',
+                                            color: '#000000'
+                                        }}>
+                                            <div style={{ marginBottom: '2px', fontWeight: '600' }}>
+                                                Thank you for your patronage!
+                                            </div>
+                                            <div style={{ marginBottom: '4px' }}>
+                                                Follow us: @cepoka
+                                            </div>
+                                            <div style={{ fontSize: '7px', color: '#666666' }}>
+                                                Computer-generated receipt
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
+                                    </>
+                                ) : (
+                                    // BIG RECEIPT LAYOUT (A4) - Original layout
+                                    <>
+                                        <div className="text-center mb-8">
+                                            <div className="mb-3" style={{ height: '80px', position: 'relative' }}>
+                                                <Image
+                                                    src="/logo.png"
+                                                    alt="Cepoka Logo"
+                                                    width={80}
+                                                    height={80}
+                                                    className="mx-auto"
+                                                    style={{
+                                                        maxWidth: '80px',
+                                                        height: 'auto',
+                                                        display: 'block',
+                                                        margin: '0 auto'
+                                                    }}
+                                                    priority={true}
+                                                    unoptimized={true}
+                                                />
+                                            </div>
+                                            <div className="relative pb-3 mb-6">
+                                                <h2 style={{
+                                                    fontSize: '24pt',
+                                                    fontWeight: '700',
+                                                    color: '#000000',
+                                                    marginBottom: '8px'
+                                                }}>
+                                                    CEPOKA BEAUTY HUB
+                                                </h2>
+                                                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-48 h-[2px]"
+                                                    style={{
+                                                        background: '#000000',
+                                                        height: '2px'
+                                                    }}
+                                                />
+                                            </div>
 
-                                <div style={{
-                                    marginTop: '16px',
-                                    paddingTop: '12px',
-                                    borderTop: '1px solid #e5e5e5',
-                                    textAlign: 'center',
-                                    color: '#000000',
-                                    fontSize: '9pt'
-                                }}>
-                                    <p style={{
-                                        marginBottom: '3px',
-                                        fontWeight: '500',
-                                        color: '#000000'
-                                    }}>Thank you for your patronage!</p>
-                                    <p style={{
-                                        fontWeight: '500',
-                                        color: '#000000'
-                                    }}>Follow us on Instagram: @cepoka</p>
-                                    <div style={{
-                                        marginTop: '12px',
-                                        fontSize: '8pt',
-                                        color: '#666666'
-                                    }}>
-                                        This is a computer-generated receipt and requires no signature.
-                                    </div>
-                                </div>
+                                            {/* Address section with HEAD OFFICE and BRANCHES */}
+                                            <div className="flex flex-col items-center" style={{
+                                                marginTop: '12px',
+                                                marginBottom: '16px',
+                                                fontSize: '9pt',
+                                                color: '#000000'
+                                            }}>
+                                                {/* HEAD OFFICE/SHOWROOM */}
+                                                <div className="mb-3 text-center">
+                                                    <p style={{
+                                                        fontWeight: '700',
+                                                        marginBottom: '4px',
+                                                        fontSize: '10pt'
+                                                    }}>HEAD OFFICE/SHOWROOM</p>
+                                                    <div className="flex flex-wrap justify-center">
+                                                        <span style={{ padding: '0 8px' }}>Lekki, Lagos</span>
+                                                        <span style={{ padding: '0 8px' }}>+234 803 123 4567</span>
+                                                        <span style={{ padding: '0 8px' }}>info@cepoka.com</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* BRANCHES */}
+                                                <div className="text-center">
+                                                    <p style={{
+                                                        fontWeight: '700',
+                                                        marginBottom: '4px',
+                                                        fontSize: '10pt'
+                                                    }}>BRANCHES</p>
+                                                    <div className="flex flex-wrap justify-center">
+                                                        <span style={{ padding: '0 8px' }}>Ikeja, Lagos</span>
+                                                        <span style={{ padding: '0 8px' }}>Abuja</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="mb-6" style={{ padding: '12px', backgroundColor: '#f8f8f8', borderRadius: '8px' }}>
+                                            <div className="flex flex-col xs:flex-row justify-between mb-2" style={{ color: '#000000' }}>
+                                                <p className="mb-1 xs:mb-0" style={{ color: '#000000' }}>
+                                                    <strong style={{ fontWeight: '600' }}>Customer:</strong> {formData.customerName}
+                                                </p>
+                                                <p className="mb-1 xs:mb-0" style={{ color: '#000000' }}>
+                                                    <strong style={{ fontWeight: '600' }}>Receipt #:</strong> {formData.receiptNumber}
+                                                </p>
+                                            </div>
+                                            <div className="flex flex-col xs:flex-row xs:justify-between" style={{ color: '#000000' }}>
+                                                <p className="mb-1 xs:mb-0" style={{ color: '#000000' }}>
+                                                    <strong style={{ fontWeight: '600' }}>Tel:</strong> {formData.whatsapp}
+                                                </p>
+                                                <p style={{ color: '#000000' }}>
+                                                    <strong style={{ fontWeight: '600' }}>Date:</strong> {new Date(formData.date).toLocaleDateString('en-NG', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* CASH SALES INVOICE Header */}
+                                        <div className="text-center mb-3">
+                                            <h3 style={{
+                                                fontWeight: '700',
+                                                fontSize: '14pt',
+                                                color: '#000000',
+                                                marginBottom: '8px'
+                                            }}>CASH SALES INVOICE</h3>
+                                        </div>
+
+                                        <div className="overflow-x-auto -mx-2 px-2">
+                                            <table style={{
+                                                width: '100%',
+                                                borderCollapse: 'collapse',
+                                                marginBottom: '16px',
+                                                color: '#000000',
+                                                fontSize: '9pt',
+                                                minWidth: '300px'
+                                            }}>
+                                                <thead>
+                                                    <tr style={{ borderBottom: '2px solid #000000', borderTop: '2px solid #000000' }}>
+                                                        <th style={{
+                                                            padding: '8px 6px',
+                                                            textAlign: 'left',
+                                                            fontWeight: '700',
+                                                            color: '#000000'
+                                                        }}>Description</th>
+                                                        <th style={{
+                                                            padding: '8px 4px',
+                                                            textAlign: 'right',
+                                                            fontWeight: '700',
+                                                            color: '#000000'
+                                                        }}>Qty</th>
+                                                        <th style={{
+                                                            padding: '8px 4px',
+                                                            textAlign: 'right',
+                                                            fontWeight: '700',
+                                                            color: '#000000'
+                                                        }}>Price</th>
+                                                        <th style={{
+                                                            padding: '8px 4px',
+                                                            textAlign: 'right',
+                                                            fontWeight: '700',
+                                                            color: '#000000'
+                                                        }}>Total</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {formData.items.map((item, index) => (
+                                                        <tr key={index} style={{ borderBottom: '1px solid #e5e5e5' }}>
+                                                            <td style={{ padding: '8px 6px', color: '#000000' }}>{item.description}</td>
+                                                            <td style={{ padding: '8px 4px', textAlign: 'right', color: '#000000' }}>{item.quantity}</td>
+                                                            <td style={{ padding: '8px 4px', textAlign: 'right', color: '#000000' }}>₦{item.unitPrice.toLocaleString()}</td>
+                                                            <td style={{ padding: '8px 4px', textAlign: 'right', color: '#000000' }}>₦{item.total.toLocaleString()}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div style={{
+                                            borderTop: '2px solid #000000',
+                                            paddingTop: '12px',
+                                            color: '#000000'
+                                        }}>
+                                            <div className="flex flex-col space-y-2" style={{ color: '#000000' }}>
+                                                <div className="flex justify-between items-center" style={{ color: '#000000' }}>
+                                                    <strong style={{
+                                                        fontWeight: '700',
+                                                        fontSize: '12pt',
+                                                        color: '#000000'
+                                                    }}>Subtotal:</strong>
+                                                    <span style={{
+                                                        fontWeight: '700',
+                                                        fontSize: '12pt',
+                                                        color: '#000000'
+                                                    }}>₦{formData.subtotal.toLocaleString()}</span>
+                                                </div>
+
+                                                <div className="flex justify-between items-center" style={{ color: '#000000' }}>
+                                                    <strong style={{
+                                                        fontWeight: '700',
+                                                        fontSize: '12pt',
+                                                        color: '#000000'
+                                                    }}>Amount Paid:</strong>
+                                                    <span style={{
+                                                        fontWeight: '700',
+                                                        fontSize: '12pt',
+                                                        color: '#000000'
+                                                    }}>₦{formData.amountPaid.toLocaleString()}</span>
+                                                </div>
+
+                                                <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-200" style={{ color: '#000000' }}>
+                                                    <strong style={{
+                                                        fontWeight: '700',
+                                                        fontSize: '12pt',
+                                                        color: '#000000'
+                                                    }}>Balance:</strong>
+                                                    <span style={{
+                                                        fontWeight: '700',
+                                                        fontSize: '12pt',
+                                                        color: formData.balance > 0 ? '#cc0000' : '#008800'
+                                                    }}>₦{formData.balance.toLocaleString()}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div style={{
+                                            marginTop: '16px',
+                                            paddingTop: '12px',
+                                            borderTop: '1px solid #e5e5e5',
+                                            textAlign: 'center',
+                                            color: '#000000',
+                                            fontSize: '9pt'
+                                        }}>
+                                            <p style={{
+                                                marginBottom: '3px',
+                                                fontWeight: '500',
+                                                color: '#000000'
+                                            }}>Thank you for your patronage!</p>
+                                            <p style={{
+                                                fontWeight: '500',
+                                                color: '#000000'
+                                            }}>Follow us on Instagram: @cepoka</p>
+                                            <div style={{
+                                                marginTop: '12px',
+                                                fontSize: '8pt',
+                                                color: '#666666'
+                                            }}>
+                                                This is a computer-generated receipt and requires no signature.
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
 
                             <div className="sticky bottom-0 bg-white pt-3 pb-1 border-t mt-4">
@@ -1666,6 +1886,78 @@ const ReceiptSender = () => {
                         </div>
                     )}
                 </div>
+
+                {/* Receipt Size Selection Modal */}
+                {showSizeModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6"
+                        >
+                            <div className="text-center mb-6">
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                                    Choose Receipt Size
+                                </h3>
+                                <p className="text-gray-600 text-sm">
+                                    What size of receipt do you want to generate?
+                                </p>
+                            </div>
+
+                            <div className="space-y-4">
+                                {/* Big Receipt Option */}
+                                <button
+                                    onClick={() => handleSizeSelection('big')}
+                                    className="w-full p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 text-left group"
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <h4 className="font-semibold text-gray-900 group-hover:text-blue-700">
+                                                📄 Big Receipt (A4)
+                                            </h4>
+                                            <p className="text-sm text-gray-600 mt-1">
+                                                Standard A4 size - Current default format
+                                            </p>
+                                        </div>
+                                        <div className="text-2xl group-hover:scale-110 transition-transform">
+                                            📄
+                                        </div>
+                                    </div>
+                                </button>
+
+                                {/* Mini Receipt Option */}
+                                <button
+                                    onClick={() => handleSizeSelection('mini')}
+                                    className="w-full p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all duration-200 text-left group"
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <h4 className="font-semibold text-gray-900 group-hover:text-green-700">
+                                                🧾 Mini Receipt (58mm)
+                                            </h4>
+                                            <p className="text-sm text-gray-600 mt-1">
+                                                For thermal printers like Bisoffice 58mm
+                                            </p>
+                                        </div>
+                                        <div className="text-2xl group-hover:scale-110 transition-transform">
+                                            🧾
+                                        </div>
+                                    </div>
+                                </button>
+                            </div>
+
+                            <div className="mt-6 pt-4 border-t border-gray-200">
+                                <button
+                                    onClick={() => setShowSizeModal(false)}
+                                    className="w-full px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
             </div>
         </div>
     );

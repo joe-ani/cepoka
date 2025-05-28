@@ -61,6 +61,7 @@ const AdminPage = () => {
     const [isAuthorized, setIsAuthorized] = useState(false);        // Authorization status
     const [products, setProducts] = useState<Product[]>([]);         // List of products
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);  // Selected image files
+    const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]); // Track existing image URLs
     const [isLoading, setIsLoading] = useState(false);              // Loading state
     const [isNavigating] = useState(false);        // Navigation loading state
     const [isStockNavigating] = useState(false);        // Navigation loading state
@@ -140,6 +141,7 @@ const AdminPage = () => {
         setEditingProduct(null);
         setSelectedCategory(null);
         setSelectedFiles([]);
+        setExistingImageUrls([]); // Clear existing image URLs
         reset({
             name: '',
             price: '',
@@ -220,37 +222,87 @@ const AdminPage = () => {
             setIsLoading(true);
             console.log('📝 Submitting product data:', data);
 
-            // Handle image uploads
+            // Handle image uploads - only upload new images
             let imageUrls: string[] = [];
+
             if (selectedFiles.length > 0) {
                 try {
-                    console.log('🖼️ Uploading images...');
-                    // Upload all selected images to Appwrite storage
-                    const uploadPromises = selectedFiles.map(file =>
-                        storage.createFile(
-                            appwriteConfig.storageId,
-                            ID.unique(),
-                            file
-                        )
-                    );
+                    console.log('🖼️ Processing images...');
 
-                    const uploadedFiles = await Promise.all(uploadPromises);
-                    // Generate URLs for uploaded images
-                    imageUrls = uploadedFiles.map(file => {
-                        if (file && file.$id) {
-                            // Use the getFileView method instead of constructing URL manually
-                            return storage.getFileView(
-                                appwriteConfig.storageId,
-                                file.$id
-                            ).toString();
+                    // Separate existing images from new images
+                    const newFiles: File[] = [];
+                    const existingUrls: string[] = [];
+
+                    for (let i = 0; i < selectedFiles.length; i++) {
+                        const file = selectedFiles[i];
+                        const correspondingExistingUrl = existingImageUrls[i];
+
+                        // Check if this is an existing image (has a corresponding URL and filename matches pattern)
+                        if (correspondingExistingUrl && file.name.startsWith('existing-image-')) {
+                            // This is an existing image, keep the original URL
+                            existingUrls.push(correspondingExistingUrl);
+                            console.log(`📷 Keeping existing image: ${file.name}`);
                         } else {
-                            console.error('❌ File upload error: missing file ID');
-                            toast.error('Failed to upload images. Please try again.');
-                            setIsLoading(false);
-                            return "";
+                            // This is a new image, needs to be uploaded
+                            newFiles.push(file);
+                            console.log(`📷 New image to upload: ${file.name}`);
                         }
-                    });
-                    console.log('✅ Images uploaded successfully');
+                    }
+
+                    // Upload only new files
+                    if (newFiles.length > 0) {
+                        console.log(`🖼️ Uploading ${newFiles.length} new images...`);
+                        const uploadPromises = newFiles.map(file =>
+                            storage.createFile(
+                                appwriteConfig.storageId,
+                                ID.unique(),
+                                file
+                            )
+                        );
+
+                        const uploadedFiles = await Promise.all(uploadPromises);
+                        // Generate URLs for uploaded images
+                        const newImageUrls = uploadedFiles.map(file => {
+                            if (file && file.$id) {
+                                // Use the getFileView method instead of constructing URL manually
+                                return storage.getFileView(
+                                    appwriteConfig.storageId,
+                                    file.$id
+                                ).toString();
+                            } else {
+                                console.error('❌ File upload error: missing file ID');
+                                toast.error('Failed to upload images. Please try again.');
+                                setIsLoading(false);
+                                return "";
+                            }
+                        });
+
+                        // Combine existing URLs with new URLs in the correct order
+                        imageUrls = [];
+                        let newUrlIndex = 0;
+                        let existingUrlIndex = 0;
+
+                        for (let i = 0; i < selectedFiles.length; i++) {
+                            const file = selectedFiles[i];
+                            const correspondingExistingUrl = existingImageUrls[i];
+
+                            if (correspondingExistingUrl && file.name.startsWith('existing-image-')) {
+                                // Use existing URL
+                                imageUrls.push(existingUrls[existingUrlIndex]);
+                                existingUrlIndex++;
+                            } else {
+                                // Use new URL
+                                imageUrls.push(newImageUrls[newUrlIndex]);
+                                newUrlIndex++;
+                            }
+                        }
+
+                        console.log('✅ Images processed successfully');
+                    } else {
+                        // All images are existing, just use the existing URLs
+                        imageUrls = existingUrls;
+                        console.log('✅ All images are existing, no upload needed');
+                    }
                 } catch (fileError: unknown) {
                     const appwriteError = fileError as AppwriteError;
                     console.error('❌ File upload error:', appwriteError);
@@ -345,11 +397,12 @@ const AdminPage = () => {
             return isValidSize;
         });
 
-        // Limit to 3 images total
-        const totalFiles = [...selectedFiles, ...validSizeFiles].slice(0, 3);
+        // When adding new files, combine with existing files but respect the 3 image limit
+        const currentFiles = selectedFiles.filter(file => !file.name.startsWith('existing-image-') || existingImageUrls.length > 0);
+        const totalFiles = [...currentFiles, ...validSizeFiles].slice(0, 3);
 
         // Show warning if files were truncated
-        if (selectedFiles.length + validSizeFiles.length > 3) {
+        if (currentFiles.length + validSizeFiles.length > 3) {
             toast.error('Maximum 3 images allowed');
         }
 
@@ -404,6 +457,9 @@ const AdminPage = () => {
 
         // Load existing images as File objects for editing
         if (product.imageUrls && product.imageUrls.length > 0) {
+            // Store the existing image URLs
+            setExistingImageUrls(product.imageUrls);
+
             const loadExistingImages = async () => {
                 try {
                     const imageFiles: File[] = [];
@@ -436,6 +492,7 @@ const AdminPage = () => {
         } else {
             // Clear images if product has none
             setSelectedFiles([]);
+            setExistingImageUrls([]);
         }
 
         // Scroll to form
@@ -849,7 +906,12 @@ const AdminPage = () => {
                                                         <button
                                                             type="button"
                                                             onClick={() => {
+                                                                // Remove the file from selectedFiles
                                                                 setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
+                                                                // Also remove the corresponding URL from existingImageUrls if it exists
+                                                                if (existingImageUrls[index]) {
+                                                                    setExistingImageUrls(existingImageUrls.filter((_, i) => i !== index));
+                                                                }
                                                                 toast.success('Image removed');
                                                             }}
                                                             className="bg-red-500 text-white rounded-full p-1.5 shadow-md transform scale-90 opacity-0 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300"

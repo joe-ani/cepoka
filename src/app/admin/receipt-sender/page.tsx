@@ -1453,7 +1453,7 @@ const ReceiptSender = () => {
                                     boxSizing: 'border-box',
                                     backgroundColor: 'white',
                                     fontFamily: 'Arial, sans-serif',
-                                    fontSize: '16px', // Increased from 12px for better thermal printing
+                                    fontSize: '18px', // Bumped up from 16px for even better thermal printing
                                     fontWeight: '700', // Extra bold for thermal printing clarity
                                     lineHeight: '1.5', // Better spacing for readability
                                     border: '1px solid #ddd',
@@ -1502,7 +1502,7 @@ const ReceiptSender = () => {
                                                 unoptimized={true}
                                             />
                                             <h2 style={{
-                                                fontSize: '18px', // Increased from 14px
+                                                fontSize: '20px', // Bumped up from 18px
                                                 fontWeight: '800', // Extra bold
                                                 color: '#000000',
                                                 marginBottom: '6px',
@@ -1512,7 +1512,7 @@ const ReceiptSender = () => {
                                                 CEPOKA BEAUTY HUB
                                             </h2>
                                             <div style={{
-                                                fontSize: '12px', // Increased from 9px
+                                                fontSize: '14px', // Bumped up from 12px
                                                 fontWeight: '600',
                                                 color: '#000000',
                                                 textAlign: 'center',
@@ -1527,7 +1527,7 @@ const ReceiptSender = () => {
                                         {/* Mini Customer Info */}
                                         <div style={{
                                             marginBottom: '14px',
-                                            fontSize: '13px', // Increased from 10px
+                                            fontSize: '15px', // Bumped up from 13px
                                             fontWeight: '600',
                                             color: '#000000',
                                             borderTop: '2px dashed #000', // Thicker border
